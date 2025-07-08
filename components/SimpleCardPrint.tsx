@@ -38,7 +38,8 @@ export default function SimpleCardPrint({ cards, onClose }: SimpleCardPrintProps
       <div className="print-sheet">
         <div className="print-grid cut-lines">
           {cards.slice(0, 9).map((card, index) => {
-            const imgUrl = card.image_uris?.normal || card.image_uris?.large || card.image_uris?.png || '';
+            // Usar apenas as propriedades que existem no tipo image_uris
+            const imgUrl = card.image_uris?.normal || card.image_uris?.small || '';
             return (
               <div key={index} className="print-card">
                 <img 

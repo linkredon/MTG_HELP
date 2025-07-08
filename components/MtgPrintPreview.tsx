@@ -45,9 +45,9 @@ export default function MtgPrintPreview({ cards, onClose }: MtgPrintPreviewProps
     console.error("Erro ao carregar imagem:", e.currentTarget.src)
     // Tentar carregar uma versão alternativa da imagem
     if (e.currentTarget.src.includes('normal')) {
-      e.currentTarget.src = e.currentTarget.src.replace('normal', 'large')
-    } else if (e.currentTarget.src.includes('large')) {
-      e.currentTarget.src = e.currentTarget.src.replace('large', 'png')
+      e.currentTarget.src = e.currentTarget.src.replace('normal', 'small')
+    } else if (e.currentTarget.src.includes('small')) {
+      e.currentTarget.src = e.currentTarget.src.replace('small', 'art_crop')
     } else {
       // Se todas as tentativas falharem, usar uma URL de fallback
       e.currentTarget.src = "https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid=0"
@@ -60,7 +60,8 @@ export default function MtgPrintPreview({ cards, onClose }: MtgPrintPreviewProps
       <div className="print-sheet">
         <div className="print-grid cut-lines">
           {cards.slice(0, 9).map((card, index) => {
-            const imgUrl = card.image_uris?.normal || card.image_uris?.large || card.image_uris?.png || '';
+            // Usar apenas as propriedades que existem no tipo image_uris
+            const imgUrl = card.image_uris?.normal || card.image_uris?.small || card.image_uris?.art_crop || '';
             return (
               <div key={index} className="print-card">
                 <img 

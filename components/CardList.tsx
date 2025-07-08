@@ -13,6 +13,10 @@ export interface CardListProps {
   onAddCard?: (card: MTGCard) => void
   onRemoveCard?: (card: MTGCard | string) => void
   showQuantity?: boolean
+  showActionButton?: boolean
+  actionButtonLabel?: string
+  onActionButtonClick?: (card: MTGCard) => void
+  className?: string
 }
 
 export default function CardList({ 
@@ -21,7 +25,11 @@ export default function CardList({
   onCardClick, 
   onAddCard, 
   onRemoveCard,
-  showQuantity = false
+  showQuantity = false,
+  showActionButton = false,
+  actionButtonLabel = 'Ação',
+  onActionButtonClick,
+  className = ''
 }: CardListProps) {
   const [view, setView] = useState<'grid' | 'list'>('grid')
   
@@ -35,7 +43,7 @@ export default function CardList({
   
   if (view === 'grid') {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 ${className}`}>
         {cards.map((card, index) => (
           <div 
             key={card.id} 
@@ -65,7 +73,7 @@ export default function CardList({
               )}
               
               {/* Controls overlay */}
-              {(onAddCard || onRemoveCard) && (
+              {(onAddCard || onRemoveCard || (showActionButton && onActionButtonClick)) && (
                 <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
                   {onAddCard && (
                     <Button 
@@ -95,6 +103,20 @@ export default function CardList({
                       Remover
                     </Button>
                   )}
+                  
+                  {showActionButton && onActionButtonClick && (
+                    <Button 
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onActionButtonClick(card);
+                      }}
+                      className="border-blue-600 text-blue-500 hover:bg-blue-900/20"
+                    >
+                      {actionButtonLabel}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -105,7 +127,7 @@ export default function CardList({
   }
   
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${className}`}>
       {cards.map((card, index) => (
         <div 
           key={card.id}
@@ -164,6 +186,20 @@ export default function CardList({
                 className="flex-shrink-0 h-8 w-8 p-0 text-red-500"
               >
                 <Minus className="w-4 h-4" />
+              </Button>
+            )}
+            
+            {showActionButton && onActionButtonClick && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onActionButtonClick(card);
+                }}
+                className="flex-shrink-0"
+              >
+                {actionButtonLabel}
               </Button>
             )}
           </div>

@@ -196,7 +196,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Função para obter quantidade de uma carta na coleção
   const getQuantidadeNaColecao = (cardId: string): number => {
-    const card = currentCollection?.cards.find(c => c.card.id === cardId);
+    const card = currentCollection?.cards?.find(c => c.card.id === cardId);
     return card ? card.quantity : 0;
   };
 

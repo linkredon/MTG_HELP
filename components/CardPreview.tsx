@@ -2,7 +2,14 @@
 
 import { Dialog, DialogContent } from "./ui/dialog"
 import Image from "next/image"
-import type { SpoilerCard } from '@/types/mtg'
+import type { MTGCard } from '@/types/mtg'
+
+// Interface local para cartas de spoiler
+interface SpoilerCard extends Partial<MTGCard> {
+  set?: string;
+  set_name?: string;
+  spoilerSource?: string;
+}
 
 interface CardPreviewProps {
   isOpen: boolean
@@ -19,7 +26,7 @@ export default function CardPreview({ isOpen, onClose, card }: CardPreviewProps)
         <div className="relative w-full">
           <Image
             src={card.image_uris?.normal || '/placeholder.png'}
-            alt={card.name}
+            alt={card.name || 'Carta sem nome'}
             width={480}
             height={680}
             className="w-full h-auto rounded-lg"

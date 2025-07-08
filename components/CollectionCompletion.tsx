@@ -30,7 +30,7 @@ const DIGITAL_SET_CODES = [
 ];
 
 export default function CollectionCompletion({ isOpen, onClose }: CollectionCompletionProps) {
-  const { collections, currentCollection } = useAppContext()
+  const { collections, currentCollection = { cards: [] } } = useAppContext()
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<MTGCard[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -64,8 +64,8 @@ export default function CollectionCompletion({ isOpen, onClose }: CollectionComp
   const isCardInCollection = (card: MTGCard): {inCollection: boolean, quantity: number, missing: number} => {
     if (!currentCollection) return { inCollection: false, quantity: 0, missing: targetCardCount }
     
-    const collectionCard = currentCollection.cards.find(c => 
-      c.card.name === card.name && c.card.set === card.set
+    const collectionCard = currentCollection?.cards?.find(c => 
+      c.card.name === card.name && c.card.set_code === card.set_code
     )
     
     const quantity = collectionCard?.quantity || 0
@@ -167,7 +167,7 @@ export default function CollectionCompletion({ isOpen, onClose }: CollectionComp
     for (const card of cards) {
       // Verificar se a carta está na coleção atual
       const collectionCard = currentCollection.cards.find(c => 
-        c.card.name === card.name && c.card.set === card.set
+        c.card.name === card.name && c.card.set_code === card.set_code
       )
       const haveCount = collectionCard?.quantity || 0
       const needCount = targetCardCount

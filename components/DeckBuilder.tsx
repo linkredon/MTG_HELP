@@ -759,7 +759,6 @@ const DeckBuilder: React.FC<DeckBuilderProps> = ({ deckId, onSave, onCancel }) =
                 {!isSearching && !searchError && searchResults.length > 0 && (
                   <SearchCardList 
                     cards={searchResults}
-                    collection={[]} // Empty since we're in deck builder
                     onAddCard={(card, quantity) => handleAddCardToDeck(card, 'mainboard', quantity)}
                     className="mb-6"
                   />

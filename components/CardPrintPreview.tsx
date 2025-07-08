@@ -23,7 +23,8 @@ export default function CardPrintPreview({ cards, onClose }: CardPrintPreviewPro
       const loadedUrls: string[] = []
       
       for (const card of cards.slice(0, 9)) {
-        const imgUrl = card.image_uris?.normal || card.image_uris?.large || card.image_uris?.png
+        // Usar apenas as propriedades que existem no tipo image_uris
+        const imgUrl = card.image_uris?.normal || card.image_uris?.small || card.image_uris?.art_crop
         
         if (imgUrl) {
           try {
@@ -64,7 +65,8 @@ export default function CardPrintPreview({ cards, onClose }: CardPrintPreviewPro
       <div className="print-area">
         <div className="card-grid cut-marks">
           {cards.slice(0, 9).map((card, index) => {
-            const imgUrl = card.image_uris?.normal || card.image_uris?.large || card.image_uris?.png || '';
+            // Usar apenas as propriedades que existem no tipo image_uris
+        const imgUrl = card.image_uris?.normal || card.image_uris?.small || card.image_uris?.art_crop || '';
             return (
               <div key={index} className="card-item">
                 <img 

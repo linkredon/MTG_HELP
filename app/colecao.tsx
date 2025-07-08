@@ -943,7 +943,6 @@ export default function Colecao({
                 </div>
                 <SearchCardList
                   cards={resultadoPesquisa}
-                  collection={currentCollection?.cards || []}
                   onAddCard={adicionarCarta}
                 />
               </>

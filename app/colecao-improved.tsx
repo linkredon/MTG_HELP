@@ -74,7 +74,7 @@ export default function ColecaoImproved({
   const [addedCards, setAddedCards] = useState<Record<string, { count: number, timestamp: number }>>({});
   
   // Contextos
-  const { currentCollection, adicionarCarta } = useAppContext();
+  const { currentCollection = { cards: [] }, adicionarCarta } = useAppContext();
   const { openModal } = useCardModal();
   
   // Função para buscar cartas

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
-import { FilePdf, Printer } from "lucide-react"
+import { FileText, Printer } from "lucide-react"
 import type { MTGCard } from '@/types/mtg'
 
 // Importação dinâmica para evitar problemas de SSR
@@ -35,7 +35,7 @@ export default function CardPdfGenerator({ isOpen, onClose, missingCards }: Card
       <DialogContent className="quantum-card-dense fixed-modal max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FilePdf className="w-5 h-5 text-cyan-400" />
+            <FileText className="w-5 h-5 text-cyan-400" />
             Gerar PDF de Proxies
           </DialogTitle>
         </DialogHeader>
@@ -93,7 +93,7 @@ export default function CardPdfGenerator({ isOpen, onClose, missingCards }: Card
               </span>
             ) : (
               <>
-                <FilePdf className="w-4 h-4 mr-1" />
+                <FileText className="w-4 h-4 mr-1" />
                 Gerar PDF (Teste)
               </>
             )}

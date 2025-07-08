@@ -7,7 +7,13 @@ import { Input } from "./ui/input"
 import { Textarea } from "./ui/textarea"
 import { Pencil, Save } from "lucide-react"
 import Image from "next/image"
-import type { SpoilerCard } from '@/types/mtg'
+import type { MTGCard } from '@/types/mtg'
+
+// Interface local para cartas de spoiler
+interface SpoilerCard extends Partial<MTGCard> {
+  set?: string;
+  set_name?: string;
+}
 
 interface QuickEditModalProps {
   isOpen: boolean

@@ -27,7 +27,7 @@ export default function CollectionSimpleRefined() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Contextos
-  const { currentCollection, adicionarCarta } = useAppContext();
+  const { currentCollection = { cards: [] }, adicionarCarta } = useAppContext();
   const { openModal } = useCardModal();
 
   // Função de busca
@@ -189,18 +189,18 @@ export default function CollectionSimpleRefined() {
               <div className="p-4 border-b border-gray-700 bg-gray-900/30">
                 <div className="flex items-center justify-between gap-4">
                   <h3 className="text-lg font-medium">
-                    Minha Coleção: {currentCollection.cards.length} cartas únicas
+                    Minha Coleção: {currentCollection?.cards?.length || 0} cartas únicas
                   </h3>
                   <div className="text-sm text-gray-400">
-                    Total: {currentCollection.cards.reduce((sum, item) => sum + item.quantity, 0)} cartas
+                    Total: {currentCollection?.cards?.reduce((sum, item) => sum + item.quantity, 0) || 0} cartas
                   </div>
                 </div>
               </div>
 
               <div className="p-6">
-                {currentCollection.cards.length > 0 ? (
+                {currentCollection?.cards?.length ? (
                   <CompactCardList
-                    cards={currentCollection.cards.map(item => item.card)}
+                    cards={currentCollection?.cards?.map(item => item.card) || []}
                     onAddCard={handleAddCard}
                   />
                 ) : (

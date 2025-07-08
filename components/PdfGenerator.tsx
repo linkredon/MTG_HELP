@@ -71,7 +71,8 @@ const PdfGenerator = ({ missingCards, copiesPerCard, onComplete }: PdfGeneratorP
         const y = margin + row * (finalCardHeight + spacing)
         
         // Carregar a imagem da carta
-        const imgUrl = card.image_uris?.normal || card.image_uris?.large || card.image_uris?.png
+        // Usar apenas as propriedades que existem no tipo image_uris
+        const imgUrl = card.image_uris?.normal || card.image_uris?.small || card.image_uris?.art_crop
         
         if (imgUrl) {
           // Converter a URL da imagem para base64

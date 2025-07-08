@@ -10,9 +10,10 @@ export interface SearchCardListProps {
   cards: MTGCard[]
   onCardClick?: (card: MTGCard) => void
   onAddCard: (card: MTGCard, quantity?: number) => void
+  className?: string
 }
 
-export default function SearchCardList({ cards, onCardClick, onAddCard }: SearchCardListProps) {
+export default function SearchCardList({ cards, onCardClick, onAddCard, className = '' }: SearchCardListProps) {
   const [view, setView] = useState<'grid' | 'list'>('grid')
   
   // Usar a visualização salva no localStorage, se disponível
@@ -25,7 +26,7 @@ export default function SearchCardList({ cards, onCardClick, onAddCard }: Search
   
   if (view === 'grid') {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 ${className}`}>
         {cards.map(card => (
           <div 
             key={card.id} 
@@ -69,7 +70,7 @@ export default function SearchCardList({ cards, onCardClick, onAddCard }: Search
   }
   
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${className}`}>
       {cards.map(card => (
         <div 
           key={card.id}

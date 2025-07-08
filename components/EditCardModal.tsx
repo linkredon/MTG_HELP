@@ -7,7 +7,14 @@ import { Input } from "./ui/input"
 import { Textarea } from "./ui/textarea"
 import { Pencil, Save } from "lucide-react"
 import Image from "next/image"
-import type { SpoilerCard } from '@/types/mtg'
+import type { MTGCard } from '@/types/mtg'
+
+// Interface local para cartas de spoiler
+interface SpoilerCard extends Partial<MTGCard> {
+  set?: string;
+  set_name?: string;
+  spoilerSource?: string;
+}
 
 interface EditCardModalProps {
   isOpen: boolean
@@ -47,7 +54,7 @@ export default function EditCardModal({ isOpen, onClose, card, onSave }: EditCar
             <div className="relative w-full aspect-[63/88] rounded-lg overflow-hidden mb-4">
               <Image
                 src={editedCard.image_uris?.normal || '/placeholder.png'}
-                alt={editedCard.name}
+                alt={editedCard.name || 'Carta sem nome'}
                 fill
                 className="object-cover"
               />

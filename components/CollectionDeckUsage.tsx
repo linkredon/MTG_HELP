@@ -21,7 +21,7 @@ const CollectionDeckUsage: React.FC<CollectionDeckUsageProps> = ({
 }) => {
   const { getCartasUsadasEmDecks } = useAppContext();
   
-  const deckUsages = getCartasUsadasEmDecks(card.id);
+  const deckUsages = card?.id ? getCartasUsadasEmDecks(card.id) : [];
 
   if (deckUsages.length === 0) {
     return null;

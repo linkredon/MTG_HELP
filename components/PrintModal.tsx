@@ -129,7 +129,8 @@ export default function PrintModal({ isOpen, onClose, missingCards }: PrintModal
               <div className="print-sheet">
                 <div className="print-grid cut-lines">
                 {cards.slice(0, 9).map((card, index) => {
-                  const imgUrl = card.image_uris?.normal || card.image_uris?.large || card.image_uris?.png || '';
+                  // Usar apenas as propriedades que existem no tipo image_uris
+                  const imgUrl = card.image_uris?.normal || card.image_uris?.small || card.image_uris?.art_crop || '';
                   return (
                     <div key={index} className="print-card">
                       <img 
