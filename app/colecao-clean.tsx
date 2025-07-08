@@ -14,7 +14,7 @@ import CardList from "@/components/CardList"
 import SearchCardList from "@/components/SearchCardList"
 import ExpandableCardGrid from '@/components/ExpandableCardGrid'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Search, Library, Plus, Minus, Download, AlertCircle, Save, Upload, Copy, Grid3X3, Settings, User, Clock, Bookmark, Heart, Trash2, Star, Filter, Eye, EyeOff, RefreshCw, ExternalLink, Package, Edit3 } from "lucide-react"
+import { Search, Library, Plus, Minus, Download, AlertCircle, Save, Upload, Copy, Grid3X3, Settings, User, Clock, Bookmark, Heart, Trash2, Star, Filter, Eye, EyeOff, RefreshCw, ExternalLink, Package, Edit3, ArrowUpDown } from "lucide-react"
 import "@/styles/palette.css"
 
 // Função utilitária para seguramente acessar propriedades de cartas
@@ -173,7 +173,12 @@ export default function Colecao({
   exportCollectionToCSV,
 }: ColecaoProps) {
   // Usar o contexto global para coleção
-  const { currentCollection, adicionarCarta, removerCarta } = useAppContext();
+  const { currentCollection = { cards: [] }, adicionarCarta, removerCarta, setCurrentCollection } = useAppContext();
+  
+  // Garantir que currentCollection seja do tipo UserCollection e não UserCollection[]
+  const collection: UserCollection = Array.isArray(currentCollection) 
+    ? (currentCollection[0] || { cards: [], id: '', name: '', description: '', createdAt: '', updatedAt: '', isPublic: false })
+    : (currentCollection as UserCollection);
   
   // Estados para navegação entre tabs da coleção - apenas Pesquisa, Coleção e Estatísticas
   const [tab, setTab] = useState<string>("pesquisa")
@@ -208,10 +213,10 @@ export default function Colecao({
   // Sugestões de busca com base no histórico e cartas populares
   const sugestoesBusca = useMemo(() => {
     const cartasPopulares = ['Lightning Bolt', 'Counterspell', 'Sol Ring', 'Swords to Plowshares', 'Dark Ritual'];
-    const cartasNaColecao = currentCollection.cards.map(c => c.card.name).slice(0, 5);
+    const cartasNaColecao = collection.cards.map(c => c.card.name).slice(0, 5);
     const todasSugestoes = [...cartasPopulares, ...cartasNaColecao];
     return Array.from(new Set(todasSugestoes));
-  }, [currentCollection.cards]);
+  }, [collection.cards]);
 
   // Função para busca rápida (Enter na pesquisa)
   const buscarRapido = useCallback((termo: string) => {
@@ -258,38 +263,36 @@ export default function Colecao({
 
   // Função melhorada para filtrar e ordenar cartas da coleção
   const cartasFiltradas = useMemo(() => {
-    let filtered = currentCollection.cards;
+    let filtered = collection.cards;
 
     // Filtro por nome/busca
     if (buscaColecao.trim()) {
       const searchTerm = buscaColecao.toLowerCase().trim();
-      filtered = filtered.filter(c => 
-        c.card.name.toLowerCase().includes(searchTerm) ||
-        c.card.set_name.toLowerCase().includes(searchTerm) ||
-        c.card.type_line.toLowerCase().includes(searchTerm)
+      filtered = filtered.filter(item => 
+        item.card.name.toLowerCase().includes(searchTerm) ||
+        (item.card.oracle_text && item.card.oracle_text.toLowerCase().includes(searchTerm))
       );
     }
 
     // Filtro por raridade
     if (filtroRaridadeColecao !== "all") {
-      filtered = filtered.filter(c => c.card.rarity === filtroRaridadeColecao);
+      filtered = filtered.filter(item => 
+        safeCardAccess.rarity(item.card) === filtroRaridadeColecao
+      );
     }
 
     // Filtro por cor
     if (filtroCorColecao !== "all") {
-      if (filtroCorColecao === "colorless") {
-        filtered = filtered.filter(c => 
-          !c.card.color_identity || c.card.color_identity.length === 0
-        );
-      } else {
-        filtered = filtered.filter(c => 
-          c.card.color_identity && c.card.color_identity.includes(filtroCorColecao)
-        );
-      }
+      filtered = filtered.filter(item => {
+        const colors = safeCardAccess.colorIdentity(item.card);
+        return filtroCorColecao === "colorless" 
+          ? colors.length === 0 
+          : colors.includes(filtroCorColecao);
+      });
     }
 
     // Ordenação
-    filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       let comparison = 0;
       
       switch (ordenacao) {
@@ -297,758 +300,856 @@ export default function Colecao({
           comparison = a.card.name.localeCompare(b.card.name);
           break;
         case 'rarity':
-          const rarityOrder = { 'common': 1, 'uncommon': 2, 'rare': 3, 'mythic': 4 };
-          comparison = (rarityOrder[a.card.rarity as keyof typeof rarityOrder] || 0) - 
-                      (rarityOrder[b.card.rarity as keyof typeof rarityOrder] || 0);
+          const rarityOrder = { common: 0, uncommon: 1, rare: 2, mythic: 3, special: 4, bonus: 5 };
+          const rarityA = safeCardAccess.rarity(a.card);
+          const rarityB = safeCardAccess.rarity(b.card);
+          comparison = (rarityOrder[rarityA as keyof typeof rarityOrder] || 0) - 
+                      (rarityOrder[rarityB as keyof typeof rarityOrder] || 0);
           break;
         case 'cmc':
-          comparison = (a.card.cmc || 0) - (b.card.cmc || 0);
+          comparison = safeCardAccess.cmc(a.card) - safeCardAccess.cmc(b.card);
           break;
         case 'quantity':
           comparison = a.quantity - b.quantity;
           break;
         case 'date':
-          comparison = new Date(a.card.released_at || '').getTime() - 
-                      new Date(b.card.released_at || '').getTime();
+          // Assumindo que há um campo de data adicionado
+          const dateA = new Date(a.card.released_at || '2000-01-01').getTime();
+          const dateB = new Date(b.card.released_at || '2000-01-01').getTime();
+          comparison = dateA - dateB;
           break;
       }
       
       return direcaoOrdenacao === 'asc' ? comparison : -comparison;
     });
+  }, [collection.cards, buscaColecao, filtroRaridadeColecao, filtroCorColecao, ordenacao, direcaoOrdenacao]);
 
-    return filtered;
-  }, [currentCollection.cards, buscaColecao, filtroRaridadeColecao, filtroCorColecao, ordenacao, direcaoOrdenacao]);
-
-  // Função para alternar direção da ordenação
-  const toggleOrdenacao = useCallback((novaOrdenacao: typeof ordenacao) => {
-    if (ordenacao === novaOrdenacao) {
-      setDirecaoOrdenacao(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setOrdenacao(novaOrdenacao);
-      setDirecaoOrdenacao('asc');
+  // Função para pesquisar cartas na API Scryfall
+  const pesquisarCartas = useCallback(async () => {
+    if (!busca.trim() && !mostrarFiltrosAvancados) {
+      setErroPesquisa("Digite um termo de busca ou use filtros avançados");
+      return;
     }
-  }, [ordenacao]);
 
-  // Função para pesquisar cartas
-  const pesquisarCartas = async () => {
-    // Se não há filtros, não pesquisa
-    if (!busca.trim() && raridade === "all" && tipo === "all" && 
-        subtipo === "all" && supertipo === "all" && !cmc && 
-        !oracleText && manaColors.length === 0 && foil === "all") {
-      setErroPesquisa("Por favor, defina pelo menos um filtro para pesquisar")
-      return
-    }
-    
-    setCarregandoPesquisa(true)
-    setErroPesquisa(null)
+    setCarregandoPesquisa(true);
+    setErroPesquisa(null);
     
     try {
-      // Construir query para Scryfall
-      let queryParts = []
+      // Construir a query para a API Scryfall
+      let query = busca.trim();
       
-      if (busca.trim()) queryParts.push(busca.trim())
-      if (raridade !== "all") queryParts.push(`rarity:${raridade}`)
-      if (tipo !== "all") queryParts.push(`type:${tipo}`)
-      if (subtipo !== "all") queryParts.push(`type:${subtipo}`)
-      if (supertipo !== "all") queryParts.push(`is:${supertipo}`)
-      if (cmc) {
-        const cmcNumber = parseInt(cmc)
-        if (!isNaN(cmcNumber)) {
-          queryParts.push(`cmc=${cmcNumber}`)
+      // Adicionar filtros avançados se estiverem ativos
+      if (mostrarFiltrosAvancados) {
+        if (raridade !== "all") query += ` r:${raridade}`;
+        if (tipo !== "all") query += ` t:${tipo}`;
+        if (subtipo !== "all") query += ` t:${subtipo}`;
+        if (supertipo !== "all") query += ` t:${supertipo}`;
+        if (cmc) query += ` cmc${cmc}`;
+        if (foil !== "all") query += ` is:${foil}`;
+        if (oracleText) query += ` o:"${oracleText}"`;
+        if (manaColors.length > 0) {
+          query += ` c:${manaColors.join('')}`;
         }
       }
-      if (foil === "foil") queryParts.push("is:foil")
-      if (foil === "nonfoil") queryParts.push("-is:foil")
-      if (oracleText.trim()) queryParts.push(`oracle:"${oracleText.trim()}"`)
-      if (manaColors.length > 0) {
-        queryParts.push(`colors:${manaColors.join("")}`)
-      }
       
-      const query = queryParts.join(" ")
-      console.log("Query construída:", query)
-      
-      // Fazer requisição para Scryfall
-      const response = await fetch(`https://api.scryfall.com/cards/search?q=${query}&order=name&dir=asc&unique=cards&page=1`)
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          setResultadoPesquisa([])
-          setErroPesquisa("Nenhuma carta encontrada com os filtros especificados")
+      // Adicionar filtro para mostrar apenas cartas na coleção
+      if (mostrarCartasNaColecao) {
+        const cardIds = collection.cards.map(c => c.card.id);
+        if (cardIds.length > 0) {
+          // Limitar a 50 IDs para não exceder limites da URL
+          const limitedIds = cardIds.slice(0, 50);
+          query += ` (${limitedIds.map(id => `id:${id}`).join(' OR ')})`;
         } else {
-          throw new Error(`Erro na API: ${response.status}`)
+          setErroPesquisa("Sua coleção está vazia");
+          setCarregandoPesquisa(false);
+          return;
         }
-        return
       }
       
-      const data = await response.json()
-      setResultadoPesquisa(data.data || [])
+      // Fazer a requisição à API
+      const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
       
-      if (data.data && data.data.length === 0) {
-        setErroPesquisa("Nenhuma carta encontrada com os filtros especificados")
+      if (data.object === "error") {
+        setErroPesquisa(data.details);
+        setResultadoPesquisa([]);
+      } else {
+        setResultadoPesquisa(data.data || []);
+        setAllCards(data.data || []);
       }
-      
     } catch (error) {
-      console.error("Erro ao pesquisar cartas:", error)
-      setErroPesquisa("Erro ao pesquisar cartas. Tente novamente.")
-      setResultadoPesquisa([])
+      console.error("Erro na pesquisa:", error);
+      setErroPesquisa("Erro ao buscar cartas. Verifique sua conexão ou tente novamente mais tarde.");
+      setResultadoPesquisa([]);
     } finally {
-      setCarregandoPesquisa(false)
+      setCarregandoPesquisa(false);
     }
-  }
+  }, [busca, mostrarFiltrosAvancados, raridade, tipo, subtipo, supertipo, cmc, foil, oracleText, manaColors, mostrarCartasNaColecao, collection.cards, setAllCards]);
 
-  // Função para limpar filtros
-  const limparFiltros = () => {
-    setBusca("")
-    setRaridade("all")
-    setTipo("all")
-    setSubtipo("all")
-    setSupertipo("all")
-    setCmc("")
-    setFoil("all")
-    setOracleText("")
-    setManaColors([])
-    setResultadoPesquisa([])
-    setErroPesquisa(null)
-  }
-
-  // Função para pesquisar ao pressionar Enter
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      pesquisarCartas()
-    }
-  }
-
-  // Função para toggle de cor de mana
-  const toggleManaCor = (cor: string) => {
-    setManaColors(prev => 
-      prev.includes(cor) 
-        ? prev.filter(c => c !== cor)
-        : [...prev, cor]
-    )
-  }
-
-  // Effect para pesquisar automaticamente quando o termo de busca muda
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (busca.trim() && busca.length >= 3) {
-        pesquisarCartas()
+  // Função para alternar a seleção de cor no filtro
+  const toggleManaColor = useCallback((color: string) => {
+    setManaColors(prev => {
+      if (prev.includes(color)) {
+        return prev.filter(c => c !== color);
+      } else {
+        return [...prev, color];
       }
-    }, 500)
+    });
+  }, []);
+
+  // Função para exportar a coleção atual
+  const exportarColecao = useCallback(() => {
+    exportCollectionToCSV(collection);
+    showNotification('success', 'Coleção exportada com sucesso!');
+  }, [collection, exportCollectionToCSV, showNotification]);
+
+  // Função para importar coleção de um arquivo CSV
+  const importarColecao = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split('\n');
+        
+        // Pular o cabeçalho
+        const dataLines = lines.slice(1);
+        
+        // Processar cada linha
+        const importedCards: CollectionCard[] = [];
+        
+        for (const line of dataLines) {
+          if (!line.trim()) continue;
+          
+          const [name, set, quantity, foilStatus, condition] = line.split(',');
+          
+          // Buscar a carta correspondente
+          const matchingCard = allCards.find(c => 
+            c.name.toLowerCase() === name.toLowerCase() && 
+            c.set_code.toLowerCase() === set.toLowerCase()
+          );
+          
+          if (matchingCard) {
+            importedCards.push({
+              card: matchingCard,
+              quantity: parseInt(quantity) || 1,
+              condition: condition || 'Near Mint',
+              foil: foilStatus.toLowerCase() === 'foil'
+            });
+          }
+        }
+        
+        // Atualizar a coleção
+        if (importedCards.length > 0) {
+          setCurrentCollection((prevCollection: any) => {
+            // Se prevCollection é um array, atualizamos o primeiro item ou criamos um novo array
+            if (Array.isArray(prevCollection)) {
+              // Verificar se o primeiro item existe e é um objeto válido
+              const firstItem = prevCollection[0];
+              const updatedCollection = firstItem ? {
+                ...firstItem,
+                cards: firstItem.cards || []
+              } : { 
+                cards: [], id: '', name: '', description: '', createdAt: '', updatedAt: '', isPublic: false 
+              };
+              
+              // Criar um novo array com o item atualizado na primeira posição
+              const result = [
+                {
+                  ...updatedCollection,
+                  cards: [...updatedCollection.cards, ...importedCards],
+                  updatedAt: new Date().toISOString()
+                }
+              ];
+              
+              // Adicionar os itens restantes do array original, se houver
+              if (prevCollection.length > 1) {
+                for (let i = 1; i < prevCollection.length; i++) {
+                  result.push(prevCollection[i]);
+                }
+              }
+              
+              return result;
+            } 
+            // Se não é um array, criamos um novo array com o item atualizado
+            else {
+              // Garantir que updatedCollection seja um objeto válido
+              // Verificar se prevCollection é um objeto válido
+              let updatedCollection;
+              if (prevCollection && typeof prevCollection === 'object') {
+                updatedCollection = {
+                  id: prevCollection.id || '',
+                  name: prevCollection.name || '',
+                  description: prevCollection.description || '',
+                  createdAt: prevCollection.createdAt || '',
+                  updatedAt: prevCollection.updatedAt || '',
+                  isPublic: prevCollection.isPublic || false,
+                  cards: prevCollection.cards || []
+                };
+              } else {
+                updatedCollection = { 
+                  cards: [], id: '', name: '', description: '', createdAt: '', updatedAt: '', isPublic: false 
+                };
+              }
+              
+              return [{
+                ...updatedCollection,
+                cards: [...updatedCollection.cards, ...importedCards],
+                updatedAt: new Date().toISOString()
+              }];
+            }
+          });
+          
+          showNotification('success', `Importadas ${importedCards.length} cartas para a coleção!`);
+        } else {
+          showNotification('error', 'Nenhuma carta foi importada. Verifique o formato do arquivo.');
+        }
+      } catch (error) {
+        console.error("Erro ao importar coleção:", error);
+        showNotification('error', 'Erro ao importar coleção. Verifique o formato do arquivo.');
+      }
+    };
     
-    return () => clearTimeout(timer)
-  }, [busca])
+    reader.readAsText(file);
+  }, [allCards, collection, setCurrentCollection, showNotification]);
 
-  // Função para capitalizar primeira letra
-  const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
-
-  // Função para obter cor de raridade
-  const getRarityColor = (rarity: string) => {
-    switch (rarity.toLowerCase()) {
-      case 'common': return 'text-gray-400'
-      case 'uncommon': return 'text-green-400'
-      case 'rare': return 'text-yellow-400'
-      case 'mythic': return 'text-orange-400'
-      default: return 'text-gray-400'
-    }
-  }
-
+  // Renderização do componente
   return (
-    <div className="space-y-6">
+    <div className="p-4 max-w-7xl mx-auto">
+      {/* Cabeçalho da página */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold mb-1">Sua Coleção MTG</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Gerencie suas cartas, pesquise novas adições e veja estatísticas
+          </p>
+        </div>
+        
+        <div className="flex gap-2 mt-4 md:mt-0">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={exportarColecao}
+            className="flex items-center gap-1"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">Exportar</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+            onClick={() => document.getElementById('importFile')?.click()}
+          >
+            <Upload className="w-4 h-4" />
+            <span className="hidden sm:inline">Importar</span>
+            <input
+              id="importFile"
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={importarColecao}
+            />
+          </Button>
+        </div>
+      </div>
+      
       {/* Notificação */}
       {notification.visible && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg text-card-foreground bg-gray-800/80 backdrop-blur-xl shadow-2xl overflow-hidden border-0 ${
-          notification.type === 'success' ? 'border-green-500/30' :
-          notification.type === 'error' ? 'border-red-500/30' : 'border-blue-500/30'
-        } text-white border`}>
-          {notification.message}
+        <div className={`mb-4 p-3 rounded-md ${
+          notification.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+          notification.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+          'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+        }`}>
+          <div className="flex items-center gap-2">
+            {notification.type === 'error' && <AlertCircle className="w-4 h-4" />}
+            <p>{notification.message}</p>
+          </div>
         </div>
       )}
-
-      {/* Busca Rápida */}
-      <Card className="bg-gray-800/50 border-gray-700/50">
-        <CardContent className="p-4">
-          <div className="relative">
+      
+      {/* Barra de pesquisa rápida */}
+      <div className="relative mb-6">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
             <Input
               type="text"
-              placeholder="Busca rápida de cartas..."
+              placeholder="Busca rápida (nome de carta, artista, texto...)"
               value={buscaRapida}
               onChange={(e) => {
                 setBuscaRapida(e.target.value);
                 setMostrarSugestoes(e.target.value.length > 0);
               }}
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   buscarRapido(buscaRapida);
                 }
               }}
-              className="bg-gray-900/50 border-gray-600 text-white placeholder-gray-400 pr-10"
+              className="pl-9"
             />
-            <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          </div>
+          <Button onClick={() => buscarRapido(buscaRapida)}>Buscar</Button>
+        </div>
+        
+        {/* Sugestões de busca */}
+        {mostrarSugestoes && (
+          <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700">
+            <div className="p-2">
+              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Sugestões</div>
+              <div className="flex flex-wrap gap-1">
+                {sugestoesBusca.filter(s => 
+                  s.toLowerCase().includes(buscaRapida.toLowerCase())
+                ).slice(0, 5).map((sugestao, i) => (
+                  <Badge 
+                    key={i} 
+                    variant="secondary"
+                    className="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
+                    onClick={() => {
+                      setBuscaRapida(sugestao);
+                      buscarRapido(sugestao);
+                    }}
+                  >
+                    {sugestao}
+                  </Badge>
+                ))}
+              </div>
+            </div>
             
-            {/* Sugestões */}
-            {mostrarSugestoes && buscaRapida.length > 0 && (
-              <div className="absolute top-full mt-1 w-full rounded-lg text-card-foreground bg-gray-800/80 backdrop-blur-xl shadow-2xl overflow-hidden border-0 z-10">
-                {sugestoesBusca
-                  .filter(s => s.toLowerCase().includes(buscaRapida.toLowerCase()))
-                  .slice(0, 5)
-                  .map((sugestao, index) => (
-                    <button
-                      key={index}
-                      onClick={() => buscarRapido(sugestao)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-700 text-white text-sm"
+            {historicoMensagens.length > 0 && (
+              <div className="border-t border-gray-200 dark:border-gray-700 p-2">
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Buscas recentes</div>
+                <div className="flex flex-wrap gap-1">
+                  {historicoMensagens.slice(0, 5).map((item, i) => (
+                    <Badge 
+                      key={i} 
+                      variant="outline"
+                      className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() => {
+                        setBuscaRapida(item);
+                        buscarRapido(item);
+                      }}
                     >
-                      {sugestao}
-                    </button>
+                      {item}
+                    </Badge>
                   ))}
+                </div>
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Navegação de Tabs - APENAS COLEÇÃO */}
-      <Card className="bg-gray-800/50 border-gray-700/50">
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              variant={tab === "pesquisa" ? "default" : "outline"}
-              onClick={() => {
-                setTab("pesquisa")
-                setBusca("")
-                setErroPesquisa(null)
-                setResultadoPesquisa([])
-              }}
-              className={`flex-1 ${tab === "pesquisa" ? "bg-blue-600 hover:bg-blue-700" : "border-gray-600 text-gray-300 hover:bg-gray-700"}`}
-            >
-              <Search className="w-4 h-4 mr-2" />
-              Pesquisar Cartas
-            </Button>
-            <Button
-              variant={tab === "colecao" ? "default" : "outline"}
-              onClick={() => {
-                setTab("colecao")
-                setBusca("")
-              }}
-              className={`flex-1 ${tab === "colecao" ? "bg-blue-600 hover:bg-blue-700" : "border-gray-600 text-gray-300 hover:bg-gray-700"}`}
-            >
-              <Library className="w-4 h-4 mr-2" />
-              Minha Coleção ({currentCollection.cards.length})
-            </Button>
-            <Button
-              variant={tab === "estatisticas" ? "default" : "outline"}
-              onClick={() => setTab("estatisticas")}
-              className={`flex-1 ${tab === "estatisticas" ? "bg-blue-600 hover:bg-blue-700" : "border-gray-600 text-gray-300 hover:bg-gray-700"}`}
-            >
-              <Star className="w-4 h-4 mr-2" />
-              Estatísticas
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Conteúdo das Tabs */}
-      {tab === "pesquisa" && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Coluna 1: Filtros */}
-          <div className="lg:col-span-1 space-y-4">
-            <Card className="bg-gray-800/50 border-gray-700/50">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Filter className="w-5 h-5" />
-                  Filtros de Pesquisa
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Busca por nome */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Nome da Carta
-                  </label>
+        )}
+      </div>
+      
+      {/* Tabs principais */}
+      <Tabs value={tab} onValueChange={setTab} className="mb-6">
+        <TabsList className="grid grid-cols-3 mb-4">
+          <TabsTrigger value="pesquisa" className="flex items-center gap-1">
+            <Search className="w-4 h-4" />
+            Pesquisar
+          </TabsTrigger>
+          <TabsTrigger value="colecao" className="flex items-center gap-1">
+            <Library className="w-4 h-4" />
+            Coleção ({collection.cards.length})
+          </TabsTrigger>
+          <TabsTrigger value="estatisticas" className="flex items-center gap-1">
+            <Grid3X3 className="w-4 h-4" />
+            Estatísticas
+          </TabsTrigger>
+        </TabsList>
+        
+        {/* Conteúdo da tab Pesquisa */}
+        <TabsContent value="pesquisa">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Search className="w-5 h-5" />
+                  Pesquisar Cartas
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setMostrarFiltrosAvancados(!mostrarFiltrosAvancados)}
+                  className="text-xs"
+                >
+                  {mostrarFiltrosAvancados ? (
+                    <><EyeOff className="w-3 h-3 mr-1" /> Ocultar Filtros</>
+                  ) : (
+                    <><Eye className="w-3 h-3 mr-1" /> Mostrar Filtros</>
+                  )}
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Campo de busca principal */}
+                <div className="flex gap-2">
                   <Input
-                    type="text"
-                    placeholder="Ex: Lightning Bolt"
+                    placeholder="Nome da carta, texto, artista..."
                     value={busca}
                     onChange={(e) => setBusca(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    className="bg-gray-900/50 border-gray-600 text-white placeholder-gray-400"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') pesquisarCartas();
+                    }}
+                    className="flex-1"
                   />
+                  <Button onClick={pesquisarCartas}>Buscar</Button>
                 </div>
-
-                {/* Filtros básicos */}
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Raridade
-                    </label>
-                    <Select value={raridade} onValueChange={setRaridade}>
-                      <SelectTrigger className="bg-gray-900/50 border-gray-600 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        {raridades.map(r => (
-                          <SelectItem key={r} value={r} className="text-white hover:bg-gray-700">
-                            {r === "all" ? "Todas" : capitalize(r)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Tipo
-                    </label>
-                    <Select value={tipo} onValueChange={setTipo}>
-                      <SelectTrigger className="bg-gray-900/50 border-gray-600 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        {tipos.map(t => (
-                          <SelectItem key={t} value={t} className="text-white hover:bg-gray-700">
-                            {t === "all" ? "Todos" : capitalize(t)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Botão para mostrar filtros avançados */}
-                <Button
-                  variant="outline"
-                  onClick={() => setMostrarFiltrosAvancados(!mostrarFiltrosAvancados)}
-                  className="w-full border-gray-600 text-gray-300 hover:bg-gray-700"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  {mostrarFiltrosAvancados ? "Ocultar" : "Mostrar"} Filtros Avançados
-                </Button>
-
+                
                 {/* Filtros avançados */}
                 {mostrarFiltrosAvancados && (
-                  <div className="space-y-4 pt-4 border-t border-gray-600">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-800">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Subtipo
-                      </label>
+                      <label className="text-sm font-medium mb-1 block">Raridade</label>
+                      <Select value={raridade} onValueChange={setRaridade}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a raridade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {raridades.map(r => (
+                            <SelectItem key={r} value={r}>
+                              {r === 'all' ? 'Todas' : r.charAt(0).toUpperCase() + r.slice(1)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Tipo</label>
+                      <Select value={tipo} onValueChange={setTipo}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tipos.map(t => (
+                            <SelectItem key={t} value={t}>
+                              {t === 'all' ? 'Todos' : t.charAt(0).toUpperCase() + t.slice(1)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Subtipo</label>
                       <Select value={subtipo} onValueChange={setSubtipo}>
-                        <SelectTrigger className="bg-gray-900/50 border-gray-600 text-white">
-                          <SelectValue />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o subtipo" />
                         </SelectTrigger>
-                        <SelectContent className="bg-gray-800 border-gray-600">
-                          {subtipos.map(st => (
-                            <SelectItem key={st} value={st} className="text-white hover:bg-gray-700">
-                              {st === "all" ? "Todos" : capitalize(st)}
+                        <SelectContent>
+                          {subtipos.map(t => (
+                            <SelectItem key={t} value={t}>
+                              {t === 'all' ? 'Todos' : t.charAt(0).toUpperCase() + t.slice(1)}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-
+                    
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Supertipo
-                      </label>
+                      <label className="text-sm font-medium mb-1 block">Supertipo</label>
                       <Select value={supertipo} onValueChange={setSupertipo}>
-                        <SelectTrigger className="bg-gray-900/50 border-gray-600 text-white">
-                          <SelectValue />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o supertipo" />
                         </SelectTrigger>
-                        <SelectContent className="bg-gray-800 border-gray-600">
-                          {supertipos.map(st => (
-                            <SelectItem key={st} value={st} className="text-white hover:bg-gray-700">
-                              {st === "all" ? "Todos" : capitalize(st)}
+                        <SelectContent>
+                          {supertipos.map(t => (
+                            <SelectItem key={t} value={t}>
+                              {t === 'all' ? 'Todos' : t.charAt(0).toUpperCase() + t.slice(1)}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-
+                    
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Custo de Mana Convertido
-                      </label>
+                      <label className="text-sm font-medium mb-1 block">CMC</label>
                       <Input
-                        type="number"
-                        placeholder="Ex: 3"
+                        placeholder="Ex: =3, >2, <5"
                         value={cmc}
                         onChange={(e) => setCmc(e.target.value)}
-                        className="bg-gray-900/50 border-gray-600 text-white placeholder-gray-400"
                       />
                     </div>
-
+                    
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Foil
-                      </label>
+                      <label className="text-sm font-medium mb-1 block">Foil</label>
                       <Select value={foil} onValueChange={setFoil}>
-                        <SelectTrigger className="bg-gray-900/50 border-gray-600 text-white">
-                          <SelectValue />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Foil ou não" />
                         </SelectTrigger>
-                        <SelectContent className="bg-gray-800 border-gray-600">
+                        <SelectContent>
                           {foils.map(f => (
-                            <SelectItem key={f} value={f} className="text-white hover:bg-gray-700">
-                              {f === "all" ? "Todas" : f === "foil" ? "Apenas Foil" : "Apenas Normal"}
+                            <SelectItem key={f} value={f}>
+                              {f === 'all' ? 'Todos' : f.charAt(0).toUpperCase() + f.slice(1)}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Texto Oracle
-                      </label>
+                    
+                    <div className="md:col-span-2 lg:col-span-3">
+                      <label className="text-sm font-medium mb-1 block">Texto do Oráculo</label>
                       <Textarea
-                        placeholder="Ex: exile target creature"
+                        placeholder="Texto que aparece na carta..."
                         value={oracleText}
                         onChange={(e) => setOracleText(e.target.value)}
-                        className="bg-gray-900/50 border-gray-600 text-white placeholder-gray-400"
-                        rows={3}
                       />
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Cores de Mana
-                      </label>
+                    
+                    <div className="md:col-span-2 lg:col-span-3">
+                      <label className="text-sm font-medium mb-1 block">Cores</label>
                       <div className="flex flex-wrap gap-2">
                         {coresMana.map(cor => (
                           <Button
                             key={cor}
                             variant={manaColors.includes(cor) ? "default" : "outline"}
                             size="sm"
-                            onClick={() => toggleManaCor(cor)}
-                            className={`w-8 h-8 p-0 ${
-                              manaColors.includes(cor)
-                                ? cor === 'W' ? 'bg-yellow-200 text-gray-900' :
-                                  cor === 'U' ? 'bg-blue-500' :
-                                  cor === 'B' ? 'bg-gray-900 text-white' :
-                                  cor === 'R' ? 'bg-red-500' :
-                                  cor === 'G' ? 'bg-green-500' :
-                                  'bg-gray-400'
-                                : 'border-gray-600 text-gray-300 hover:bg-gray-700'
-                            }`}
+                            onClick={() => toggleManaColor(cor)}
+                            className={`w-8 h-8 p-0 rounded-full ${
+                              cor === 'W' ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800' :
+                              cor === 'U' ? 'bg-blue-100 hover:bg-blue-200 text-blue-800' :
+                              cor === 'B' ? 'bg-gray-800 hover:bg-gray-900 text-gray-100' :
+                              cor === 'R' ? 'bg-red-100 hover:bg-red-200 text-red-800' :
+                              cor === 'G' ? 'bg-green-100 hover:bg-green-200 text-green-800' :
+                              'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                            } ${manaColors.includes(cor) ? '!ring-2 ring-offset-2' : ''}`}
                           >
                             {cor}
                           </Button>
                         ))}
                       </div>
                     </div>
+                    
+                    <div className="md:col-span-2 lg:col-span-3 flex items-center">
+                      <input
+                        type="checkbox"
+                        id="mostrarCartasNaColecao"
+                        checked={mostrarCartasNaColecao}
+                        onChange={(e) => setMostrarCartasNaColecao(e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="mostrarCartasNaColecao" className="text-sm">
+                        Mostrar apenas cartas que já estão na minha coleção
+                      </label>
+                    </div>
                   </div>
                 )}
-
-                {/* Botões de ação */}
-                <div className="flex gap-2 pt-4">
-                  <Button
-                    onClick={pesquisarCartas}
-                    disabled={carregandoPesquisa}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
-                  >
-                    {carregandoPesquisa ? (
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Search className="w-4 h-4 mr-2" />
-                    )}
-                    Pesquisar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={limparFiltros}
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* Opções de visualização */}
-                <div className="pt-4 border-t border-gray-600">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="mostrarCartasNaColecao"
-                      checked={mostrarCartasNaColecao}
-                      onChange={(e) => setMostrarCartasNaColecao(e.target.checked)}
-                      className="rounded border-gray-600 bg-gray-900"
-                    />
-                    <label htmlFor="mostrarCartasNaColecao" className="text-sm text-gray-300">
-                      Destacar cartas na coleção
-                    </label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Coluna 2-4: Resultados */}
-          <div className="lg:col-span-3">
-            {erroPesquisa ? (
-              <Card className="bg-gray-800/50 border-gray-700/50">
-                <CardContent className="text-center py-12">
-                  <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
-                  <p className="text-red-400 mb-4">{erroPesquisa}</p>
-                  <Button onClick={pesquisarCartas} variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700">
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Tentar Novamente
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : carregandoPesquisa ? (
-              <Card className="bg-gray-800/50 border-gray-700/50">
-                <CardContent className="text-center py-12">
-                  <RefreshCw className="w-16 h-16 mx-auto mb-4 text-blue-500 animate-spin" />
-                  <p className="text-gray-400">Pesquisando cartas...</p>
-                </CardContent>
-              </Card>
-            ) : resultadoPesquisa.length > 0 ? (
-              <SearchCardList
-                cards={resultadoPesquisa}
-                collection={currentCollection.cards}
-                onAddCard={adicionarCarta}
-                className="mt-4"
-              />
-            ) : (
-              <Card className="bg-gray-800/50 border-gray-700/50">
-                <CardContent className="text-center py-12">
-                  <Search className="w-16 h-16 mx-auto mb-4 text-gray-500" />
-                  <h3 className="text-xl font-medium text-white mb-2">Pesquise por cartas</h3>
-                  <p className="text-gray-400 mb-6">
-                    Use os filtros ao lado para encontrar cartas específicas
-                  </p>
-                  <div className="flex justify-center gap-4">
-                    <Button onClick={() => setBusca("Lightning Bolt")} variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700">
-                      Exemplo: Lightning Bolt
-                    </Button>
-                    <Button onClick={() => setRaridade("mythic")} variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700">
-                      Exemplo: Cartas Míticas
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-      )}
-
-      {tab === "colecao" && (
-        <div className="space-y-6">
-          {/* Header da Coleção */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Minha Coleção</h2>
-              <p className="text-gray-400">Gerencie suas cartas de Magic: The Gathering</p>
-            </div>
-            <Button
-              onClick={() => exportCollectionToCSV(currentCollection)}
-              variant="outline"
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Exportar CSV
-            </Button>
-          </div>
-
-          {/* Filtros da Coleção */}
-          <Card className="bg-gray-800/50 border-gray-700/50">
-            <CardContent className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Input
-                  placeholder="Buscar na coleção..."
-                  value={buscaColecao}
-                  onChange={(e) => setBuscaColecao(e.target.value)}
-                  className="bg-gray-900/50 border-gray-600 text-white placeholder-gray-400"
-                />
-                <Select value={filtroRaridadeColecao} onValueChange={setFiltroRaridadeColecao}>
-                  <SelectTrigger className="bg-gray-900/50 border-gray-600 text-white">
-                    <SelectValue placeholder="Raridade" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600">
-                    <SelectItem value="all" className="text-white hover:bg-gray-700">Todas</SelectItem>
-                    <SelectItem value="common" className="text-white hover:bg-gray-700">Comum</SelectItem>
-                    <SelectItem value="uncommon" className="text-white hover:bg-gray-700">Incomum</SelectItem>
-                    <SelectItem value="rare" className="text-white hover:bg-gray-700">Rara</SelectItem>
-                    <SelectItem value="mythic" className="text-white hover:bg-gray-700">Mítica</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={filtroCorColecao} onValueChange={setFiltroCorColecao}>
-                  <SelectTrigger className="bg-gray-900/50 border-gray-600 text-white">
-                    <SelectValue placeholder="Cor" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600">
-                    <SelectItem value="all" className="text-white hover:bg-gray-700">Todas</SelectItem>
-                    <SelectItem value="W" className="text-white hover:bg-gray-700">Branco</SelectItem>
-                    <SelectItem value="U" className="text-white hover:bg-gray-700">Azul</SelectItem>
-                    <SelectItem value="B" className="text-white hover:bg-gray-700">Preto</SelectItem>
-                    <SelectItem value="R" className="text-white hover:bg-gray-700">Vermelho</SelectItem>
-                    <SelectItem value="G" className="text-white hover:bg-gray-700">Verde</SelectItem>
-                    <SelectItem value="colorless" className="text-white hover:bg-gray-700">Incolor</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => toggleOrdenacao('name')}
-                    className={`flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 ${
-                      ordenacao === 'name' ? 'bg-gray-700' : ''
-                    }`}
-                  >
-                    Nome {ordenacao === 'name' && (direcaoOrdenacao === 'asc' ? '↑' : '↓')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => toggleOrdenacao('rarity')}
-                    className={`flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 ${
-                      ordenacao === 'rarity' ? 'bg-gray-700' : ''
-                    }`}
-                  >
-                    Raridade {ordenacao === 'rarity' && (direcaoOrdenacao === 'asc' ? '↑' : '↓')}
-                  </Button>
+                
+                {/* Resultados da pesquisa */}
+                <div className="mt-6">
+                  {carregandoPesquisa ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Buscando cartas...</p>
+                    </div>
+                  ) : erroPesquisa ? (
+                    <div className="text-center py-8">
+                      <AlertCircle className="h-8 w-8 text-red-500 mx-auto" />
+                      <p className="mt-2 text-sm text-red-600 dark:text-red-400">{erroPesquisa}</p>
+                    </div>
+                  ) : resultadoPesquisa.length > 0 ? (
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-medium">
+                          {resultadoPesquisa.length} cartas encontradas
+                        </h3>
+                        <CardViewOptions />
+                      </div>
+                      
+                      <SearchCardList 
+                        cards={resultadoPesquisa}
+                        onCardClick={openModal}
+                        onAddCard={adicionarMultiplasCartas}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>Faça uma busca para encontrar cartas</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Lista de Cartas da Coleção */}
-          {cartasFiltradas.length === 0 ? (
-            <Card className="bg-gray-800/50 border-gray-700/50">
-              <CardContent className="text-center py-12">
-                <Library className="w-16 h-16 mx-auto mb-4 text-gray-500" />
-                <h3 className="text-xl font-medium text-white mb-2">Coleção vazia</h3>
-                <p className="text-gray-400 mb-6">
-                  Adicione cartas à sua coleção pesquisando na aba "Pesquisar Cartas"
-                </p>
-                <Button
-                  onClick={() => setTab("pesquisa")}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Pesquisar Cartas
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <ExpandableCardGrid
-              collectionCards={cartasFiltradas}
-              onAddCard={adicionarCarta}
-              onRemoveCard={removerCarta}
-              className="mt-4"
-            />
-          )}
-        </div>
-      )}
-
-      {tab === "estatisticas" && (
-        <div className="space-y-6">
-          {/* Estatísticas da Coleção */}
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-4">Estatísticas da Coleção</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-gray-800/50 border-gray-700/50">
-                <CardContent className="p-6 text-center">
-                  <Library className="w-12 h-12 mx-auto mb-4 text-blue-400" />
-                  <h3 className="text-2xl font-bold text-white">{currentCollection.cards.length}</h3>
-                  <p className="text-gray-400">Cartas únicas</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gray-800/50 border-gray-700/50">
-                <CardContent className="p-6 text-center">
-                  <Package className="w-12 h-12 mx-auto mb-4 text-green-400" />
-                  <h3 className="text-2xl font-bold text-white">
-                    {currentCollection.cards.reduce((sum, c) => sum + c.quantity, 0)}
-                  </h3>
-                  <p className="text-gray-400">Total de cartas</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gray-800/50 border-gray-700/50">
-                <CardContent className="p-6 text-center">
-                  <Star className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
-                  <h3 className="text-2xl font-bold text-white">
-                    {new Set(currentCollection.cards.map(c => c.card.set_code)).size}
-                  </h3>
-                  <p className="text-gray-400">Coleções diferentes</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Distribuição por Raridade */}
-          <Card className="bg-gray-800/50 border-gray-700/50">
+        </TabsContent>
+        
+        {/* Conteúdo da tab Coleção */}
+        <TabsContent value="colecao">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-white">Distribuição por Raridade</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Library className="w-5 h-5" />
+                  Sua Coleção
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select value={ordenacao} onValueChange={(val) => setOrdenacao(val as any)}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Ordenar por" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Nome</SelectItem>
+                      <SelectItem value="rarity">Raridade</SelectItem>
+                      <SelectItem value="cmc">CMC</SelectItem>
+                      <SelectItem value="quantity">Quantidade</SelectItem>
+                      <SelectItem value="date">Data de lançamento</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setDirecaoOrdenacao(d => d === 'asc' ? 'desc' : 'asc')}
+                  >
+                    {direcaoOrdenacao === 'asc' ? (
+                      <ArrowUpDown className="h-4 w-4" />
+                    ) : (
+                      <ArrowUpDown className="h-4 w-4 transform rotate-180" />
+                    )}
+                  </Button>
+                </div>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {(['common', 'uncommon', 'rare', 'mythic'] as const).map(rarity => {
-                  const count = currentCollection.cards.filter(c => c.card.rarity === rarity).length;
-                  const percentage = currentCollection.cards.length > 0 
-                    ? (count / currentCollection.cards.length * 100).toFixed(1) 
-                    : '0';
+                {/* Filtros da coleção */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Filtrar por nome ou texto..."
+                      value={buscaColecao}
+                      onChange={(e) => setBuscaColecao(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
                   
-                  return (
-                    <div key={rarity} className="flex justify-between items-center">
-                      <span className={`font-medium ${getRarityColor(rarity)}`}>
-                        {capitalize(rarity)}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 bg-gray-700 rounded-full h-2">
-                          <div 
-                            className={`h-2 rounded-full ${
-                              rarity === 'common' ? 'bg-gray-400' :
-                              rarity === 'uncommon' ? 'bg-green-400' :
-                              rarity === 'rare' ? 'bg-yellow-400' :
-                              'bg-orange-400'
-                            }`}
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <span className="text-gray-300 text-sm w-12 text-right">
-                          {count}
-                        </span>
-                        <span className="text-gray-400 text-sm w-12 text-right">
-                          ({percentage}%)
-                        </span>
-                      </div>
+                  <div className="flex gap-2">
+                    <Select value={filtroRaridadeColecao} onValueChange={setFiltroRaridadeColecao}>
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue placeholder="Raridade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="common">Comum</SelectItem>
+                        <SelectItem value="uncommon">Incomum</SelectItem>
+                        <SelectItem value="rare">Rara</SelectItem>
+                        <SelectItem value="mythic">Mítica</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={filtroCorColecao} onValueChange={setFiltroCorColecao}>
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue placeholder="Cor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="W">Branco</SelectItem>
+                        <SelectItem value="U">Azul</SelectItem>
+                        <SelectItem value="B">Preto</SelectItem>
+                        <SelectItem value="R">Vermelho</SelectItem>
+                        <SelectItem value="G">Verde</SelectItem>
+                        <SelectItem value="colorless">Incolor</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                {/* Lista de cartas na coleção */}
+                <div className="mt-6">
+                  {cartasFiltradas.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>Sua coleção está vazia ou nenhuma carta corresponde aos filtros</p>
                     </div>
-                  );
-                })}
+                  ) : (
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-medium">
+                          {cartasFiltradas.length} cartas na coleção
+                        </h3>
+                        <CardViewOptions />
+                      </div>
+                      
+                      <CardList 
+                        cards={cartasFiltradas.map(item => item.card)}
+                        quantities={cartasFiltradas.map(item => item.quantity)}
+                        onCardClick={openModal}
+                        onAddCard={(card) => adicionarCarta(card)}
+                        onRemoveCard={(card) => {
+                          // Se recebemos uma string ID, precisamos encontrar a carta correspondente
+                          if (typeof card === 'string') {
+                            // Encontrar a carta na coleção atual usando o ID
+                            const cardObj = cartasFiltradas.find(item => item.card.id === card)?.card;
+                            if (cardObj) {
+                              removerCarta(cardObj);
+                            }
+                          } else {
+                            // Se já é um objeto MTGCard, podemos passar diretamente
+                            removerCarta(card);
+                          }
+                        }}
+                        showQuantity={true}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Top 10 Coleções */}
-          <Card className="bg-gray-800/50 border-gray-700/50">
+        </TabsContent>
+        
+        {/* Conteúdo da tab Estatísticas */}
+        <TabsContent value="estatisticas">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-white">Top 10 Coleções</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Grid3X3 className="w-5 h-5" />
+                Estatísticas da Coleção
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {Object.entries(
-                  currentCollection.cards.reduce((acc, card) => {
-                    const setName = card.card.set_name;
-                    acc[setName] = (acc[setName] || 0) + 1;
-                    return acc;
-                  }, {} as Record<string, number>)
-                )
-                  .sort(([,a], [,b]) => b - a)
-                  .slice(0, 10)
-                  .map(([setName, count], index) => (
-                    <div key={setName} className="flex justify-between items-center py-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 text-sm w-6">#{index + 1}</span>
-                        <span className="text-white">{setName}</span>
-                      </div>
-                      <Badge variant="secondary">{count} cartas</Badge>
-                    </div>
-                  ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Total de cartas */}
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Total de cartas</div>
+                  <div className="text-2xl font-bold mt-1">
+                    {collection.cards.reduce((acc, item) => acc + item.quantity, 0)}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {collection.cards.length} cartas únicas
+                  </div>
+                </div>
+                
+                {/* Distribuição por raridade */}
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Raridades</div>
+                  <div className="flex gap-2 mt-2">
+                    {['common', 'uncommon', 'rare', 'mythic'].map(r => {
+                      const count = collection.cards.filter(
+                        item => safeCardAccess.rarity(item.card) === r
+                      ).length;
+                      
+                      return (
+                        <div key={r} className="flex-1">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {r.charAt(0).toUpperCase() + r.slice(1)}
+                          </div>
+                          <div className="text-lg font-semibold mt-1">{count}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Distribuição por cor */}
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Cores</div>
+                  <div className="flex gap-2 mt-2">
+                    {coresMana.map(cor => {
+                      const count = collection.cards.filter(item => 
+                        safeCardAccess.colorIdentity(item.card).includes(cor)
+                      ).length;
+                      
+                      return (
+                        <div key={cor} className="flex-1">
+                          <div className={`text-center rounded-full w-6 h-6 mx-auto flex items-center justify-center ${
+                            cor === 'W' ? 'bg-yellow-100 text-yellow-800' :
+                            cor === 'U' ? 'bg-blue-100 text-blue-800' :
+                            cor === 'B' ? 'bg-gray-800 text-gray-100' :
+                            cor === 'R' ? 'bg-red-100 text-red-800' :
+                            cor === 'G' ? 'bg-green-100 text-green-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {cor}
+                          </div>
+                          <div className="text-center text-sm mt-1">{count}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Distribuição por CMC */}
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Curva de Mana</div>
+                  <div className="h-32 flex items-end gap-1 mt-2">
+                    {[0, 1, 2, 3, 4, 5, 6, 7].map(cmcValue => {
+                      const count = collection.cards.filter(item => 
+                        Math.floor(safeCardAccess.cmc(item.card)) === cmcValue
+                      ).length;
+                      
+                      const maxCount = Math.max(...[0, 1, 2, 3, 4, 5, 6, 7].map(c => 
+                        collection.cards.filter(item => 
+                          Math.floor(safeCardAccess.cmc(item.card)) === c
+                        ).length
+                      ));
+                      
+                      const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                      
+                      return (
+                        <div key={cmcValue} className="flex-1 flex flex-col items-center">
+                          <div 
+                            className="w-full bg-blue-500 rounded-t"
+                            style={{ height: `${height}%` }}
+                          ></div>
+                          <div className="text-xs mt-1">{cmcValue}{cmcValue === 7 ? '+' : ''}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Distribuição por tipo */}
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Tipos</div>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {['creature', 'instant', 'sorcery', 'artifact', 'enchantment', 'planeswalker', 'land'].map(t => {
+                      const count = collection.cards.filter(item => 
+                        safeCardAccess.typeLine(item.card).toLowerCase().includes(t)
+                      ).length;
+                      
+                      return (
+                        <div key={t} className="flex justify-between">
+                          <span className="text-xs">{t.charAt(0).toUpperCase() + t.slice(1)}</span>
+                          <span className="text-xs font-medium">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Coleções mais representadas */}
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Principais Coleções</div>
+                  <div className="space-y-2 mt-2">
+                    {Object.entries(
+                      collection.cards.reduce((acc, item) => {
+                        const setName = safeCardAccess.setName(item.card);
+                        acc[setName] = (acc[setName] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>)
+                    )
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 5)
+                      .map(([setName, count]) => (
+                        <div key={setName} className="flex justify-between">
+                          <span className="text-xs truncate">{setName}</span>
+                          <span className="text-xs font-medium">{count}</span>
+                        </div>
+                      ))
+                    }
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
-        </div>
-      )}
-
-      {/* Usando o modal global através do contexto - não precisa mais incluir o CardModal aqui */}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

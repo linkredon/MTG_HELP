@@ -1,3 +1,8 @@
 {
-  "/page": "app/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/redirect/route": "app/api/redirect/route.js",
+  "/colecao-improved/page": "app/colecao-improved/page.js",
+  "/page": "app/page.js",
+  "/colecao-selector/page": "app/colecao-selector/page.js",
+  "/colecao-redirect/page": "app/colecao-redirect/page.js"
 }

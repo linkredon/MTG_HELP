@@ -74,7 +74,7 @@ export default function ColecaoSimples() {
       let results = data.data || [];
       
       // Filtrar apenas cartas não presentes na coleção se o filtro estiver ativado
-      if (filterInCollection) {
+      if (filterInCollection && currentCollection && currentCollection.cards) {
         const collectionIds = new Set(currentCollection.cards.map(c => c.card.id));
         results = results.filter((card: MTGCard) => !collectionIds.has(card.id));
       }
@@ -170,17 +170,19 @@ export default function ColecaoSimples() {
   
   // Verificar se a carta está na coleção e obter quantidade
   const getCardQuantityInCollection = useCallback((cardId: string): number => {
+    if (!currentCollection || !currentCollection.cards) return 0;
     const cardInCollection = currentCollection.cards.find(c => c.card.id === cardId);
     return cardInCollection ? cardInCollection.quantity : 0;
-  }, [currentCollection.cards]);
+  }, [currentCollection]);
   
   // Obter outras versões na coleção (mesmo nome, mas ID diferente)
   const getOtherVersionsInCollection = useCallback((cardName: string, currentCardId: string): CollectionCard[] => {
+    if (!currentCollection || !currentCollection.cards) return [];
     return currentCollection.cards.filter(c => 
       c.card.name.toLowerCase() === cardName.toLowerCase() && 
       c.card.id !== currentCardId
     );
-  }, [currentCollection.cards]);
+  }, [currentCollection]);
   
   // Componente de carta para resultado de busca
   const SearchResultCard = ({ card }: { card: MTGCard }) => {

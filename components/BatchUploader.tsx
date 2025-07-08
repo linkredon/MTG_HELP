@@ -3,7 +3,9 @@
 import { useState, useRef } from 'react'
 import { Button } from "./ui/button"
 import { Upload, FileText, AlertCircle } from "lucide-react"
-import type { SpoilerCard } from '@/types/mtg'
+// import type { SpoilerCard } from '@/types/mtg'
+// TODO: Replace 'any' with the correct type exported from '@/types/mtg' if available
+type SpoilerCard = any
 
 interface BatchUploaderProps {
   onCardsUploaded: (cards: Partial<SpoilerCard>[]) => void
