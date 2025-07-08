@@ -195,7 +195,7 @@ export default function ColecaoImproved({
       
       return true;
     });
-  }, [currentCollection.cards, searchTerm, rarityFilter, typeFilter, cmc]);
+  }, [currentCollection?.cards, searchTerm, rarityFilter, typeFilter, cmc]);
   
   // Verificar se uma carta está na coleção
   const getCardQuantityInCollection = useCallback((cardId: string): number => {
