@@ -1,0 +1,266 @@
+/* Text Readability and Contrast Enhancements */
+
+/* High contrast text classes for maximum readability */
+.text-contrast-high {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
+}
+
+.text-contrast-medium {
+  color: #f1f5f9 !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.text-contrast-soft {
+  color: #e2e8f0 !important;
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced text on colored backgrounds */
+.text-on-primary {
+  color: #ffffff !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.text-on-secondary {
+  color: #1e293b !important;
+  font-weight: 500;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.text-on-dark {
+  color: #ffffff !important;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Card text enhancements */
+.card-text-title {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1.125rem;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  letter-spacing: -0.025em;
+}
+
+.card-text-body {
+  color: #e2e8f0;
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+}
+
+.card-text-caption {
+  color: #cbd5e1;
+  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.15);
+}
+
+/* Button text enhancements */
+.btn-text-enhanced {
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn-white .btn-text-enhanced {
+  color: #0f172a !important;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* Navigation text enhancements */
+.nav-text-active {
+  color: #ffffff !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.nav-text-inactive {
+  color: #94a3b8 !important;
+  font-weight: 500;
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+}
+
+.nav-text-inactive:hover {
+  color: #e2e8f0 !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+
+/* Form text enhancements */
+.form-label-enhanced {
+  color: #f1f5f9 !important;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.025em;
+}
+
+.form-input-enhanced::placeholder {
+  color: #94a3b8 !important;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.form-input-enhanced {
+  color: #ffffff !important;
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge text enhancements */
+.badge-text-enhanced {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.05em;
+}
+
+/* Dropdown text enhancements */
+.dropdown-text-enhanced {
+  color: #e2e8f0 !important;
+  font-weight: 500;
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-text-enhanced:hover {
+  color: #ffffff !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+
+/* Notification text enhancements */
+.notification-text {
+  color: #ffffff !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  line-height: 1.5;
+}
+
+/* Search text enhancements */
+.search-text-enhanced {
+  color: #ffffff !important;
+  font-weight: 500;
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+}
+
+.search-text-enhanced::placeholder {
+  color: #94a3b8 !important;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+/* Statistics text enhancements */
+.stat-number-enhanced {
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.025em;
+}
+
+.stat-label-enhanced {
+  color: #cbd5e1 !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Link text enhancements */
+.link-enhanced {
+  color: #60a5fa !important;
+  font-weight: 500;
+  text-decoration: none;
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.link-enhanced:hover {
+  color: #93c5fd !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  text-decoration: underline;
+}
+
+/* Error and success text */
+.text-success-enhanced {
+  color: #4ade80 !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.text-error-enhanced {
+  color: #fb7185 !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.text-warning-enhanced {
+  color: #fbbf24 !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .text-contrast-high,
+  .text-contrast-medium,
+  .text-contrast-soft {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+  }
+  
+  .card-text-body {
+    color: #f1f5f9 !important;
+  }
+  
+  .card-text-caption {
+    color: #e2e8f0 !important;
+  }
+  
+  .nav-text-inactive {
+    color: #cbd5e1 !important;
+  }
+}
+
+/* Reduced motion support for text shadows */
+@media (prefers-reduced-motion: reduce) {
+  .text-contrast-high,
+  .text-contrast-medium,
+  .text-contrast-soft,
+  .card-text-title,
+  .card-text-body,
+  .card-text-caption,
+  .btn-text-enhanced,
+  .nav-text-active,
+  .nav-text-inactive,
+  .form-label-enhanced,
+  .badge-text-enhanced,
+  .dropdown-text-enhanced,
+  .notification-text,
+  .search-text-enhanced,
+  .stat-number-enhanced,
+  .stat-label-enhanced,
+  .link-enhanced {
+    text-shadow: none !important;
+  }
+}
+
+/* Print styles for accessibility */
+@media print {
+  .text-contrast-high,
+  .text-contrast-medium,
+  .text-contrast-soft,
+  .text-on-primary,
+  .text-on-secondary,
+  .text-on-dark {
+    color: #000000 !important;
+    text-shadow: none !important;
+  }
+}

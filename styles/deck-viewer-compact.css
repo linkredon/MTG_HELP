@@ -1,0 +1,123 @@
+/* Estilos compactos específicos para o DeckViewer */
+.quantum-card-dense {
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(6, 182, 212, 0.1);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Estilo para scrollbar compatível com o tema */
+.quantum-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.quantum-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.quantum-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.3);
+  border-radius: 3px;
+}
+
+.quantum-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.5);
+}
+
+/* Versão mais compacta dos elementos UI */
+.quantum-btn.compact {
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  height: 1.75rem;
+  font-size: 0.75rem;
+  min-height: 1.75rem;
+}
+
+/* Ajustes específicos para grids de cartas compactos */
+.card-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.25rem;
+}
+
+.card-grid-compact .card-item {
+  position: relative;
+  transition: transform 0.15s ease-in-out;
+}
+
+.card-grid-compact .card-item:hover {
+  transform: translateY(-2px);
+  z-index: 10;
+}
+
+/* Tooltips para informações rápidas */
+.card-tooltip {
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  color: white;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+  z-index: 50;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+}
+
+.card-item:hover .card-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Efeito de hover mais sutil */
+.hover-highlight {
+  transition: all 0.15s ease;
+}
+
+.hover-highlight:hover {
+  background: rgba(6, 182, 212, 0.1);
+  border-color: rgba(6, 182, 212, 0.5);
+}
+
+/* Estilo para informações numéricas */
+.stat-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: rgba(6, 182, 212, 0.9);
+}
+
+/* Espaçamentos mais reduzidos */
+.compact-space-y > * + * {
+  margin-top: 0.25rem;
+}
+
+.compact-space-x > * + * {
+  margin-left: 0.25rem;
+}
+
+/* Colunas responsivas mais densas */
+@media (min-width: 640px) {
+  .deck-viewer-layout {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(300px, 3fr) minmax(180px, 1fr);
+    gap: 0.5rem;
+    height: calc(100vh - 140px);
+  }
+  
+  .deck-viewer-column {
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+}

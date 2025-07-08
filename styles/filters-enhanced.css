@@ -1,0 +1,226 @@
+/* Melhorias específicas para os filtros - Enhanced */
+
+/* Select triggers com melhor contraste - Versão mais agressiva */
+[data-radix-select-trigger],
+.select-trigger,
+button[role="combobox"] {
+  background-color: rgb(55, 65, 81) !important; /* gray-700 */
+  border-color: rgb(75, 85, 99) !important; /* gray-600 */
+  color: rgb(255, 255, 255) !important;
+  transition: all 0.2s ease-in-out !important;
+  min-height: 40px !important;
+}
+
+[data-radix-select-trigger]:hover,
+.select-trigger:hover,
+button[role="combobox"]:hover {
+  background-color: rgb(75, 85, 99) !important; /* gray-600 */
+  border-color: rgb(99, 102, 241) !important; /* blue-500 */
+}
+
+[data-radix-select-trigger]:focus,
+[data-radix-select-trigger]:focus-visible,
+.select-trigger:focus,
+button[role="combobox"]:focus {
+  background-color: rgb(75, 85, 81) !important; /* gray-600 */
+  border-color: rgb(99, 102, 241) !important; /* blue-500 */
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  outline: none !important;
+}
+
+/* Select value (texto selecionado) - Forçar branco */
+[data-radix-select-value],
+.select-value,
+[data-placeholder] {
+  color: rgb(255, 255, 255) !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}
+
+/* Placeholder específico */
+[data-placeholder="true"],
+.placeholder {
+  color: rgb(156, 163, 175) !important; /* gray-400 */
+  opacity: 0.8 !important;
+}
+
+/* Select content (dropdown) - Melhor contraste */
+[data-radix-select-content],
+.select-content,
+[role="listbox"] {
+  background-color: rgb(45, 55, 72) !important; /* Ainda mais escuro */
+  border-color: rgb(75, 85, 99) !important; /* gray-600 */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7) !important;
+  border-width: 2px !important;
+}
+
+/* Select items - Contraste máximo */
+[data-radix-select-item],
+.select-item,
+[role="option"] {
+  color: rgb(255, 255, 255) !important;
+  padding: 10px 16px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease-in-out !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  margin: 2px 4px !important;
+}
+
+[data-radix-select-item]:hover,
+.select-item:hover,
+[role="option"]:hover {
+  background-color: rgb(59, 130, 246) !important; /* blue-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+[data-radix-select-item]:focus,
+.select-item:focus,
+[role="option"]:focus {
+  background-color: rgb(59, 130, 246) !important; /* blue-500 */
+  color: rgb(255, 255, 255) !important;
+  outline: none !important;
+}
+
+[data-radix-select-item][data-highlighted],
+.select-item.highlighted {
+  background-color: rgb(59, 130, 246) !important; /* blue-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+[data-radix-select-item][data-state="checked"],
+.select-item.selected {
+  background-color: rgb(37, 99, 235) !important; /* blue-600 */
+  color: rgb(255, 255, 255) !important;
+  font-weight: 700 !important;
+}
+
+/* Forçar estilo em elementos específicos do Shadcn */
+.bg-gray-700 {
+  background-color: rgb(55, 65, 81) !important;
+  color: rgb(255, 255, 255) !important;
+}
+
+.border-gray-600 {
+  border-color: rgb(75, 85, 99) !important;
+}
+
+.text-white {
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Inputs de texto com melhor contraste */
+input[type="text"],
+.input-text {
+  background-color: rgb(55, 65, 81) !important; /* gray-700 */
+  border-color: rgb(75, 85, 99) !important; /* gray-600 */
+  color: rgb(255, 255, 255) !important;
+  transition: all 0.2s ease-in-out !important;
+  min-height: 40px !important;
+}
+
+input[type="text"]:hover,
+.input-text:hover {
+  border-color: rgb(99, 102, 241) !important; /* blue-500 */
+}
+
+input[type="text"]:focus,
+.input-text:focus {
+  border-color: rgb(99, 102, 241) !important; /* blue-500 */
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  outline: none !important;
+}
+
+input[type="text"]::placeholder,
+.input-text::placeholder {
+  color: rgb(156, 163, 175) !important; /* gray-400 */
+  opacity: 0.8 !important;
+}
+
+/* Botões de cores de mana com melhor feedback visual */
+.mana-color-button {
+  transition: all 0.2s ease-in-out !important;
+  position: relative;
+  overflow: hidden;
+  min-height: 44px !important;
+}
+
+.mana-color-button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.mana-color-button:active {
+  transform: translateY(0) !important;
+}
+
+.mana-color-button.selected {
+  box-shadow: 0 0 0 2px currentColor, 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Labels com melhor contraste */
+label {
+  color: rgb(229, 231, 235) !important; /* gray-200 - mais claro */
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+/* Botão de limpar filtros */
+.clear-filters-btn {
+  background-color: rgb(55, 65, 81) !important; /* gray-700 */
+  border-color: rgb(75, 85, 99) !important; /* gray-600 */
+  color: rgb(229, 231, 235) !important; /* gray-200 */
+  transition: all 0.2s ease-in-out !important;
+  min-height: 36px !important;
+}
+
+.clear-filters-btn:hover {
+  background-color: rgb(75, 85, 99) !important; /* gray-600 */
+  color: rgb(255, 255, 255) !important;
+  border-color: rgb(99, 102, 241) !important; /* blue-500 */
+}
+
+/* Container dos filtros */
+.filters-container {
+  background-color: rgba(45, 55, 72, 0.95) !important; /* Mais escuro e mais opaco */
+  backdrop-filter: blur(12px) !important;
+  border-color: rgb(75, 85, 99) !important; /* gray-600 */
+  border-width: 2px !important;
+}
+
+/* Animações suaves para transições */
+* {
+  transition-property: background-color, border-color, color, box-shadow, transform !important;
+  transition-duration: 0.15s !important;
+  transition-timing-function: ease-in-out !important;
+}
+
+/* Focus ring personalizado */
+*:focus-visible {
+  outline: 2px solid rgb(99, 102, 241) !important; /* blue-500 */
+  outline-offset: 2px !important;
+}
+
+/* Scrollbar personalizada para dropdowns */
+[data-radix-select-content]::-webkit-scrollbar,
+.select-content::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+[data-radix-select-content]::-webkit-scrollbar-track,
+.select-content::-webkit-scrollbar-track {
+  background: rgba(45, 55, 72, 0.8) !important;
+  border-radius: 4px !important;
+}
+
+[data-radix-select-content]::-webkit-scrollbar-thumb,
+.select-content::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.6) !important;
+  border-radius: 4px !important;
+}
+
+[data-radix-select-content]::-webkit-scrollbar-thumb:hover,
+.select-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.8) !important;
+}

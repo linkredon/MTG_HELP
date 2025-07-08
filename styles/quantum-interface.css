@@ -1,0 +1,749 @@
+/* =================================================================
+   FUTURISTIC MTG INTERFACE - Compact Design System
+   ================================================================= */
+
+:root {
+  /* Futuristic Color Palette */
+  --primary-neon: #00fff0;
+  --secondary-neon: #ff0080;
+  --accent-neon: #8000ff;
+  --warning-neon: #ffff00;
+  --success-neon: #00ff40;
+  
+  /* Dark Glass Theme */
+  --glass-dark: rgba(0, 0, 0, 0.85);
+  --glass-medium: rgba(0, 0, 0, 0.65);
+  --glass-light: rgba(0, 0, 0, 0.45);
+  --glass-ultra: rgba(0, 0, 0, 0.95);
+  
+  /* Neon Glows */
+  --glow-primary: 0 0 10px var(--primary-neon), 0 0 20px var(--primary-neon);
+  --glow-secondary: 0 0 10px var(--secondary-neon);
+  --glow-accent: 0 0 10px var(--accent-neon);
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, var(--primary-neon) 0%, var(--accent-neon) 100%);
+  --gradient-secondary: linear-gradient(135deg, var(--secondary-neon) 0%, var(--primary-neon) 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  
+  /* Compact Spacing - Reduzido */
+  --space-xs: 0.125rem;   /* 2px */
+  --space-sm: 0.25rem;    /* 4px */
+  --space-md: 0.5rem;     /* 8px */
+  --space-lg: 0.75rem;    /* 12px */
+  --space-xl: 1rem;       /* 16px */
+  --space-2xl: 1.5rem;    /* 24px */
+  --space-3xl: 2rem;      /* 32px */
+  
+  /* Typography - Mais compacta */
+  --font-display: 'Orbitron', 'SF Pro Display', system-ui, sans-serif;
+  --font-body: 'Inter', 'SF Pro Text', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.875rem;
+  --font-size-base: 0.9375rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.125rem;
+  --font-size-2xl: 1.25rem;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.4;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  background: 
+    radial-gradient(circle at 20% 20%, var(--accent-neon) 0%, transparent 30%),
+    radial-gradient(circle at 80% 80%, var(--secondary-neon) 0%, transparent 30%),
+    radial-gradient(circle at 40% 60%, var(--primary-neon) 0%, transparent 30%),
+    linear-gradient(135deg, #000000 0%, #1a0033 50%, #000000 100%);
+  background-attachment: fixed;
+  background-size: 150% 150%;
+  color: white;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* =================================================================
+   QUANTUM APP LAYOUT - COMPACTO
+   ================================================================= */
+
+.quantum-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.quantum-app::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300fff0' fill-opacity='0.02'%3E%3Cpath d='M20 20c0-11.046-8.954-20-20-20v40c11.046 0 20-8.954 20-20z'/%3E%3C/g%3E%3C/svg%3E") repeat;
+  background-size: 30px 30px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* =================================================================
+   HOLOGRAPHIC HEADER - COMPACTO
+   ================================================================= */
+
+.quantum-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--glass-ultra);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--primary-neon);
+  box-shadow: 0 2px 16px rgba(0, 255, 240, 0.2);
+  height: 3.5rem; /* Altura fixa compacta */
+}
+
+.quantum-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-lg);
+  max-width: 1600px; /* Expandido para usar mais espaço horizontal */
+  margin: 0 auto;
+  height: 100%;
+}
+
+.quantum-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  color: white;
+}
+
+.quantum-logo {
+  width: 2.5rem; /* Reduzido */
+  height: 2.5rem; /* Reduzido */
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1rem; /* Reduzido */
+  color: black;
+  text-shadow: none;
+  position: relative;
+  animation: quantum-pulse 3s ease-in-out infinite;
+}
+
+.quantum-logo::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: quantum-rotate 10s linear infinite;
+  z-index: -1;
+}
+
+.quantum-brand-text {
+  font-family: var(--font-display);
+}
+
+.quantum-brand-title {
+  font-size: 1.25rem; /* Reduzido */
+  font-weight: 700;
+  margin: 0;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.quantum-brand-subtitle {
+  font-size: 0.6875rem; /* Reduzido */
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1.5px; /* Reduzido */
+}
+
+/* =================================================================
+   HOLOGRAPHIC NAVIGATION - COMPACTO
+   ================================================================= */
+
+.quantum-nav {
+  padding: 0 var(--space-lg);
+  max-width: 1600px; /* Expandido */
+  margin: 0 auto;
+  width: 100%;
+}
+
+.quantum-nav-container {
+  background: var(--glass-medium);
+  backdrop-filter: blur(15px);
+  border-radius: 12px; /* Reduzido */
+  padding: var(--space-xs); /* Reduzido */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: var(--space-md) 0; /* Reduzido */
+  position: relative;
+  overflow: hidden;
+}
+
+.quantum-nav-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-glass);
+  border-radius: 12px; /* Reduzido */
+  pointer-events: none;
+}
+
+.quantum-nav-tabs {
+  display: flex;
+  gap: var(--space-xs); /* Reduzido */
+  position: relative;
+  z-index: 1;
+}
+
+.quantum-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs); /* Reduzido */
+  padding: var(--space-sm) var(--space-md); /* Reduzido */
+  border-radius: 10px; /* Reduzido */
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-width: 100px; /* Reduzido */
+  justify-content: center;
+}
+
+.quantum-tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 10px;
+}
+
+.quantum-tab:hover {
+  color: white;
+  transform: translateY(-1px); /* Reduzido */
+}
+
+.quantum-tab:hover::before {
+  opacity: 0.1;
+}
+
+.quantum-tab.active {
+  color: white;
+  background: var(--glass-dark);
+  border: 1px solid var(--primary-neon);
+  box-shadow: var(--glow-primary);
+  text-shadow: 0 0 5px var(--primary-neon);
+}
+
+.quantum-tab.active::before {
+  opacity: 0.2;
+}
+
+.quantum-tab-icon {
+  width: 16px; /* Reduzido */
+  height: 16px; /* Reduzido */
+  filter: drop-shadow(0 0 2px currentColor);
+}
+
+.quantum-tab-text {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* =================================================================
+   NEURAL CONTENT AREAS - COMPACTO
+   ================================================================= */
+
+.quantum-content {
+  flex: 1;
+  padding: 0 var(--space-lg) var(--space-lg);
+  max-width: 1600px; /* Expandido */
+  margin: 0 auto;
+  width: 100%;
+}
+
+.neural-section {
+  margin-bottom: var(--space-xl); /* Reduzido */
+}
+
+/* =================================================================
+   QUANTUM CARDS SYSTEM - COMPACTO
+   ================================================================= */
+
+.quantum-card {
+  background: var(--glass-medium);
+  backdrop-filter: blur(15px);
+  border-radius: 16px; /* Reduzido */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--space-md); /* Reduzido */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quantum-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-glass);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.quantum-card:hover {
+  transform: translateY(-4px); /* Reduzido */
+  border-color: var(--primary-neon);
+  box-shadow: 
+    0 10px 20px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(0, 255, 240, 0.2);
+}
+
+.quantum-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm); /* Reduzido */
+  padding: var(--space-md); /* Reduzido */
+  position: relative;
+  z-index: 1;
+}
+
+.quantum-card-icon {
+  width: 36px; /* Reduzido */
+  height: 36px; /* Reduzido */
+  background: var(--gradient-primary);
+  border-radius: 10px; /* Reduzido */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+  box-shadow: var(--glow-primary);
+}
+
+.quantum-card-content {
+  flex: 1;
+}
+
+.quantum-card-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg); /* Reduzido */
+  font-weight: 600;
+  margin: 0 0 var(--space-xs) 0;
+  color: white;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  line-height: var(--line-height-tight);
+}
+
+.quantum-card-subtitle {
+  font-size: var(--font-size-sm);
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.3;
+}
+
+.quantum-card-body {
+  padding: 0 var(--space-md) var(--space-md); /* Reduzido */
+  position: relative;
+  z-index: 1;
+}
+
+/* =================================================================
+   HOLOGRAPHIC BUTTONS - COMPACTO
+   ================================================================= */
+
+.quantum-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs); /* Reduzido */
+  padding: var(--space-sm) var(--space-md); /* Reduzido */
+  border-radius: 10px; /* Reduzido */
+  border: none;
+  background: var(--glass-medium);
+  color: white;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.quantum-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.quantum-btn:hover {
+  transform: translateY(-1px); /* Reduzido */
+  border-color: var(--primary-neon);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), var(--glow-primary);
+}
+
+.quantum-btn:hover::before {
+  opacity: 0.15;
+}
+
+.quantum-btn.primary {
+  background: var(--gradient-primary);
+  color: black;
+  border-color: var(--primary-neon);
+  box-shadow: var(--glow-primary);
+}
+
+.quantum-btn.secondary {
+  background: var(--gradient-secondary);
+  color: white;
+  border-color: var(--secondary-neon);
+  box-shadow: var(--glow-secondary);
+}
+
+.quantum-btn.accent {
+  background: var(--gradient-primary);
+  color: black;
+  border-color: var(--accent-neon);
+  box-shadow: var(--glow-accent);
+}
+
+.quantum-btn.compact {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-xs);
+}
+
+/* =================================================================
+   NEURAL GRID SYSTEM - COMPACTO
+   ================================================================= */
+
+.neural-grid {
+  display: grid;
+  gap: var(--space-md); /* Reduzido */
+  margin: var(--space-md) 0; /* Reduzido */
+}
+
+.neural-grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Reduzido */
+}
+
+.neural-grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Reduzido */
+}
+
+.neural-grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Reduzido */
+}
+
+.neural-grid-dense {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Ainda mais compacto */
+  gap: var(--space-sm);
+}
+
+/* =================================================================
+   QUANTUM FORMS - COMPACTO
+   ================================================================= */
+
+.quantum-form-group {
+  margin-bottom: var(--space-md); /* Reduzido */
+}
+
+.quantum-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--space-xs); /* Reduzido */
+  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px; /* Reduzido */
+}
+
+.quantum-input {
+  width: 100%;
+  padding: var(--space-sm); /* Reduzido */
+  border-radius: 8px; /* Reduzido */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--glass-medium);
+  backdrop-filter: blur(10px);
+  color: white;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  transition: all 0.2s ease;
+  height: 2rem; /* Altura fixa compacta */
+}
+
+.quantum-input:focus {
+  outline: none;
+  border-color: var(--primary-neon);
+  box-shadow: 0 0 0 2px rgba(0, 255, 240, 0.2), var(--glow-primary);
+}
+
+.quantum-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.quantum-select {
+  width: 100%;
+  padding: var(--space-sm); /* Reduzido */
+  border-radius: 8px; /* Reduzido */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--glass-medium);
+  backdrop-filter: blur(10px);
+  color: white;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  height: 2rem; /* Altura fixa compacta */
+}
+
+.quantum-textarea {
+  width: 100%;
+  padding: var(--space-sm); /* Reduzido */
+  border-radius: 8px; /* Reduzido */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--glass-medium);
+  backdrop-filter: blur(10px);
+  color: white;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  resize: vertical;
+  min-height: 80px; /* Reduzido */
+}
+
+/* =================================================================
+   HOLOGRAPHIC BADGES & STATUS - COMPACTO
+   ================================================================= */
+
+.quantum-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm); /* Reduzido */
+  border-radius: 12px; /* Reduzido */
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px; /* Reduzido */
+  border: 1px solid;
+}
+
+.quantum-badge.primary {
+  background: rgba(0, 255, 240, 0.15);
+  color: var(--primary-neon);
+  border-color: var(--primary-neon);
+  box-shadow: 0 0 5px rgba(0, 255, 240, 0.2); /* Reduzido */
+}
+
+.quantum-badge.secondary {
+  background: rgba(255, 0, 128, 0.15);
+  color: var(--secondary-neon);
+  border-color: var(--secondary-neon);
+  box-shadow: 0 0 5px rgba(255, 0, 128, 0.2); /* Reduzido */
+}
+
+.quantum-badge.success {
+  background: rgba(0, 255, 64, 0.15);
+  color: var(--success-neon);
+  border-color: var(--success-neon);
+  box-shadow: 0 0 5px rgba(0, 255, 64, 0.2); /* Reduzido */
+}
+
+.quantum-badge.warning {
+  background: rgba(255, 255, 0, 0.15);
+  color: var(--warning-neon);
+  border-color: var(--warning-neon);
+  box-shadow: 0 0 5px rgba(255, 255, 0, 0.2); /* Reduzido */
+}
+
+/* =================================================================
+   QUANTUM ANIMATIONS - SUAVIZADO
+   ================================================================= */
+
+@keyframes quantum-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+@keyframes quantum-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes quantum-glow {
+  0%, 100% { 
+    box-shadow: 0 0 10px var(--primary-neon);
+  }
+  50% { 
+    box-shadow: 0 0 20px var(--primary-neon), 0 0 30px var(--primary-neon);
+  }
+}
+
+@keyframes neural-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); } /* Reduzido */
+}
+
+/* =================================================================
+   RESPONSIVE DESIGN - MAIS OTIMIZADO
+   ================================================================= */
+
+@media (max-width: 768px) {
+  .quantum-header-content {
+    padding: var(--space-sm);
+  }
+  
+  .quantum-nav {
+    padding: 0 var(--space-sm);
+  }
+  
+  .quantum-content {
+    padding: 0 var(--space-sm) var(--space-lg);
+  }
+  
+  .quantum-nav-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .quantum-tab {
+    min-width: auto;
+    flex: 1;
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--font-size-xs);
+  }
+  
+  .neural-grid-2,
+  .neural-grid-3,
+  .neural-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =================================================================
+   DENSIDADE DE DADOS - NOVO
+   ================================================================= */
+
+/* Tabelas densas */
+.quantum-table-container {
+  overflow-x: auto;
+  margin: var(--space-sm) 0;
+  border-radius: 10px;
+  background: var(--glass-medium);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quantum-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.quantum-table th {
+  background: var(--glass-dark);
+  font-weight: 600;
+  text-align: left;
+  padding: var(--space-xs) var(--space-sm);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--primary-neon);
+}
+
+.quantum-table td {
+  padding: var(--space-xs) var(--space-sm);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.quantum-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Cards densos */
+.quantum-card-dense {
+  padding: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.quantum-card-dense .quantum-card-header {
+  padding: var(--space-xs) var(--space-sm);
+  gap: var(--space-xs);
+}
+
+.quantum-card-dense .quantum-card-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.quantum-card-dense .quantum-card-body {
+  padding: var(--space-xs) var(--space-sm);
+}
+
+/* Grid denso para cards/items */
+.compact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-xs);
+}
+
+.compact-list-item {
+  padding: var(--space-xs);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  border-radius: 6px;
+  background: var(--glass-medium);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Compact Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-neon);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-neon);
+}

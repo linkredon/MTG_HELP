@@ -1,0 +1,32 @@
+/* Correção específica para os dropdowns do Select */
+
+.select-dropdown-fix {
+  position: relative !important;
+}
+
+.select-dropdown-fix [data-radix-select-trigger] {
+  position: relative;
+  z-index: 1;
+}
+
+.select-dropdown-fix [data-radix-select-content] {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin-top: 4px;
+  z-index: 9999;
+}
+
+/* Remover transformações que podem estar causando problemas */
+[data-radix-popper-content-wrapper] {
+  position: absolute !important;
+  max-height: 300px !important;
+  overflow-y: auto !important;
+}
+
+/* Garantir que o dropdown apareça abaixo do trigger */
+[data-radix-select-content] {
+  position: relative !important;
+  margin-top: 4px !important;
+}

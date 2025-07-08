@@ -1,0 +1,27 @@
+/* Dropdown animations and styles */
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-menu {
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+/* Mobile dropdown styles */
+@media (max-width: 767px) {
+  .dropdown-menu {
+    max-height: 80vh;
+    overflow-y: auto;
+    margin-top: 8px !important;
+    left: 16px !important;
+    right: 16px !important;
+    width: calc(100% - 32px) !important;
+  }
+}

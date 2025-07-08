@@ -1,0 +1,131 @@
+/* Estilos para o efeito de brilho ambiente */
+.ambient-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.ambient-glow::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at center,
+    rgba(59, 130, 246, 0.04) 0%,
+    rgba(139, 92, 246, 0.03) 25%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  opacity: 0.4;
+  animation: pulse 15s ease-in-out infinite alternate;
+}
+
+.ambient-glow::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at center,
+    rgba(16, 185, 129, 0.02) 0%,
+    rgba(245, 165, 36, 0.01) 30%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  opacity: 0.3;
+  animation: pulse 20s ease-in-out infinite alternate-reverse;
+}
+
+/* Efeito de pulso suave */
+@keyframes pulse {
+  0% {
+    transform: translate(10%, 10%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-5%, -5%) scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(0%, 0%) scale(1);
+    opacity: 0.5;
+  }
+}
+
+/* Efeito de brilho para cartas específicas */
+.card-glow {
+  position: relative;
+}
+
+.card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(10, 112, 243, 0.5),
+    rgba(124, 58, 237, 0.3),
+    rgba(23, 201, 100, 0.2),
+    rgba(245, 165, 36, 0.3)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-glow:hover::before {
+  opacity: 1;
+}
+
+/* Variações de cores para diferentes tipos de cartas */
+.card-glow-blue::before {
+  background: linear-gradient(
+    135deg,
+    rgba(10, 112, 243, 0.7),
+    rgba(74, 144, 226, 0.3)
+  );
+}
+
+.card-glow-purple::before {
+  background: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.7),
+    rgba(167, 139, 250, 0.3)
+  );
+}
+
+.card-glow-green::before {
+  background: linear-gradient(
+    135deg,
+    rgba(23, 201, 100, 0.7),
+    rgba(49, 163, 84, 0.3)
+  );
+}
+
+.card-glow-red::before {
+  background: linear-gradient(
+    135deg,
+    rgba(243, 18, 96, 0.7),
+    rgba(215, 48, 39, 0.3)
+  );
+}
+
+.card-glow-gold::before {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 165, 36, 0.7),
+    rgba(234, 179, 8, 0.3)
+  );
+}
