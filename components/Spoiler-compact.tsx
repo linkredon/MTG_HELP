@@ -1,5 +1,12 @@
 "use client"
 
+// Declaração global para evitar erros de tipo implícito
+declare global {
+  interface Function {
+    __brand: 'typed';
+  }
+}
+
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Button } from "./ui/button"
@@ -14,14 +21,35 @@ import CardPreview from "./CardPreview"
 import EditCardModal from "./EditCardModal"
 import QuickEditModal from "./QuickEditModal"
 import { loadSpoilerCards, saveSpoilerCards, addSpoilerCard, addSpoilerCards, removeSpoilerCard } from "@/utils/storage"
-import type { MTGCard, SpoilerCard } from '@/types/mtg'
+import type { MTGCard } from '@/types/mtg'
+
+// Interface local para cartas de spoiler
+interface SpoilerCard extends Partial<MTGCard> {
+  set?: string;
+  set_name?: string;
+  spoilerSource?: string;
+  isNew?: boolean;
+  releaseDate?: string;
+  // Estendendo image_uris para incluir propriedades adicionais
+  image_uris?: {
+    normal: string;
+    small?: string;
+    art_crop?: string;
+    large?: string;
+    png?: string;
+  };
+}
 
 interface SpoilerProps {
   isAdmin?: boolean
 }
 
 export default function Spoiler({ isAdmin = false }: SpoilerProps) {
+  // Definir o tipo para o parâmetro prev em todas as funções de atualização de estado
+  type SetCardsCallback = (prev: SpoilerCard[]) => SpoilerCard[];
   const [cards, setCards] = useState<SpoilerCard[]>([])
+  // Tipando a função setCards para evitar erros de tipo implícito
+  const typedSetCards = (callback: (prev: SpoilerCard[]) => SpoilerCard[]) => setCards(callback)
   const [currentSet, setCurrentSet] = useState("Edges of Eternities")
   const [isAddCardModalOpen, setIsAddCardModalOpen] = useState(false)
   const [newCard, setNewCard] = useState<Partial<SpoilerCard>>({
@@ -56,8 +84,8 @@ export default function Spoiler({ isAdmin = false }: SpoilerProps) {
       // Ordenar as cartas por ordem decrescente (mais recentes primeiro)
       const sortedCards = [...loadedCards].sort((a, b) => {
         // Ordenar por ID (que contém timestamp) ou data de adição
-        const idA = a.id.split('-')[1] || '0';
-        const idB = b.id.split('-')[1] || '0';
+        const idA = a.id ? a.id.split('-')[1] || '0' : '0';
+        const idB = b.id ? b.id.split('-')[1] || '0' : '0';
         return parseInt(idB) - parseInt(idA);
       });
       
@@ -119,7 +147,7 @@ export default function Spoiler({ isAdmin = false }: SpoilerProps) {
       // Adicionar a carta usando a função de armazenamento
       const success = addSpoilerCard(cardToAdd)
       if (success) {
-        setCards(prev => [cardToAdd, ...prev])
+        setCards((prev: SpoilerCard[]) => [cardToAdd, ...prev])
         setIsAddCardModalOpen(false)
         resetNewCard()
       } else {
@@ -258,7 +286,7 @@ export default function Spoiler({ isAdmin = false }: SpoilerProps) {
       const success = addSpoilerCard(newCard)
       if (success) {
         // Adicionar a carta no início da lista (ordem decrescente)
-        setCards(prev => [newCard, ...prev])
+        setCards((prev: SpoilerCard[]) => [newCard, ...prev])
       } else {
         setStorageError('Não foi possível adicionar a carta devido a limitações de armazenamento.')
       }
@@ -318,12 +346,12 @@ export default function Spoiler({ isAdmin = false }: SpoilerProps) {
   // Função para alternar o modo de administração
   const toggleAdminMode = () => {
     // Em um ambiente real, aqui teria autenticação
-    setIsAdminMode(prev => !prev)
+    setIsAdminMode((prev: boolean) => !prev)
   }
 
   // Função para lidar com o upload de uma única imagem
   const handleImageUploaded = (imageUrl: string) => {
-    setNewCard(prev => ({
+    setNewCard((prev: Partial<SpoilerCard>) => ({
       ...prev,
       image_uris: { ...prev.image_uris, normal: imageUrl }
     }))
@@ -427,8 +455,8 @@ export default function Spoiler({ isAdmin = false }: SpoilerProps) {
                 // Garantir que as cartas estejam em ordem decrescente (mais recentes primeiro)
                 const sortedCards = [...cards].sort((a, b) => {
                   // Ordenar por ID (que contém timestamp) ou data de adição
-                  const idA = a.id.split('-')[1] || '0';
-                  const idB = b.id.split('-')[1] || '0';
+                  const idA = a.id ? a.id.split('-')[1] || '0' : '0';
+                  const idB = b.id ? b.id.split('-')[1] || '0' : '0';
                   return parseInt(idB) - parseInt(idA);
                 });
                 setCards(sortedCards);
@@ -463,7 +491,7 @@ export default function Spoiler({ isAdmin = false }: SpoilerProps) {
             <div className="relative">
               <Image
                 src={card.image_uris?.normal || '/placeholder.png'}
-                alt={card.name}
+                alt={card.name || 'Carta sem nome'}
                 width={265}
                 height={370}
                 className="w-full h-auto"
@@ -504,7 +532,7 @@ export default function Spoiler({ isAdmin = false }: SpoilerProps) {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeCard(card.id);
+                      removeCard(card.id || '');
                     }}
                     className="w-8 h-8 p-0 rounded-full"
                   >
