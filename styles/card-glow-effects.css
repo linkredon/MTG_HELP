@@ -20,6 +20,7 @@
     rgba(245, 165, 36, 0.5)
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
@@ -83,7 +84,10 @@
   );
 }
 
-/* Script para acompanhar o movimento do mouse */
+/* Nota: O script para acompanhar o movimento do mouse deve ser movido para um arquivo JavaScript separado */
+/* 
+Exemplo de como implementar em JavaScript:
+
 document.addEventListener('DOMContentLoaded', function() {
   const cards = document.querySelectorAll('.quantum-card-dense');
   
@@ -98,3 +102,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+*/

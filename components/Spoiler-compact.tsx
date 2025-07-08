@@ -25,6 +25,8 @@ import type { MTGCard } from '@/types/mtg'
 
 // Interface local para cartas de spoiler
 interface SpoilerCard extends Partial<MTGCard> {
+  id: string;
+  name: string;
   set?: string;
   set_name?: string;
   spoilerSource?: string;

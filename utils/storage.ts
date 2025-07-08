@@ -1,6 +1,24 @@
 // Utilitários para armazenamento de dados
 
-import type { SpoilerCard } from '@/types/mtg'
+import type { MTGCard } from '@/types/mtg'
+
+// Interface local para cartas de spoiler
+interface SpoilerCard extends Partial<MTGCard> {
+  id: string;
+  name: string;
+  set?: string;
+  set_name?: string;
+  spoilerSource?: string;
+  isNew?: boolean;
+  releaseDate?: string;
+  image_uris?: {
+    normal: string;
+    small?: string;
+    art_crop?: string;
+    large?: string;
+    png?: string;
+  };
+}
 
 // Tamanho máximo aproximado para o localStorage (em bytes)
 const MAX_STORAGE_SIZE = 5 * 1024 * 1024 // 5MB

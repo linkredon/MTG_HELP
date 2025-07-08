@@ -2727,6 +2727,7 @@
     rgba(245, 165, 36, 0.5)
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
@@ -4110,6 +4111,7 @@ body {
     rgba(245, 165, 36, 0.3)
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
@@ -4466,10 +4468,13 @@ body {
   z-index: 9999 !important;
   pointer-events: auto !important;
   margin: 0 !important;
-  animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important,
-             modalGlow 2s ease-in-out infinite alternate !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5),
-              0 8px 10px -6px rgba(0, 0, 0, 0.7) !important;
+  animation-name: modalFadeIn, modalGlow !important;
+  animation-duration: 0.3s, 2s !important;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1), ease-in-out !important;
+  animation-iteration-count: 1, infinite !important;
+  animation-direction: normal, alternate !important;
+  animation-fill-mode: forwards, none !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.7) !important;
 }
 
 @keyframes modalFadeIn {
@@ -4485,14 +4490,10 @@ body {
 
 @keyframes modalGlow {
   0% {
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5),
-                0 8px 10px -6px rgba(0, 0, 0, 0.7),
-                0 0 0 rgba(0, 255, 240, 0);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.7), 0 0 0 rgba(0, 255, 240, 0);
   }
   100% {
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5),
-                0 8px 10px -6px rgba(0, 0, 0, 0.7),
-                0 0 15px rgba(0, 255, 240, 0.3);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 255, 240, 0.3);
   }
 }
 
@@ -4537,4 +4538,3 @@ body {
     overflow: auto !important;
   }
 }
-
