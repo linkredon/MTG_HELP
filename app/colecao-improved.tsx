@@ -169,6 +169,9 @@ export default function ColecaoImproved({
   
   // Cartas filtradas da coleção
   const filteredCollectionCards = useCallback(() => {
+    // Verificar se currentCollection existe e tem a propriedade cards
+    if (!currentCollection || !currentCollection.cards) return [];
+    
     return currentCollection.cards.filter(item => {
       // Filtrar por nome
       if (searchTerm && !item.card.name.toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -196,17 +199,21 @@ export default function ColecaoImproved({
   
   // Verificar se uma carta está na coleção
   const getCardQuantityInCollection = useCallback((cardId: string): number => {
+    if (!currentCollection || !currentCollection.cards) return 0;
+    
     const found = currentCollection.cards.find(item => item.card.id === cardId);
     return found ? found.quantity : 0;
-  }, [currentCollection.cards]);
+  }, [currentCollection?.cards]);
   
   // Obter versões alternativas de uma carta
   const getCardOtherVersions = useCallback((cardName: string, currentCardId: string): CollectionCard[] => {
+    if (!currentCollection || !currentCollection.cards) return [];
+    
     return currentCollection.cards.filter(item => 
       item.card.name.toLowerCase() === cardName.toLowerCase() && 
       item.card.id !== currentCardId
     );
-  }, [currentCollection.cards]);
+  }, [currentCollection?.cards]);
   
   return (
     <div className="mtg-helper-collection">
@@ -217,11 +224,11 @@ export default function ColecaoImproved({
           <div className="stats flex gap-4">
             <Badge variant="outline" className="py-1 px-3 border-blue-600 bg-blue-900/20 text-blue-300">
               <Library className="w-4 h-4 mr-2" />
-              {currentCollection.cards.length} cartas únicas
+              {currentCollection?.cards?.length || 0} cartas únicas
             </Badge>
             <Badge variant="outline" className="py-1 px-3 border-purple-600 bg-purple-900/20 text-purple-300">
               <Sparkles className="w-4 h-4 mr-2" />
-              {currentCollection.cards.reduce((total, item) => total + item.quantity, 0)} no total
+              {currentCollection?.cards?.reduce((total, item) => total + item.quantity, 0) || 0} no total
             </Badge>
           </div>
         </div>
@@ -245,7 +252,7 @@ export default function ColecaoImproved({
                 className="flex-1 h-12 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-white"
               >
                 <Library className="w-4 h-4 mr-2" />
-                Coleção ({currentCollection.cards.reduce((total, item) => total + item.quantity, 0)})
+                Coleção ({currentCollection?.cards?.reduce((total, item) => total + item.quantity, 0) || 0})
               </TabsTrigger>
               <TabsTrigger
                 value="estatisticas"
@@ -881,7 +888,7 @@ export default function ColecaoImproved({
             
             {/* Conteúdo da coleção */}
             <div className="p-4">
-              {currentCollection.cards.length === 0 ? (
+              {!currentCollection?.cards?.length ? (
                 <div className="flex flex-col items-center justify-center py-12 space-y-4">
                   <Library className="h-16 w-16 text-slate-700" />
                   <div className="text-center">
@@ -1073,7 +1080,7 @@ export default function ColecaoImproved({
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardContent className="p-4">
                     <h3 className="text-sm text-slate-400 mb-1">Cartas Únicas</h3>
-                    <div className="text-2xl font-bold text-slate-100">{currentCollection.cards.length}</div>
+                    <div className="text-2xl font-bold text-slate-100">{currentCollection?.cards?.length || 0}</div>
                   </CardContent>
                 </Card>
                 
@@ -1081,7 +1088,7 @@ export default function ColecaoImproved({
                   <CardContent className="p-4">
                     <h3 className="text-sm text-slate-400 mb-1">Total de Cartas</h3>
                     <div className="text-2xl font-bold text-slate-100">
-                      {currentCollection.cards.reduce((total, item) => total + item.quantity, 0)}
+                      {currentCollection?.cards?.reduce((total, item) => total + item.quantity, 0) || 0}
                     </div>
                   </CardContent>
                 </Card>
@@ -1090,7 +1097,7 @@ export default function ColecaoImproved({
                   <CardContent className="p-4">
                     <h3 className="text-sm text-slate-400 mb-1">Cartas Míticas</h3>
                     <div className="text-2xl font-bold text-orange-400">
-                      {currentCollection.cards.filter(item => item.card.rarity === 'mythic').length}
+                      {currentCollection?.cards?.filter(item => item.card.rarity === 'mythic').length || 0}
                     </div>
                   </CardContent>
                 </Card>
@@ -1099,7 +1106,7 @@ export default function ColecaoImproved({
                   <CardContent className="p-4">
                     <h3 className="text-sm text-slate-400 mb-1">Cartas Raras</h3>
                     <div className="text-2xl font-bold text-yellow-400">
-                      {currentCollection.cards.filter(item => item.card.rarity === 'rare').length}
+                      {currentCollection?.cards?.filter(item => item.card.rarity === 'rare').length || 0}
                     </div>
                   </CardContent>
                 </Card>
