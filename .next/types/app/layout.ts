@@ -1,4 +1,4 @@
-// File: C:\Users\Vilarejo\Downloads\colecao-page-main\app\layout.tsx
+// File: F:\PÁGINA MTG HELPER\colecao-page-main\app\layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

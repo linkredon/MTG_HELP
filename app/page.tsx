@@ -11,12 +11,15 @@ import '../styles/mobile-fixes.css'
 import '../styles/dropdown-menu.css'
 import '../styles/card-glow-effects-fixed.css'
 import '../styles/ambient-glow-enhanced.css'
+import '../styles/card-modal-enhanced.css'
+import '../styles/deck-selector-compact.css'
 import { useState, useEffect } from 'react'
 import Script from 'next/script'
 import Colecao from './colecao-compact'
 import Painel from '@/components/Painel-compact'
 import ConstrutorDecks from '@/components/ConstrutorDecks-compact'
 import Regras from '@/components/Regras-compact'
+import Spoiler from '@/components/Spoiler-compact'
 import UserHeader from '@/components/UserHeader'
 import MobileNavigation from '@/components/MobileNavigation'
 import LoginDialog from '@/components/LoginDialog'
@@ -35,7 +38,8 @@ import {
   TrendingUp,
   Award,
   Zap,
-  Target
+  Target,
+  Star
 } from "lucide-react"
 import type { User, MTGCard, UserCollection } from '@/types/mtg';
 
@@ -86,17 +90,18 @@ export default function Home() {
     }
   }, [])
 
-  // Função para exportar coleção para CSV
+  // Função para exportar coleção para CSV no formato Manabox
   const exportCollectionToCSV = (collection: UserCollection) => {
+    // Formato Manabox: Name,Set,Quantity,Foil,Condition,Language
     const csvContent = [
-      ['Nome', 'Conjunto', 'Raridade', 'Quantidade', 'CMC', 'Tipo'],
+      ['Name', 'Set', 'Quantity', 'Foil', 'Condition', 'Language'],
       ...collection.cards.map(c => [
         c.card.name,
-        c.card.set_name,
-        c.card.rarity,
+        c.card.set_code,
         c.quantity.toString(),
-        c.card.cmc.toString(),
-        c.card.type_line
+        'Non-foil', // Padrão para não-foil
+        'Near Mint', // Padrão para condição
+        'English' // Padrão para idioma
       ])
     ].map(row => row.join(',')).join('\n')
 
@@ -104,7 +109,7 @@ export default function Home() {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${collection.name}.csv`
+    a.download = `${collection.name}_manabox.csv`
     a.click()
     window.URL.revokeObjectURL(url)
   }
@@ -134,6 +139,12 @@ export default function Home() {
       label: 'Deck Builder',
       icon: Hammer,
       component: <ConstrutorDecks />
+    },
+    {
+      id: 'spoiler',
+      label: 'Spoilers',
+      icon: Star,
+      component: <Spoiler isAdmin={user?.email === 'admin@example.com'} />
     },
     {
       id: 'regras',

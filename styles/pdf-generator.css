@@ -1,0 +1,53 @@
+/* Estilos para o gerador de PDF */
+
+.quantum-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.5) rgba(17, 24, 39, 0.3);
+}
+
+.quantum-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.quantum-scrollbar::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.3);
+  border-radius: 4px;
+}
+
+.quantum-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(59, 130, 246, 0.5);
+  border-radius: 4px;
+}
+
+.quantum-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(59, 130, 246, 0.7);
+}
+
+/* Estilos para cartas parcialmente coletadas */
+.card-partial {
+  position: relative;
+}
+
+.card-partial::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(to left, rgba(8, 145, 178, 0.7), transparent);
+  pointer-events: none;
+}
+
+.card-missing-count {
+  position: absolute;
+  top: 50%;
+  right: 25%;
+  transform: translate(50%, -50%);
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  z-index: 10;
+}

@@ -720,6 +720,27 @@
   }
 }
 
+/* Modal responsivo e compacto */
+.card-modal-enhanced .grid {
+  gap: 0.75rem !important;
+}
+
+@media (max-width: 768px) {
+  .card-modal-enhanced {
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+  }
+  
+  .card-modal-enhanced .grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+  
+  .card-modal-image {
+    max-height: 50vh !important;
+  }
+}
+
 /* Focus and Accessibility */
 .mtg-focus-ring:focus-visible {
   outline: 2px solid var(--border-focus);

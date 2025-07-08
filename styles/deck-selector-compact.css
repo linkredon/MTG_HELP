@@ -1,0 +1,189 @@
+/* Estilos compactos para o seletor de decks */
+.deck-selector-compact .card-header {
+  padding: 0.5rem !important;
+  border-bottom: 1px solid rgba(0, 255, 240, 0.2) !important;
+}
+
+.deck-selector-compact .card-title {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: rgba(0, 255, 240, 0.9) !important;
+  text-shadow: 0 0 3px rgba(0, 255, 240, 0.5) !important;
+  letter-spacing: 0.02rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+}
+
+.deck-selector-compact .card-title::before {
+  content: '' !important;
+  display: inline-block !important;
+  width: 0.5rem !important;
+  height: 0.5rem !important;
+  background: rgba(0, 255, 240, 0.8) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 5px rgba(0, 255, 240, 0.8) !important;
+}
+
+.deck-selector-compact .card-content {
+  padding: 0.5rem !important;
+}
+
+.deck-selector-compact .select-trigger {
+  height: 1.75rem !important;
+  min-height: 1.75rem !important;
+  font-size: 0.75rem !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(0, 255, 240, 0.2) !important;
+  color: white !important;
+  font-weight: 500 !important;
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.5) !important;
+}
+
+.deck-selector-compact .select-content {
+  background: rgba(0, 0, 0, 0.9) !important;
+  border: 1px solid rgba(0, 255, 240, 0.2) !important;
+}
+
+.deck-selector-compact .select-item {
+  font-size: 0.75rem !important;
+  color: white !important;
+}
+
+.deck-selector-compact .select-item[data-highlighted="true"] {
+  background: rgba(0, 255, 240, 0.2) !important;
+  color: white !important;
+}
+
+.deck-selector-compact .select-trigger:hover,
+.deck-selector-compact .select-trigger:focus {
+  border-color: rgba(0, 255, 240, 0.5) !important;
+  box-shadow: 0 0 0 1px rgba(0, 255, 240, 0.2) !important;
+}
+
+.deck-selector-compact .input-label {
+  font-size: 0.65rem !important;
+  color: rgba(0, 255, 240, 0.8) !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.125rem !important;
+  letter-spacing: 0.02rem !important;
+}
+
+.deck-selector-compact .input-field {
+  height: 1.75rem !important;
+  min-height: 1.75rem !important;
+  font-size: 0.75rem !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(0, 255, 240, 0.2) !important;
+  color: white !important;
+  font-weight: 500 !important;
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.5) !important;
+  padding: 0 0.5rem !important;
+}
+
+.deck-selector-compact .input-field:hover,
+.deck-selector-compact .input-field:focus {
+  border-color: rgba(0, 255, 240, 0.5) !important;
+  box-shadow: 0 0 0 1px rgba(0, 255, 240, 0.2) !important;
+}
+
+.deck-selector-compact .input-field::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 0.7rem !important;
+}
+
+.deck-selector-compact .button-add {
+  height: 1.75rem !important;
+  font-size: 0.75rem !important;
+  background: linear-gradient(135deg, #8000ff, #0099ff) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+.deck-selector-compact .button-add:hover {
+  box-shadow: 0 0 10px rgba(128, 0, 255, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+.deck-selector-compact .button-create {
+  height: 1.75rem !important;
+  font-size: 0.75rem !important;
+  background: linear-gradient(135deg, #00ff40, #00fff0) !important;
+  color: black !important;
+  font-weight: 600 !important;
+}
+
+.deck-selector-compact .button-create:hover {
+  box-shadow: 0 0 10px rgba(0, 255, 64, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+.deck-selector-compact .button-outline {
+  height: 1.75rem !important;
+  font-size: 0.75rem !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(0, 255, 240, 0.3) !important;
+  color: rgba(0, 255, 240, 0.9) !important;
+}
+
+.deck-selector-compact .button-outline:hover {
+  background: rgba(0, 255, 240, 0.1) !important;
+  border-color: rgba(0, 255, 240, 0.5) !important;
+}
+
+.deck-selector-compact .button-cancel {
+  height: 1.75rem !important;
+  font-size: 0.75rem !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+  border: 1px solid rgba(255, 0, 0, 0.3) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.deck-selector-compact .button-cancel:hover {
+  background: rgba(255, 0, 0, 0.2) !important;
+  border-color: rgba(255, 0, 0, 0.5) !important;
+}
+
+.deck-selector-compact .color-button {
+  height: 1.5rem !important;
+  font-size: 0.65rem !important;
+  padding: 0 0.5rem !important;
+}
+
+.deck-selector-compact .textarea-field {
+  min-height: 2.5rem !important;
+  font-size: 0.75rem !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(0, 255, 240, 0.2) !important;
+  color: white !important;
+}
+
+.deck-selector-compact .form-row {
+  margin-bottom: 0.25rem !important;
+}
+
+.deck-selector-compact .badge {
+  font-size: 0.6rem !important;
+  padding: 0 0.25rem !important;
+  height: 1.25rem !important;
+}
+
+.deck-selector-compact .card {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(0, 255, 240, 0.15) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 240, 0.1) !important;
+}
+
+/* Ajustes para o modal */
+.card-modal-enhanced .deck-selector-compact .card {
+  margin-bottom: 0 !important;
+}
+
+.card-modal-enhanced .deck-selector-compact .space-y-4 {
+  margin-top: 0 !important;
+}
+
+.card-modal-enhanced .deck-selector-compact .space-y-3 {
+  margin-top: 0 !important;
+}

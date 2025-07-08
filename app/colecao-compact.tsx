@@ -20,7 +20,9 @@ import { searchCardsWithTranslation, getAllPrintsByNameWithTranslation } from '@
 import ExpandableCardGrid from '@/components/ExpandableCardGrid'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Search, Library, Plus, Minus, Download, AlertCircle, Save, Upload, Copy, Grid3X3, Settings, User, Clock, Bookmark, Heart, Trash2, Star, Filter, Eye, EyeOff, RefreshCw, ExternalLink, Package, Edit3, FileText, History } from "lucide-react"
+import { Search, Library, Plus, Minus, Download, AlertCircle, Save, Upload, Copy, Grid3X3, Settings, User, Clock, Bookmark, Heart, Trash2, Star, Filter, Eye, EyeOff, RefreshCw, ExternalLink, Package, Edit3, FileText, History, Check, Info, ListChecks, CheckCircle } from "lucide-react"
+import ImportCollectionModal from "@/components/ImportCollectionModal"
+import CollectionCompletion from "@/components/CollectionCompletion"
 import "@/styles/palette.css"
 import "@/styles/card-search-enhanced.css"
 import "@/styles/filtros-fix.css"
@@ -244,6 +246,8 @@ export default function ColecaoCompact({
   const [pesquisasSalvas, setPesquisasSalvas] = useState<string[]>([])
   const [nomePesquisaSalva, setNomePesquisaSalva] = useState("")
   const [mostrarModalSalvar, setMostrarModalSalvar] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
 
   // Sugestões de busca com base no histórico e cartas populares
   const sugestoesBusca = useMemo(() => {
@@ -686,6 +690,21 @@ export default function ColecaoCompact({
           {notification.message}
         </div>
       )}
+      
+      {/* Modal de importação */}
+      <ImportCollectionModal 
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={(importedCount) => {
+          showNotification('success', `Importação concluída! ${importedCount} cartas adicionadas à coleção.`);
+        }}
+      />
+      
+      {/* Modal de Completar Coleção */}
+      <CollectionCompletion
+        isOpen={isCompletionModalOpen}
+        onClose={() => setIsCompletionModalOpen(false)}
+      />
 
       {/* Busca Rápida */}
       <div className="quantum-card-dense mb-2 card-glow card-glow-blue">
@@ -1304,52 +1323,76 @@ export default function ColecaoCompact({
                 <div>
                   <h2 className="quantum-title">{currentCollection.name}</h2>
                 </div>
-                <Button
-                  onClick={() => exportCollectionToCSV(currentCollection)}
-                  className="quantum-btn compact"
-                  size="sm"
-                  disabled={!currentCollection}
-                >
-                  <Download className="w-3 h-3 mr-1" />
-                  Exportar
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setIsCompletionModalOpen(true)}
+                    className="quantum-btn compact bg-purple-600 hover:bg-purple-700"
+                    size="sm"
+                    disabled={!currentCollection}
+                  >
+                    <ListChecks className="w-3 h-3 mr-1" />
+                    Completar
+                  </Button>
+                  <Button
+                    onClick={() => setIsImportModalOpen(true)}
+                    className="quantum-btn compact bg-cyan-600 hover:bg-cyan-700"
+                    size="sm"
+                    disabled={!currentCollection}
+                  >
+                    <Upload className="w-3 h-3 mr-1" />
+                    Importar
+                  </Button>
+                  <Button
+                    onClick={() => exportCollectionToCSV(currentCollection)}
+                    className="quantum-btn compact"
+                    size="sm"
+                    disabled={!currentCollection}
+                  >
+                    <Download className="w-3 h-3 mr-1" />
+                    Exportar
+                  </Button>
+                </div>
               </div>
 
               {/* Filtros da Coleção */}
               <div className="quantum-card-dense p-2 mb-2 filtros-colecao">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <Input
                     placeholder="Buscar na coleção..."
                     value={buscaColecao}
                     onChange={(e) => setBuscaColecao(e.target.value)}
                     className="quantum-field-sm h-7"
                   />
-                  <SimpleSelect
-                    value={filtroRaridadeColecao}
-                    onChange={setFiltroRaridadeColecao}
-                    options={[
-                      { value: "all", label: "Todas" },
-                      { value: "common", label: "Comum" },
-                      { value: "uncommon", label: "Incomum" },
-                      { value: "rare", label: "Rara" },
-                      { value: "mythic", label: "Mítica" }
-                    ]}
-                    placeholder="Raridade"
-                  />
-                  <SimpleSelect
-                    value={filtroCorColecao}
-                    onChange={setFiltroCorColecao}
-                    options={[
-                      { value: "all", label: "Todas" },
-                      { value: "W", label: "Branco" },
-                      { value: "U", label: "Azul" },
-                      { value: "B", label: "Preto" },
-                      { value: "R", label: "Vermelho" },
-                      { value: "G", label: "Verde" },
-                      { value: "colorless", label: "Incolor" }
-                    ]}
-                    placeholder="Cor"
-                  />
+                  <div className="flex gap-2">
+                    <SimpleSelect
+                      value={filtroRaridadeColecao}
+                      onChange={setFiltroRaridadeColecao}
+                      options={[
+                        { value: "all", label: "Todas" },
+                        { value: "common", label: "Comum" },
+                        { value: "uncommon", label: "Incomum" },
+                        { value: "rare", label: "Rara" },
+                        { value: "mythic", label: "Mítica" }
+                      ]}
+                      placeholder="Raridade"
+                      className="flex-1"
+                    />
+                    <SimpleSelect
+                      value={filtroCorColecao}
+                      onChange={setFiltroCorColecao}
+                      options={[
+                        { value: "all", label: "Todas" },
+                        { value: "W", label: "Branco" },
+                        { value: "U", label: "Azul" },
+                        { value: "B", label: "Preto" },
+                        { value: "R", label: "Vermelho" },
+                        { value: "G", label: "Verde" },
+                        { value: "colorless", label: "Incolor" }
+                      ]}
+                      placeholder="Cor"
+                      className="flex-1"
+                    />
+                  </div>
                   <div className="flex gap-1">
                     <Button
                       variant="outline"
@@ -1366,6 +1409,22 @@ export default function ColecaoCompact({
                       size="sm"
                     >
                       Raridade {ordenacao === 'rarity' && (direcaoOrdenacao === 'asc' ? '↑' : '↓')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => toggleOrdenacao('date')}
+                      className="quantum-btn compact flex-1"
+                      size="sm"
+                    >
+                      Data {ordenacao === 'date' && (direcaoOrdenacao === 'asc' ? '↑' : '↓')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => toggleOrdenacao('cmc')}
+                      className="quantum-btn compact flex-1"
+                      size="sm"
+                    >
+                      CMC {ordenacao === 'cmc' && (direcaoOrdenacao === 'asc' ? '↑' : '↓')}
                     </Button>
                   </div>
                 </div>

@@ -4,10 +4,11 @@ import React, { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
-import { Plus, Bookmark, ExternalLink, X } from "lucide-react"
+import { Plus, Bookmark, ExternalLink, X, Info, Layers, Palette } from "lucide-react"
 import "../styles/modal-fix.css"
+import "../styles/card-modal-enhanced.css"
 import CardViewOptions from "./CardViewOptions"
-import DeckSelector from "./DeckSelector"
+import DeckSelector from "./DeckSelector-enhanced"
 import CollectionDeckUsage from "./CollectionDeckUsage"
 import { useCardModal } from "../contexts/CardModalContext"
 import { useAppContext } from "../contexts/AppContext"
@@ -131,9 +132,10 @@ const AdicionarCartaButton = React.memo(({ card }: { card: MTGCard }) => {
     <Button 
       onClick={handleClick}
       disabled={loading}
-      className="bg-green-600 hover:bg-green-700"
+      size="sm"
+      className="card-modal-button-primary text-xs py-1"
     >
-      <Plus className="w-4 h-4 mr-2" />
+      <Plus className="w-3 h-3 mr-1" />
       {buttonText}
     </Button>
   );
@@ -187,9 +189,11 @@ const AdicionarAoDeckButton = React.memo(({ card }: { card: MTGCard }) => {
     <Button
       onClick={handleClick}
       disabled={loading}
-      className="bg-blue-600 hover:bg-blue-700"
+      size="sm"
+      className="card-modal-button-primary text-xs py-1"
+      style={{ background: 'linear-gradient(135deg, #8000ff, #0099ff) !important' }}
     >
-      <Bookmark className="w-4 h-4 mr-2" />
+      <Bookmark className="w-3 h-3 mr-1" />
       {buttonText}
     </Button>
   );
@@ -303,19 +307,19 @@ export default function CardModal() {
       modal={true}
     >
       <DialogContent 
-        className="quantum-card-dense border border-cyan-500/20 bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-xl shadow-xl fixed-modal card-view-modal"
+        className="card-modal-enhanced quantum-card-dense fixed-modal card-view-modal"
         onEscapeKeyDown={() => onClose()}
         onInteractOutside={e => e.preventDefault()}
       >
-        <DialogHeader className="border-b border-cyan-500/20 pb-3">
-          <DialogTitle className="text-xl text-white flex justify-between items-center">
+        <DialogHeader className="card-modal-header">
+          <DialogTitle className="card-modal-title text-xl flex justify-between items-center">
             <span>{card.name}</span>
             <div className="flex gap-2">
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => onClose()}
-                className="h-8 w-8 p-1 rounded-full bg-gray-800/60 hover:bg-gray-700/60 text-gray-400 hover:text-white"
+                className="card-modal-close h-8 w-8 p-1 rounded-full"
                 title="Fechar"
               >
                 <X className="h-4 w-4" />
@@ -325,14 +329,14 @@ export default function CardModal() {
         </DialogHeader>
 
         <div className="overflow-y-auto quantum-scrollbar pr-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-2">
             {/* Imagem da carta */}
             <div className="flex justify-center">
               {(card.image_uris?.normal) ? (
                 <img 
                   src={card.image_uris.normal} 
                   alt={card.name}
-                  className="rounded-lg max-h-[80vh] object-contain"
+                  className="card-modal-image max-h-[80vh] object-contain"
                   crossOrigin="anonymous"
                 />
               ) : card.card_faces?.[0]?.image_uris?.normal ? (
@@ -340,14 +344,14 @@ export default function CardModal() {
                   <img 
                     src={card.card_faces[0].image_uris.normal} 
                     alt={card.name + " (frente)"}
-                    className="rounded-lg max-h-[38vh] object-contain"
+                    className="card-modal-image max-h-[38vh] object-contain"
                     crossOrigin="anonymous"
                   />
                   {card.card_faces[1]?.image_uris?.normal && (
                     <img 
                       src={card.card_faces[1].image_uris.normal} 
                       alt={card.name + " (verso)"}
-                      className="rounded-lg max-h-[38vh] object-contain"
+                      className="card-modal-image max-h-[38vh] object-contain"
                       crossOrigin="anonymous"
                     />
                   )}
@@ -361,82 +365,97 @@ export default function CardModal() {
 
             {/* Informações da carta */}
             <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium text-white">{card.name}</h3>
-                <p className="text-gray-300">{card.mana_cost}</p>
-                <p className="text-sm text-gray-400 mt-1">{safeCardAccess.typeLine(card)}</p>
+              <div className="card-modal-section">
+                <div className="flex items-center gap-1 mb-1">
+                  <Info className="w-3 h-3 text-cyan-400" />
+                  <h3 className="text-sm font-semibold text-white">Detalhes da Carta</h3>
+                </div>
+                <p className="text-cyan-300 font-semibold text-sm">{card.mana_cost}</p>
+                <p className="text-xs text-white mt-0.5">{safeCardAccess.typeLine(card)}</p>
               </div>
 
-              <div className="bg-gray-700/50 p-3 rounded-md">
+              <div className="card-modal-section card-modal-oracle">
+                <div className="flex items-center gap-1 mb-1">
+                  <Layers className="w-3 h-3 text-cyan-400" />
+                  <h4 className="text-xs text-white font-semibold">Texto do Oráculo</h4>
+                </div>
                 <p className="text-sm whitespace-pre-wrap">{card.oracle_text}</p>
                 {(card.power && card.toughness) && (
-                  <p className="text-right text-gray-300 mt-2">{card.power}/{card.toughness}</p>
+                  <p className="text-right text-cyan-300 mt-1 font-bold">{card.power}/{card.toughness}</p>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <span className="text-gray-400">Edição:</span>
-                  <p>{safeCardAccess.setName(card)} ({safeCardAccess.setCode(card)})</p>
+              <div className="card-modal-section">
+                <div className="flex items-center gap-1 mb-1">
+                  <Palette className="w-3 h-3 text-cyan-400" />
+                  <h4 className="text-xs text-white font-semibold">Informações da Edição</h4>
                 </div>
-                <div>
-                  <span className="text-gray-400">Raridade:</span>
-                  <p className="capitalize">{safeCardAccess.rarity(card)}</p>
-                </div>
-                <div>
-                  <span className="text-gray-400">Artista:</span>
-                  <p>{card.artist}</p>
-                </div>
-                <div>
-                  <span className="text-gray-400">Colecionador:</span>
-                  <p>#{card.collector_number}</p>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+                  <div>
+                    <div className="card-modal-label">Edição</div>
+                    <div className="card-modal-value">{safeCardAccess.setName(card)} ({safeCardAccess.setCode(card)})</div>
+                  </div>
+                  <div>
+                    <div className="card-modal-label">Raridade</div>
+                    <div className="card-modal-value capitalize">{safeCardAccess.rarity(card)}</div>
+                  </div>
+                  <div>
+                    <div className="card-modal-label">Artista</div>
+                    <div className="card-modal-value">{card.artist}</div>
+                  </div>
+                  <div>
+                    <div className="card-modal-label">Número</div>
+                    <div className="card-modal-value">#{card.collector_number}</div>
+                  </div>
                 </div>
               </div>
 
               {/* Na sua coleção */}
-              <div className="bg-gray-700/50 p-3 rounded-md">
-                <h4 className="text-white font-medium mb-2">Na sua coleção</h4>
+              <div className="card-modal-section">
+                <h4 className="text-xs text-white font-semibold mb-1">Na sua coleção</h4>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Quantidade:</span>
-                  <Badge variant="outline" className="border-blue-500 text-blue-400">
+                  <span className="text-xs text-cyan-300 font-medium">Quantidade:</span>
+                  <Badge className="card-modal-badge">
                     <QuantidadeAsync cardId={card.id} />
                   </Badge>
                 </div>
               </div>
 
               {/* Botões de ação */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
                 <AdicionarCartaButton card={card} />
 
                 {adicionarAoDeck && (
                   <AdicionarAoDeckButton card={card} />
                 )}
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-1 mt-1">
                   <Button 
                     onClick={() => window.open(getGathererURL(card), '_blank')}
                     variant="outline"
-                    className="border-purple-500 text-purple-400 hover:bg-purple-600/10"
+                    size="sm"
+                    className="card-modal-button-secondary text-xs py-1"
                   >
-                    <ExternalLink className="w-4 h-4 mr-2" />
+                    <ExternalLink className="w-3 h-3 mr-1" />
                     Ver no Gatherer
                   </Button>
                   <Button 
                     onClick={() => window.open(getLigaMagicURL(card), '_blank')}
                     variant="outline"
-                    className="border-purple-500 text-purple-400 hover:bg-purple-600/10"
+                    size="sm"
+                    className="card-modal-button-secondary text-xs py-1"
                   >
-                    <ExternalLink className="w-4 h-4 mr-2" />
+                    <ExternalLink className="w-3 h-3 mr-1" />
                     Ver na LigaMagic
                   </Button>
                 </div>
               </div>
 
               {/* Seletor de Deck */}
-              <div className="border-t border-gray-600 pt-4">
+              <div className="card-modal-divider pt-2">
                 <DeckSelector 
                   card={card}
-                  className="w-full"
+                  className="w-full text-xs deck-selector-compact"
                   showCreateDeck={true}
                   showCategorySelect={true}
                 />
@@ -445,7 +464,7 @@ export default function CardModal() {
               {/* Uso em Decks */}
               <CollectionDeckUsage 
                 card={card}
-                className="border-t border-gray-600 pt-4"
+                className="card-modal-divider pt-2 text-xs"
               />
             </div>
           </div>
