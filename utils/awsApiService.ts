@@ -46,7 +46,7 @@ export const collectionService = {
     
     // Verificar se a coleção pertence ao usuário
     const collection = await awsDbService.getById(TABLES.COLLECTIONS, id);
-    if (!collection.success || collection.data.userId !== session.user.id) {
+    if (!collection.success || !collection.data || collection.data.userId !== session.user.id) {
       return { success: false, error: 'Coleção não encontrada ou acesso negado' };
     }
     
@@ -62,7 +62,7 @@ export const collectionService = {
     
     // Verificar se a coleção pertence ao usuário
     const collection = await awsDbService.getById(TABLES.COLLECTIONS, id);
-    if (!collection.success || collection.data.userId !== session.user.id) {
+    if (!collection.success || !collection.data || collection.data.userId !== session.user.id) {
       return { success: false, error: 'Coleção não encontrada ou acesso negado' };
     }
     
@@ -78,7 +78,7 @@ export const collectionService = {
     
     // Obter a coleção atual
     const collection = await awsDbService.getById(TABLES.COLLECTIONS, collectionId);
-    if (!collection.success || collection.data.userId !== session.user.id) {
+    if (!collection.success || !collection.data || collection.data.userId !== session.user.id) {
       return { success: false, error: 'Coleção não encontrada ou acesso negado' };
     }
     
@@ -118,7 +118,7 @@ export const collectionService = {
     
     // Obter a coleção atual
     const collection = await awsDbService.getById(TABLES.COLLECTIONS, collectionId);
-    if (!collection.success || collection.data.userId !== session.user.id) {
+    if (!collection.success || !collection.data || collection.data.userId !== session.user.id) {
       return { success: false, error: 'Coleção não encontrada ou acesso negado' };
     }
     
@@ -148,7 +148,7 @@ export const collectionService = {
     
     // Obter a coleção atual
     const collection = await awsDbService.getById(TABLES.COLLECTIONS, collectionId);
-    if (!collection.success || collection.data.userId !== session.user.id) {
+    if (!collection.success || !collection.data || collection.data.userId !== session.user.id) {
       return { success: false, error: 'Coleção não encontrada ou acesso negado' };
     }
     
@@ -208,7 +208,7 @@ export const deckService = {
     
     // Verificar se o deck pertence ao usuário
     const deck = await awsDbService.getById(TABLES.DECKS, id);
-    if (!deck.success || deck.data.userId !== session.user.id) {
+    if (!deck.success || !deck.data || deck.data.userId !== session.user.id) {
       return { success: false, error: 'Deck não encontrado ou acesso negado' };
     }
     
@@ -229,7 +229,7 @@ export const deckService = {
     
     // Verificar se o deck pertence ao usuário
     const deck = await awsDbService.getById(TABLES.DECKS, id);
-    if (!deck.success || deck.data.userId !== session.user.id) {
+    if (!deck.success || !deck.data || deck.data.userId !== session.user.id) {
       return { success: false, error: 'Deck não encontrado ou acesso negado' };
     }
     
@@ -245,7 +245,7 @@ export const deckService = {
     
     // Obter o deck atual
     const deck = await awsDbService.getById(TABLES.DECKS, deckId);
-    if (!deck.success || deck.data.userId !== session.user.id) {
+    if (!deck.success || !deck.data || deck.data.userId !== session.user.id) {
       return { success: false, error: 'Deck não encontrado ou acesso negado' };
     }
     
@@ -289,7 +289,7 @@ export const deckService = {
     
     // Obter o deck atual
     const deck = await awsDbService.getById(TABLES.DECKS, deckId);
-    if (!deck.success || deck.data.userId !== session.user.id) {
+    if (!deck.success || !deck.data || deck.data.userId !== session.user.id) {
       return { success: false, error: 'Deck não encontrado ou acesso negado' };
     }
     
@@ -319,7 +319,7 @@ export const deckService = {
     
     // Obter o deck atual
     const deck = await awsDbService.getById(TABLES.DECKS, deckId);
-    if (!deck.success || deck.data.userId !== session.user.id) {
+    if (!deck.success || !deck.data || deck.data.userId !== session.user.id) {
       return { success: false, error: 'Deck não encontrado ou acesso negado' };
     }
     
@@ -383,7 +383,7 @@ export const favoriteService = {
     
     // Encontrar o ID do favorito
     const favorites = await this.getAll();
-    if (!favorites.success) {
+    if (!favorites.success || !favorites.data) {
       return { success: false, error: 'Erro ao obter favoritos' };
     }
     

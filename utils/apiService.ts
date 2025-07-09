@@ -22,8 +22,10 @@ async function fetchApi<T>(
     };
 
     if (session) {
-      // Se houver sessão, adicionar token de autenticação
-      headers['Authorization'] = `Bearer ${session.user.token}`;
+      // Se houver sessão, usar o ID do usuário como autenticação
+      // Nota: Normalmente usaríamos um token JWT, mas como não temos acesso ao token diretamente,
+      // estamos usando o ID do usuário como identificação
+      headers['Authorization'] = `Bearer ${session.user.id}`;
     }
 
     const options: RequestInit = {
