@@ -12,7 +12,7 @@ export const truncateCardData = (card: MTGCard): Partial<MTGCard> => {
     set_code: card.set_code,
     type_line: card.type_line,
     cmc: card.cmc,
-    colors: card.colors,
+    color_identity: card.color_identity,
     rarity: card.rarity
   };
 };
