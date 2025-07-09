@@ -145,6 +145,15 @@ const UserHeader = (props: UserHeaderProps) => {
                         <Settings className="w-4 h-4" />
                         <span>Configurações</span>
                       </button>
+                      {user?.role === 'admin' && (
+                        <button 
+                          onClick={() => router.push('/admin')}
+                          className="w-full text-left px-4 py-2 text-sm text-blue-400 hover:bg-slate-700 flex items-center gap-2"
+                        >
+                          <Settings className="w-4 h-4" />
+                          <span>Administração</span>
+                        </button>
+                      )}
                       <div className="border-t border-slate-700 my-1"></div>
                       <button 
                         onClick={handleLogout}
