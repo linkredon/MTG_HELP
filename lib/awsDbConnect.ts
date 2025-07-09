@@ -75,7 +75,7 @@ export const awsDbService = {
       Key: { id },
       UpdateExpression: updateExpression,
       ExpressionAttributeValues: expressionAttributeValues,
-      ReturnValues: 'ALL_NEW'
+      ReturnValues: "ALL_NEW" as const
     };
     
     try {
