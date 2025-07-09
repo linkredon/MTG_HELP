@@ -3,20 +3,15 @@
 import { useState, useEffect } from 'react';
 import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/api';
-import { AuthUser } from 'aws-amplify/auth/dist/types';
-import { JsonValue } from '@aws-amplify/api/dist/types';
 import { listUsers } from '../../src/graphql/queries';
 import { createUser, updateUser, deleteUser } from '../../src/graphql/mutations';
+import { User as AmplifyUser, CreateUserInput, UpdateUserInput, DeleteUserInput } from '../../lib/API';
 
 export default function AdminPage() {
-  type User = {
-    id: string;
-    name: string;
-    email: string;
-    role?: string;
-  };
+  // Usando o tipo do Amplify com algumas simplificações
+  type AppUser = Pick<AmplifyUser, 'id' | 'name' | 'email' | 'role'>;
 
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AppUser[]>([]);
   const [currentUser, setCurrentUser] = useState<{username?: string, userId?: string} | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -66,7 +61,14 @@ export default function AdminPage() {
       const result = await client.graphql({
         query: listUsers
       });
-      setUsers(result.data.listUsers.items);
+      // Converter os resultados para o tipo AppUser
+      const userItems = result.data.listUsers.items.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        role: item.role
+      }));
+      setUsers(userItems);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
       setError('Erro ao carregar usuários.');
@@ -74,11 +76,23 @@ export default function AdminPage() {
   };
 
   // Criar um novo usuário
-  const handleCreateUser = async (userData: Partial<User>) => {
+  const handleCreateUser = async (userData: Partial<AppUser>) => {
     try {
+      // Garantir que os campos obrigatórios estão presentes
+      if (!userData.name || !userData.email) {
+        setError('Nome e email são obrigatórios');
+        return;
+      }
+      
+      const input: CreateUserInput = {
+        name: userData.name,
+        email: userData.email,
+        role: userData.role || 'user'
+      };
+      
       await client.graphql({
         query: createUser,
-        variables: { input: userData }
+        variables: { input }
       });
       fetchUsers();
     } catch (error) {
@@ -88,11 +102,16 @@ export default function AdminPage() {
   };
 
   // Atualizar um usuário existente
-  const handleUpdateUser = async (id: string, userData: Partial<User>) => {
+  const handleUpdateUser = async (id: string, userData: Partial<AppUser>) => {
     try {
+      const input: UpdateUserInput = {
+        id,
+        ...userData
+      };
+      
       await client.graphql({
         query: updateUser,
-        variables: { input: { id, ...userData } }
+        variables: { input }
       });
       fetchUsers();
     } catch (error) {
@@ -104,9 +123,11 @@ export default function AdminPage() {
   // Excluir um usuário
   const handleDeleteUser = async (id: string) => {
     try {
+      const input: DeleteUserInput = { id };
+      
       await client.graphql({
         query: deleteUser,
-        variables: { input: { id } }
+        variables: { input }
       });
       fetchUsers();
     } catch (error) {
@@ -156,7 +177,7 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user: User) => (
+              {users.map((user: AppUser) => (
                 <tr key={user.id} className="border-b border-gray-700">
                   <td className="px-4 py-3">{user.name}</td>
                   <td className="px-4 py-3">{user.email}</td>
