@@ -1,15 +1,23 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Amplify } from 'aws-amplify';
 import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/api';
+import { AuthUser } from 'aws-amplify/auth/dist/types';
+import { JsonValue } from '@aws-amplify/api/dist/types';
 import { listUsers } from '../../src/graphql/queries';
 import { createUser, updateUser, deleteUser } from '../../src/graphql/mutations';
 
 export default function AdminPage() {
-  const [users, setUsers] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
+  type User = {
+    id: string;
+    name: string;
+    email: string;
+    role?: string;
+  };
+
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<{username?: string, userId?: string} | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -21,13 +29,21 @@ export default function AdminPage() {
   useEffect(() => {
     const checkAdmin = async () => {
       try {
-        const { username, userId, signInDetails } = await getCurrentUser();
+        const userInfo = await getCurrentUser();
         const session = await fetchAuthSession();
-        const groups = session.tokens?.accessToken?.payload['cognito:groups'] || [];
-        const attributes = signInDetails?.attributes || {};
-        const isUserAdmin = groups.includes('Admin') || attributes['custom:role'] === 'admin';
         
-        setCurrentUser({ username, userId });
+        // Extrair grupos do token de acesso
+        const cognitoGroups = session.tokens?.accessToken?.payload['cognito:groups'];
+        const groups = Array.isArray(cognitoGroups) ? cognitoGroups : [];
+        
+        // Verificar se o usuário é admin
+        const customRole = session.tokens?.idToken?.payload['custom:role'];
+        const isUserAdmin = groups.includes('Admin') || customRole === 'admin';
+        
+        setCurrentUser({ 
+          username: userInfo.username,
+          userId: userInfo.userId 
+        });
         setIsAdmin(isUserAdmin);
         
         if (isUserAdmin) {
@@ -58,7 +74,7 @@ export default function AdminPage() {
   };
 
   // Criar um novo usuário
-  const handleCreateUser = async (userData) => {
+  const handleCreateUser = async (userData: Partial<User>) => {
     try {
       await client.graphql({
         query: createUser,
@@ -72,7 +88,7 @@ export default function AdminPage() {
   };
 
   // Atualizar um usuário existente
-  const handleUpdateUser = async (id, userData) => {
+  const handleUpdateUser = async (id: string, userData: Partial<User>) => {
     try {
       await client.graphql({
         query: updateUser,
@@ -86,7 +102,7 @@ export default function AdminPage() {
   };
 
   // Excluir um usuário
-  const handleDeleteUser = async (id) => {
+  const handleDeleteUser = async (id: string) => {
     try {
       await client.graphql({
         query: deleteUser,
@@ -140,7 +156,7 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
+              {users.map((user: User) => (
                 <tr key={user.id} className="border-b border-gray-700">
                   <td className="px-4 py-3">{user.name}</td>
                   <td className="px-4 py-3">{user.email}</td>
