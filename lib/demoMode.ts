@@ -102,7 +102,7 @@ export const authenticateDemoUser = (email: string, password: string) => {
       }
     };
   }
-  return { success: false, message: 'Modo de demonstração não ativado' };
+  return { success: false, error: 'Modo de demonstração não ativado' };
 };
 
 // Função para registrar usuário de demonstração
@@ -117,5 +117,5 @@ export const registerDemoUser = (userData: { name: string, email: string, passwo
       }
     };
   }
-  return { success: false, message: 'Modo de demonstração não ativado' };
+  return { success: false, error: 'Modo de demonstração não ativado' };
 };
