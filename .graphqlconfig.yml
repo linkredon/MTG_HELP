@@ -1,0 +1,12 @@
+projects:
+  mtghelp:
+    schemaPath: src/graphql/schema.json
+    includes:
+      - src/graphql/**/*.ts
+    excludes:
+      - ./amplify/**
+    extensions:
+      amplify:
+        codeGenTarget: typescript
+        generatedFileName: lib/API.ts
+        docsFilePath: src/graphql

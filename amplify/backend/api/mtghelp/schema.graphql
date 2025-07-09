@@ -1,0 +1,69 @@
+# Configuração de autorização simplificada
+type User @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  name: String!
+  email: String!
+  avatar: String
+  role: String
+  joinedAt: AWSDateTime
+  collectionsCount: Int
+  totalCards: Int
+  achievements: [String]
+}
+
+type Collection @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  name: String!
+  description: String
+  isPublic: Boolean
+  backgroundImage: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  userID: ID!
+  user: User @hasOne(fields: ["userID"])
+}
+
+type CollectionCard @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  cardId: String!
+  cardData: String!
+  quantity: Int!
+  condition: String
+  foil: Boolean
+  language: String
+  collectionID: ID!
+  collection: Collection @hasOne(fields: ["collectionID"])
+}
+
+type Deck @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  name: String!
+  format: String!
+  colors: [String]!
+  description: String
+  isPublic: Boolean
+  tags: [String]
+  createdAt: AWSDateTime
+  lastModified: AWSDateTime
+  userID: ID!
+  user: User @hasOne(fields: ["userID"])
+}
+
+type DeckCard @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  cardId: String!
+  cardData: String!
+  quantity: Int!
+  category: String!
+  deckID: ID!
+  deck: Deck @hasOne(fields: ["deckID"])
+}
+
+type Favorite @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  cardId: String!
+  cardData: String!
+  addedAt: AWSDateTime
+  userID: ID!
+  user: User @hasOne(fields: ["userID"])
+}
