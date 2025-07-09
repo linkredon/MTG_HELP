@@ -12,55 +12,97 @@ import { getAllPrintsByNameWithTranslation } from '@/utils/scryfallService';
 import CollectionIndicator from '@/components/CollectionIndicator';
 import CardViewOptions from '@/components/CardViewOptions';
 
-// Resto do código permanece igual...
+// Interface para o objeto de contagem de versões
+interface CardVersionCountsType {
+  [cardId: string]: number;
+}
 
-// Modificando apenas a função fetchVersionCount para tratar erros corretamente
-const fetchVersionCount = useCallback(async (card: MTGCard) => {
-  if (cardVersionCounts[card.id] !== undefined) return; // Já tem a contagem
-  
-  try {
-    console.log(`Buscando contagem de versões para: ${card.name}`);
-    
-    // Usar a API do Scryfall com &format=json&page=1 para pegar apenas a primeira página
-    // e usar total_cards do response para saber quantas existem
-    const url = `https://api.scryfall.com/cards/search?q="${encodeURIComponent(card.name)}"+unique:prints&order=released&page=1`;
+// Interface para as props do componente
+interface EnhancedSearchCardListProps {
+  cards: MTGCard[];
+  collection?: Array<{ card: MTGCard; quantity: number }>;
+  onAddCard?: (card: MTGCard) => void;
+  searchResults?: {
+    hasMore?: boolean;
+    nextPage?: () => void;
+    totalCards?: number;
+    currentPage?: number;
+    isLoadingMore?: boolean;
+  };
+  onSortChange?: (mode: string, direction: string) => void;
+  currentSort?: {
+    mode: string;
+    direction: string;
+  };
+}
+
+// Componente principal
+const EnhancedSearchCardList = ({ 
+  cards, 
+  collection = [], 
+  onAddCard, 
+  searchResults, 
+  onSortChange, 
+  currentSort 
+}: EnhancedSearchCardListProps) => {
+  // Adicionando o estado para contagem de versões
+  const [cardVersionCounts, setCardVersionCounts] = useState<CardVersionCountsType>({});
+
+  const fetchVersionCount = useCallback(async (card: MTGCard) => {
+    if (cardVersionCounts[card.id] !== undefined) return; // Já tem a contagem
     
     try {
-      const response = await fetch(url);
+      console.log(`Buscando contagem de versões para: ${card.name}`);
       
-      if (response.ok) {
-        const data = await response.json();
-        const totalVersions = data.total_cards || 0;
-        const currentCardVersions = totalVersions > 0 ? totalVersions - 1 : 0; // Subtraí 1 pois não conta a carta atual
+      // Usar a API do Scryfall com &format=json&page=1 para pegar apenas a primeira página
+      // e usar total_cards do response para saber quantas existem
+      const url = `https://api.scryfall.com/cards/search?q="${encodeURIComponent(card.name)}"+unique:prints&order=released&page=1`;
+      
+      try {
+        const response = await fetch(url);
         
-        setCardVersionCounts(prev => ({
-          ...prev,
-          [card.id]: currentCardVersions
-        }));
-        
-        console.log(`${card.name} tem ${currentCardVersions} versões alternativas`);
-      } else if (response.status === 404) {
-        // Não encontrou versões
+        if (response.ok) {
+          const data = await response.json();
+          const totalVersions = data.total_cards || 0;
+          const currentCardVersions = totalVersions > 0 ? totalVersions - 1 : 0; // Subtraí 1 pois não conta a carta atual
+          
+          setCardVersionCounts(prev => ({
+            ...prev,
+            [card.id]: currentCardVersions
+          }));
+          
+          console.log(`${card.name} tem ${currentCardVersions} versões alternativas`);
+        } else if (response.status === 404) {
+          // Não encontrou versões
+          setCardVersionCounts(prev => ({
+            ...prev,
+            [card.id]: 0
+          }));
+        }
+      } catch (error) {
+        console.error(`Erro ao buscar contagem de versões para ${card.name}:`, error);
+        // Em caso de erro de rede, definir como 0
         setCardVersionCounts(prev => ({
           ...prev,
           [card.id]: 0
         }));
       }
     } catch (error) {
-      console.error(`Erro ao buscar contagem de versões para ${card.name}:`, error);
-      // Em caso de erro de rede, definir como 0
+      console.error(`Erro ao processar busca de versões para ${card.name}:`, error);
       setCardVersionCounts(prev => ({
         ...prev,
         [card.id]: 0
       }));
     }
-  } catch (error) {
-    console.error(`Erro ao processar busca de versões para ${card.name}:`, error);
-    setCardVersionCounts(prev => ({
-      ...prev,
-      [card.id]: 0
-    }));
-  }
-}, [cardVersionCounts]);
+  }, [cardVersionCounts]);
 
-// Resto do código permanece igual...
+  // Resto do componente aqui...
+  
+  return (
+    <div>
+      {/* Conteúdo do componente */}
+    </div>
+  );
+};
+
+export default EnhancedSearchCardList;

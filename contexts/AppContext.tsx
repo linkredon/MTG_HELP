@@ -1,6 +1,20 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import type { ApiResponse } from '@/types/api';
+
+// Helper function for type assertion
+function asUserCollection(data: any): UserCollection {
+  return data as UserCollection;
+}
+
+function asUserCollectionArray(data: any[]): UserCollection[] {
+  return data as UserCollection[];
+}
+
+function asDeckArray(data: any[]): Deck[] {
+  return data as Deck[];
+}
 import { safeLocalStorageSave } from '@/utils/storageUtils';
 import type { MTGCard, UserCollection, CollectionCard, Deck, DeckCard } from '@/types/mtg';
 import { collectionService, deckService, favoriteService } from '@/utils/awsApiService';
@@ -81,7 +95,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           // Carregar coleções
           const collectionsResponse = await collectionService.getAll();
           if (collectionsResponse.success && collectionsResponse.data) {
-            setCollections(collectionsResponse.data);
+            setCollections(asUserCollectionArray(collectionsResponse.data));
             if (collectionsResponse.data.length > 0 && !currentCollectionId) {
               setCurrentCollectionId(collectionsResponse.data[0].id);
             }
@@ -90,13 +104,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           // Carregar decks
           const decksResponse = await deckService.getAll();
           if (decksResponse.success && decksResponse.data) {
-            setDecks(decksResponse.data);
+            setDecks(asDeckArray(decksResponse.data));
           }
 
           // Carregar favoritos
           const favoritesResponse = await favoriteService.getAll();
           if (favoritesResponse.success && favoritesResponse.data) {
-            setFavorites(favoritesResponse.data.map((fav: any) => fav.card));
+            setFavorites(favoritesResponse.data.map((fav: any) => fav.card) as MTGCard[]);
           }
         } catch (error) {
           console.error('Erro ao carregar dados:', error);
@@ -183,7 +197,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       try {
         const response = await collectionService.create({ name, description });
         if (response.success && response.data) {
-          setCollections(prev => [...prev, response.data]);
+          setCollections(prev => [...prev, asUserCollection(response.data)]);
           setCurrentCollectionId(response.data.id);
           return response.data.id;
         }
@@ -283,7 +297,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           // Atualizar estado local
           const updatedResponse = await collectionService.getById(response.data.id);
           if (updatedResponse.success) {
-            setCollections(prev => [...prev, updatedResponse.data]);
+            setCollections(prev => [...prev, asUserCollection(updatedResponse.data)]);
           }
         }
       } catch (error) {
@@ -318,7 +332,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         // Atualizar estado local
         const response = await collectionService.getById(currentCollectionId);
         if (response.success) {
-          setCollections(prev => prev.map(c => c.id === currentCollectionId ? response.data : c));
+          setCollections(prev => prev.map(c => c.id === currentCollectionId ? asUserCollection(response.data) : c));
         }
       } catch (error) {
         console.error('Erro ao adicionar carta:', error);
@@ -365,18 +379,22 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         
         if (cardInCollection.quantity > 1) {
           // Atualizar quantidade
-          await collectionService.updateCard(currentCollectionId, cardInCollection._id, {
-            quantity: cardInCollection.quantity - 1
-          });
+          if (cardInCollection._id) {
+            await collectionService.updateCard(currentCollectionId, cardInCollection._id, {
+              quantity: cardInCollection.quantity - 1
+            });
+          }
         } else {
           // Remover carta
-          await collectionService.removeCard(currentCollectionId, cardInCollection._id);
+          if (cardInCollection._id) {
+            await collectionService.removeCard(currentCollectionId, cardInCollection._id);
+          }
         }
         
         // Atualizar estado local
         const response = await collectionService.getById(currentCollectionId);
         if (response.success) {
-          setCollections(prev => prev.map(c => c.id === currentCollectionId ? response.data : c));
+          setCollections(prev => prev.map(c => c.id === currentCollectionId ? asUserCollection(response.data) : c));
         }
       } catch (error) {
         console.error('Erro ao remover carta:', error);
@@ -512,8 +530,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           
           // Atualizar estado local
           const updatedResponse = await deckService.getById(response.data.id);
-          if (updatedResponse.success) {
-            setDecks(prev => [...prev, updatedResponse.data]);
+          if (updatedResponse.success && updatedResponse.data) {
+            setDecks(prev => [...prev, updatedResponse.data as Deck]);
             return updatedResponse.data.id;
           }
         }
@@ -556,7 +574,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         // Atualizar estado local
         const response = await deckService.getById(deckId);
         if (response.success) {
-          setDecks(prev => prev.map(deck => deck.id === deckId ? response.data : deck));
+          setDecks(prev => prev.map(deck => deck.id === deckId ? response.data as Deck : deck));
         }
       } catch (error) {
         console.error('Erro ao adicionar carta ao deck:', error);
@@ -605,12 +623,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const cardInDeck = deck.cards.find(c => c.card.id === cardId && c.category === category);
         if (!cardInDeck) return;
         
-        await deckService.removeCard(deckId, cardInDeck._id);
+        if (cardInDeck._id) {
+          await deckService.removeCard(deckId, cardInDeck._id);
+        }
         
         // Atualizar estado local
         const response = await deckService.getById(deckId);
         if (response.success) {
-          setDecks(prev => prev.map(deck => deck.id === deckId ? response.data : deck));
+          setDecks(prev => prev.map(deck => deck.id === deckId ? response.data as Deck : deck));
         }
       } catch (error) {
         console.error('Erro ao remover carta do deck:', error);
@@ -652,12 +672,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const cardInDeck = deck.cards.find(c => c.card.id === cardId && c.category === category);
         if (!cardInDeck) return;
         
-        await deckService.updateCard(deckId, cardInDeck._id, { quantity: novaQuantidade });
+        if (cardInDeck._id) {
+          await deckService.updateCard(deckId, cardInDeck._id, { quantity: novaQuantidade });
+        }
         
         // Atualizar estado local
         const response = await deckService.getById(deckId);
         if (response.success) {
-          setDecks(prev => prev.map(deck => deck.id === deckId ? response.data : deck));
+          setDecks(prev => prev.map(deck => deck.id === deckId ? response.data as Deck : deck));
         }
       } catch (error) {
         console.error('Erro ao atualizar quantidade no deck:', error);
@@ -889,3 +911,4 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     </AppContext.Provider>
   );
 };
+

@@ -83,48 +83,61 @@ export default function ConstrutorDecks() {
   }
 
   // Função para criar novo deck
-  const handleCreateDeck = () => {
+  const handleCreateDeck = async () => {
     if (!newDeckData.name.trim()) {
       showNotification('error', 'Nome do deck é obrigatório')
       return
     }
 
-    const deckId = criarDeck({
-      name: newDeckData.name,
-      format: newDeckData.format,
-      colors: newDeckData.colors,
-      cards: [],
-      isPublic: false,
-      tags: [],
-      description: newDeckData.description
-    })
-    setNewDeckData({ name: '', format: 'Standard', colors: [], description: '' })
-    setIsCreatingDeck(false)
-    showNotification('success', 'Deck criado com sucesso!')
-    
-    // Ir direto para o builder do novo deck
-    setSelectedDeck(deckId)
-    setViewMode('builder')
-  }
-
-  const handleDuplicateDeck = (deckId: string) => {
-    const newDeckId = duplicarDeck(deckId);
-    if (newDeckId) {
-      console.log('Deck duplicado com sucesso! Novo ID:', newDeckId);
-      showNotification('success', 'Deck duplicado com sucesso!');
-    } else {
-      showNotification('error', 'Falha ao duplicar o deck.');
+    try {
+      const deckId = await criarDeck({
+        name: newDeckData.name,
+        format: newDeckData.format,
+        colors: newDeckData.colors,
+        cards: [],
+        isPublic: false,
+        tags: [],
+        description: newDeckData.description
+      })
+      setNewDeckData({ name: '', format: 'Standard', colors: [], description: '' })
+      setIsCreatingDeck(false)
+      showNotification('success', 'Deck criado com sucesso!')
+      
+      // Ir direto para o builder do novo deck
+      setSelectedDeck(deckId)
+      setViewMode('builder')
+    } catch (error) {
+      showNotification('error', 'Erro ao criar deck')
     }
   }
 
-  const handleDeleteDeck = (deckId: string) => {
-    deletarDeck(deckId)
-    if (selectedDeck === deckId) {
-      setSelectedDeck(null)
-      setViewMode('list')
+  const handleDuplicateDeck = async (deckId: string) => {
+    try {
+      const newDeckId = await duplicarDeck(deckId);
+      if (newDeckId) {
+        console.log('Deck duplicado com sucesso! Novo ID:', newDeckId);
+        showNotification('success', 'Deck duplicado com sucesso!');
+      } else {
+        showNotification('error', 'Falha ao duplicar o deck.');
+      }
+    } catch (error) {
+      showNotification('error', 'Erro ao duplicar deck');
     }
-    setShowDeleteConfirm(null)
-    showNotification('success', 'Deck deletado com sucesso!')
+  }
+
+  const handleDeleteDeck = async (deckId: string) => {
+    try {
+      await deletarDeck(deckId)
+      if (selectedDeck === deckId) {
+        setSelectedDeck(null)
+        setViewMode('list')
+      }
+      setShowDeleteConfirm(null)
+      showNotification('success', 'Deck deletado com sucesso!')
+    } catch (error) {
+      showNotification('error', 'Erro ao deletar deck')
+      setShowDeleteConfirm(null)
+    }
   }
 
   // Filtrar e ordenar decks

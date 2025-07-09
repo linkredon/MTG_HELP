@@ -1452,7 +1452,16 @@ export default function ColecaoCompact({
                   <ExpandableCardGrid
                     collectionCards={cartasFiltradas}
                     onAddCard={adicionarCarta}
-                    onRemoveCard={removerCarta}
+                    onRemoveCard={(card) => {
+                      if (typeof card === 'string') {
+                        // Se for string (ID), encontrar a carta correspondente
+                        const cardObj = currentCollection?.cards.find(c => c.card.id === card)?.card;
+                        if (cardObj) removerCarta(cardObj);
+                      } else {
+                        // Se for objeto MTGCard, usar diretamente
+                        removerCarta(card);
+                      }
+                    }}
                   />
                 )}
               </div>

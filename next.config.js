@@ -9,7 +9,9 @@ const nextConfig = {
   },
   // Configurações para evitar problemas com o arquivo trace
   experimental: {
-    outputFileTracingIgnores: ['.next/**/*'],
+    outputFileTracingExcludes: {
+      '.next': ['**/*']
+    },
   },
 }
 

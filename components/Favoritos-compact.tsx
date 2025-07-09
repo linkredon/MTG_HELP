@@ -111,7 +111,7 @@ export default function FavoritosCompact() {
                           size="sm" 
                           variant="ghost" 
                           className="h-6 w-6 p-0 text-gray-400 hover:text-blue-400 hover:bg-blue-900/20"
-                          onClick={() => window.open(`https://scryfall.com/card/${card.set}/${card.collector_number}`, '_blank')}
+                          onClick={() => window.open(`https://scryfall.com/card/${card.set || card.set_code}/${card.collector_number}`, '_blank')}
                         >
                           <ExternalLink className="h-3 w-3" />
                         </Button>
