@@ -1,4 +1,6 @@
 import { Amplify } from 'aws-amplify';
+import { Auth } from '@aws-amplify/auth';
+import { API } from '@aws-amplify/api';
 import { getAmplifyConfig } from './demoMode';
 
 // Usar configurações do ambiente ou do arquivo aws-exports.js
@@ -13,5 +15,7 @@ try {
 }
 
 Amplify.configure(config);
+Auth.configure(config);
+API.configure(config);
 
 export default Amplify;

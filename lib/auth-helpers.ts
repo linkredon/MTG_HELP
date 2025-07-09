@@ -1,4 +1,5 @@
-import { Auth } from 'aws-amplify';
+import { Amplify } from 'aws-amplify';
+import { Auth } from '@aws-amplify/auth';
 import { isDemoMode, authenticateDemoUser, registerDemoUser } from './demoMode';
 
 // Definindo tipos para os retornos das funções de autenticação
