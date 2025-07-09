@@ -1,338 +1,5 @@
-/*!******************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/modal-fix.css ***!
-  \******************************************************************************************************************************************************************************************************************************************************************/
-/* Estilos para corrigir o posicionamento dos modais */
-.fixed-modal {
-  position: fixed !important;
-  left: 50% !important;
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  z-index: 9999 !important;
-  pointer-events: auto !important;
-  margin: 0 !important;
-  animation-name: modalFadeIn, modalGlow !important;
-  animation-duration: 0.3s, 2s !important;
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1), ease-in-out !important;
-  animation-iteration-count: 1, infinite !important;
-  animation-direction: normal, alternate !important;
-  animation-fill-mode: forwards, none !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.7) !important;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -48%) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-@keyframes modalGlow {
-  0% {
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.7), 0 0 0 rgba(0, 255, 240, 0);
-  }
-  100% {
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 255, 240, 0.3);
-  }
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 9998;
-}
-
-.card-selector-modal {
-  max-width: 95vw !important;
-  width: 800px !important;
-  max-height: 85vh !important;
-}
-
-.creation-modal {
-  max-width: 95vw !important;
-  width: 500px !important;
-}
-
-.delete-modal {
-  max-width: 95vw !important;
-  width: 450px !important;
-}
-
-.card-view-modal {
-  max-width: 95vw !important;
-  width: 1000px !important;
-  max-height: 90vh !important;
-  overflow-y: auto !important;
-}
-
-@media (max-width: 768px) {
-  .card-view-modal {
-    width: 95vw !important;
-    height: auto !important;
-    max-height: 85vh !important;
-  }
-  
-  .fixed-modal {
-    overflow: auto !important;
-  }
-}
 /*!****************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/card-modal-enhanced.css ***!
-  \****************************************************************************************************************************************************************************************************************************************************************************/
-/* Estilos aprimorados para o modal de detalhes das cartas - Versão compacta */
-.card-modal-enhanced {
-  background: var(--glass-ultra, rgba(0, 0, 0, 0.95)) !important;
-  -webkit-backdrop-filter: blur(15px) !important;
-          backdrop-filter: blur(15px) !important;
-  border: 1px solid var(--primary-neon, #00fff0) !important;
-  box-shadow: 0 0 20px rgba(0, 255, 240, 0.2) !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
-  animation: modal-glow 3s infinite alternate !important;
-  max-width: 900px !important;
-}
-
-@keyframes modal-glow {
-  0% {
-    box-shadow: 0 0 10px rgba(0, 255, 240, 0.2) !important;
-  }
-  100% {
-    box-shadow: 0 0 25px rgba(0, 255, 240, 0.4) !important;
-  }
-}
-
-.card-modal-header {
-  border-bottom: 1px solid rgba(0, 255, 240, 0.3) !important;
-  padding-bottom: var(--space-sm, 0.25rem) !important;
-  margin-bottom: var(--space-sm, 0.25rem) !important;
-}
-
-.card-modal-title {
-  font-family: var(--font-display, 'Orbitron', system-ui, sans-serif) !important;
-  font-weight: 700 !important;
-  font-size: 1.1rem !important;
-  background: linear-gradient(135deg, #ffffff, var(--primary-neon)) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
-  text-shadow: 0 0 5px rgba(0, 255, 240, 0.5) !important;
-}
-
-.card-modal-close {
-  background: rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: rgba(255, 255, 255, 0.7) !important;
-  transition: all 0.2s ease !important;
-}
-
-.card-modal-close:hover {
-  background: rgba(255, 0, 0, 0.2) !important;
-  border-color: rgba(255, 0, 0, 0.4) !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-  transform: rotate(90deg) !important;
-}
-
-.card-modal-section {
-  background: rgba(0, 0, 0, 0.4) !important;
-  border-radius: 6px !important;
-  border: 1px solid rgba(0, 255, 240, 0.15) !important;
-  padding: var(--space-sm, 0.25rem) var(--space-md, 0.5rem) !important;
-  margin-bottom: var(--space-sm, 0.25rem) !important;
-}
-
-.card-modal-label {
-  color: rgba(0, 255, 240, 0.8) !important;
-  font-size: 0.7rem !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
-  margin-bottom: 1px !important;
-  font-weight: 600 !important;
-}
-
-.card-modal-value {
-  color: white !important;
-  font-weight: 500 !important;
-  text-shadow: 0 0 2px rgba(255, 255, 255, 0.3) !important;
-}
-
-.card-modal-image {
-  border-radius: 12px !important;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5) !important;
-  transition: transform 0.3s ease !important;
-}
-
-.card-modal-image:hover {
-  transform: scale(1.02) !important;
-}
-
-.card-modal-button-primary {
-  background: linear-gradient(135deg, var(--primary-neon, #00fff0), #0099ff) !important;
-  color: black !important;
-  font-weight: 700 !important;
-  border: none !important;
-  box-shadow: 0 0 10px rgba(0, 255, 240, 0.3) !important;
-  transition: all 0.2s ease !important;
-  letter-spacing: 0.02rem !important;
-}
-
-.card-modal-button-primary:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 0 15px rgba(0, 255, 240, 0.5) !important;
-}
-
-.card-modal-button-secondary {
-  background: rgba(0, 255, 240, 0.05) !important;
-  border: 1px solid var(--primary-neon, #00fff0) !important;
-  color: white !important;
-  transition: all 0.2s ease !important;
-  font-weight: 600 !important;
-  text-shadow: 0 0 3px rgba(0, 255, 240, 0.5) !important;
-}
-
-.card-modal-button-secondary:hover {
-  background: rgba(0, 255, 240, 0.15) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 0 8px rgba(0, 255, 240, 0.3) !important;
-}
-
-.card-modal-oracle {
-  font-family: var(--font-body, 'Inter', system-ui, sans-serif) !important;
-  line-height: 1.4 !important;
-  color: rgba(255, 255, 255, 1) !important;
-}
-
-.card-modal-oracle p {
-  font-size: 0.85rem !important;
-  text-shadow: 0 0 1px rgba(0, 0, 0, 0.8) !important;
-  letter-spacing: 0.01rem !important;
-}
-
-.card-modal-badge {
-  background: rgba(0, 255, 240, 0.2) !important;
-  color: white !important;
-  border: 1px solid var(--primary-neon, #00fff0) !important;
-  font-weight: 700 !important;
-  padding: 1px 6px !important;
-  border-radius: 8px !important;
-  font-size: 0.7rem !important;
-  text-shadow: 0 0 3px rgba(0, 255, 240, 0.8) !important;
-  box-shadow: 0 0 5px rgba(0, 255, 240, 0.3) !important;
-}
-
-.card-modal-divider {
-  border-top: 1px solid rgba(0, 255, 240, 0.2) !important;
-  margin: var(--space-xs, 0.125rem) 0 !important;
-  padding-top: var(--space-xs, 0.125rem) !important;
-}
-
-/* Scrollbar personalizada */
-.quantum-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.quantum-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.quantum-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--primary-neon, #00fff0);
-  border-radius: 3px;
-}
-
-.quantum-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-neon, #8000ff);
-}
-/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[2].use[1]!./node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js??ruleSet[1].rules[13].oneOf[2].use[2]!./node_modules/next/font/google/target.css?{"path":"app\\layout.tsx","import":"Inter","arguments":[{"subsets":["latin"]}],"variableName":"inter"} ***!
-  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
-/* cyrillic-ext */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url(/_next/static/media/55c55f0601d81cf3-s.woff2) format('woff2');
-  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-}
-/* cyrillic */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url(/_next/static/media/26a46d62cd723877-s.woff2) format('woff2');
-  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-/* greek-ext */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url(/_next/static/media/97e0cb1ae144a2a9-s.woff2) format('woff2');
-  unicode-range: U+1F00-1FFF;
-}
-/* greek */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url(/_next/static/media/581909926a08bbc8-s.woff2) format('woff2');
-  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
-}
-/* vietnamese */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url(/_next/static/media/df0a9ae256c0569c-s.woff2) format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
-}
-/* latin-ext */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url(/_next/static/media/8e9860b6e62d6359-s.woff2) format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-/* latin */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url(/_next/static/media/e4af272ccee01ff0-s.p.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}@font-face {font-family: 'Inter Fallback';src: local("Arial");ascent-override: 90.44%;descent-override: 22.52%;line-gap-override: 0.00%;size-adjust: 107.12%
-}.__className_e8ce0c {font-family: 'Inter', 'Inter Fallback';font-style: normal
-}
-
-/*!****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[2].use[1]!./node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js??ruleSet[1].rules[13].oneOf[2].use[2]!./node_modules/next/font/google/target.css?{"path":"app\\layout.tsx","import":"Orbitron","arguments":[{"subsets":["latin"],"variable":"--font-orbitron"}],"variableName":"orbitron"} ***!
-  \****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
-/* latin */
-@font-face {
-  font-family: 'Orbitron';
-  font-style: normal;
-  font-weight: 400 900;
-  font-display: swap;
-  src: url(/_next/static/media/9a4ee768fed045da-s.p.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}@font-face {font-family: 'Orbitron Fallback';src: local("Arial");ascent-override: 81.50%;descent-override: 19.59%;line-gap-override: 0.00%;size-adjust: 124.05%
-}.__className_e087fb {font-family: 'Orbitron', 'Orbitron Fallback';font-style: normal
-}.__variable_e087fb {--font-orbitron: 'Orbitron', 'Orbitron Fallback'
-}
-
-/*!****************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/mobile-first-design.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/mobile-first-design.css ***!
   \****************************************************************************************************************************************************************************************************************************************************************************/
 /* Mobile-First Advanced Design System - Refined */
 
@@ -1776,7 +1443,7 @@
 }
 
 /*!*************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/filters-enhanced.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/filters-enhanced.css ***!
   \*************************************************************************************************************************************************************************************************************************************************************************/
 /* Melhorias específicas para os filtros - Enhanced */
 
@@ -2012,7 +1679,7 @@ label {
 }
 
 /*!*************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./app/globals.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./app/globals.css ***!
   \*************************************************************************************************************************************************************************************************************************************************************/
 /* CSS específico do Tailwind CSS */
 /* csslint ignore:start */
@@ -2667,9 +2334,6 @@ body {
 .col-span-12 {
   grid-column: span 12 / span 12;
 }
-.col-span-full {
-  grid-column: 1 / -1;
-}
 .m-0 {
   margin: 0px;
 }
@@ -2689,16 +2353,9 @@ body {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
-.my-2 {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-}
 .my-8 {
   margin-top: 2rem;
   margin-bottom: 2rem;
-}
-.mb-0 {
-  margin-bottom: 0px;
 }
 .mb-1 {
   margin-bottom: 0.25rem;
@@ -2769,6 +2426,9 @@ body {
 .mt-6 {
   margin-top: 1.5rem;
 }
+.mt-8 {
+  margin-top: 2rem;
+}
 .line-clamp-2 {
   overflow: hidden;
   display: -webkit-box;
@@ -2805,11 +2465,11 @@ body {
 .aspect-\[63\/88\] {
   aspect-ratio: 63/88;
 }
+.aspect-\[745\/1040\] {
+  aspect-ratio: 745/1040;
+}
 .aspect-square {
   aspect-ratio: 1 / 1;
-}
-.h-0\.5 {
-  height: 0.125rem;
 }
 .h-1 {
   height: 0.25rem;
@@ -2943,9 +2603,6 @@ body {
 .min-h-screen {
   min-height: 100vh;
 }
-.w-0 {
-  width: 0px;
-}
 .w-1 {
   width: 0.25rem;
 }
@@ -2960,9 +2617,6 @@ body {
 }
 .w-12 {
   width: 3rem;
-}
-.w-14 {
-  width: 3.5rem;
 }
 .w-16 {
   width: 4rem;
@@ -3298,10 +2952,25 @@ body {
   margin-right: calc(-0.25rem * var(--tw-space-x-reverse));
   margin-left: calc(-0.25rem * calc(1 - var(--tw-space-x-reverse)));
 }
+.space-x-1 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(0.25rem * var(--tw-space-x-reverse));
+  margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
+}
 .space-x-2 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0;
   margin-right: calc(0.5rem * var(--tw-space-x-reverse));
   margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+.space-x-3 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(0.75rem * var(--tw-space-x-reverse));
+  margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse)));
+}
+.space-x-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(1rem * var(--tw-space-x-reverse));
+  margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
 }
 .space-y-0 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
@@ -3371,9 +3040,6 @@ body {
 }
 .overflow-hidden {
   overflow: hidden;
-}
-.overflow-visible {
-  overflow: visible;
 }
 .overflow-x-auto {
   overflow-x: auto;
@@ -3527,12 +3193,6 @@ body {
 .border-cyan-800\/50 {
   border-color: rgb(21 94 117 / 0.5);
 }
-.border-cyan-900\/20 {
-  border-color: rgb(22 78 99 / 0.2);
-}
-.border-cyan-900\/30 {
-  border-color: rgb(22 78 99 / 0.3);
-}
 .border-emerald-500\/30 {
   border-color: rgb(16 185 129 / 0.3);
 }
@@ -3607,6 +3267,16 @@ body {
   --tw-border-opacity: 1;
   border-color: rgb(22 163 74 / var(--tw-border-opacity, 1));
 }
+.border-indigo-400\/20 {
+  border-color: rgb(129 140 248 / 0.2);
+}
+.border-indigo-400\/30 {
+  border-color: rgb(129 140 248 / 0.3);
+}
+.border-indigo-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(99 102 241 / var(--tw-border-opacity, 1));
+}
 .border-indigo-500\/20 {
   border-color: rgb(99 102 241 / 0.2);
 }
@@ -3646,6 +3316,10 @@ body {
   --tw-border-opacity: 1;
   border-color: rgb(252 165 165 / var(--tw-border-opacity, 1));
 }
+.border-red-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));
+}
 .border-red-500\/20 {
   border-color: rgb(239 68 68 / 0.2);
 }
@@ -3676,6 +3350,14 @@ body {
 }
 .border-slate-700\/50 {
   border-color: rgb(51 65 85 / 0.5);
+}
+.border-slate-800 {
+  --tw-border-opacity: 1;
+  border-color: rgb(30 41 59 / var(--tw-border-opacity, 1));
+}
+.border-slate-900 {
+  --tw-border-opacity: 1;
+  border-color: rgb(15 23 42 / var(--tw-border-opacity, 1));
 }
 .border-transparent {
   border-color: transparent;
@@ -3769,9 +3451,6 @@ body {
   --tw-bg-opacity: 1;
   background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
 }
-.bg-blue-600\/20 {
-  background-color: rgb(37 99 235 / 0.2);
-}
 .bg-blue-600\/30 {
   background-color: rgb(37 99 235 / 0.3);
 }
@@ -3824,15 +3503,9 @@ body {
   --tw-bg-opacity: 1;
   background-color: rgb(8 145 178 / var(--tw-bg-opacity, 1));
 }
-.bg-cyan-600\/20 {
-  background-color: rgb(8 145 178 / 0.2);
-}
 .bg-cyan-800 {
   --tw-bg-opacity: 1;
   background-color: rgb(21 94 117 / var(--tw-bg-opacity, 1));
-}
-.bg-cyan-800\/30 {
-  background-color: rgb(21 94 117 / 0.3);
 }
 .bg-cyan-900\/20 {
   background-color: rgb(22 78 99 / 0.2);
@@ -3958,9 +3631,6 @@ body {
   --tw-bg-opacity: 1;
   background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));
 }
-.bg-green-600\/20 {
-  background-color: rgb(22 163 74 / 0.2);
-}
 .bg-green-600\/30 {
   background-color: rgb(22 163 74 / 0.3);
 }
@@ -3993,6 +3663,9 @@ body {
 .bg-indigo-600 {
   --tw-bg-opacity: 1;
   background-color: rgb(79 70 229 / var(--tw-bg-opacity, 1));
+}
+.bg-indigo-600\/20 {
+  background-color: rgb(79 70 229 / 0.2);
 }
 .bg-muted {
   --tw-bg-opacity: 1;
@@ -4069,10 +3742,6 @@ body {
 .bg-red-600\/90 {
   background-color: rgb(220 38 38 / 0.9);
 }
-.bg-red-700 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));
-}
 .bg-red-900\/20 {
   background-color: rgb(127 29 29 / 0.2);
 }
@@ -4130,6 +3799,9 @@ body {
 }
 .bg-slate-900\/90 {
   background-color: rgb(15 23 42 / 0.9);
+}
+.bg-slate-900\/95 {
+  background-color: rgb(15 23 42 / 0.95);
 }
 .bg-transparent {
   background-color: transparent;
@@ -4236,11 +3908,6 @@ body {
   --tw-gradient-to: rgb(6 182 212 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
-.from-cyan-600 {
-  --tw-gradient-from: #0891b2 var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(8 145 178 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
 .from-cyan-800\/80 {
   --tw-gradient-from: rgb(21 94 117 / 0.8) var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(21 94 117 / 0) var(--tw-gradient-to-position);
@@ -4254,6 +3921,11 @@ body {
 .from-gray-700 {
   --tw-gradient-from: #374151 var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(55 65 81 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.from-gray-900 {
+  --tw-gradient-from: #111827 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(17 24 39 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 .from-gray-900\/95 {
@@ -4330,17 +4002,13 @@ body {
   --tw-gradient-to: rgb(34 211 238 / 0)  var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), rgb(34 211 238 / 0.4) var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
-.via-cyan-700 {
-  --tw-gradient-to: rgb(14 116 144 / 0)  var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), #0e7490 var(--tw-gradient-via-position), var(--tw-gradient-to);
-}
 .via-cyan-900\/10 {
   --tw-gradient-to: rgb(22 78 99 / 0)  var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), rgb(22 78 99 / 0.1) var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
-.via-gray-800\/90 {
+.via-gray-800 {
   --tw-gradient-to: rgb(31 41 55 / 0)  var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), rgb(31 41 55 / 0.9) var(--tw-gradient-via-position), var(--tw-gradient-to);
+  --tw-gradient-stops: var(--tw-gradient-from), #1f2937 var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 .via-transparent {
   --tw-gradient-to: rgb(0 0 0 / 0)  var(--tw-gradient-to-position);
@@ -4370,9 +4038,6 @@ body {
 .to-cyan-600 {
   --tw-gradient-to: #0891b2 var(--tw-gradient-to-position);
 }
-.to-cyan-800 {
-  --tw-gradient-to: #155e75 var(--tw-gradient-to-position);
-}
 .to-emerald-600 {
   --tw-gradient-to: #059669 var(--tw-gradient-to-position);
 }
@@ -4384,9 +4049,6 @@ body {
 }
 .to-gray-900 {
   --tw-gradient-to: #111827 var(--tw-gradient-to-position);
-}
-.to-gray-900\/95 {
-  --tw-gradient-to: rgb(17 24 39 / 0.95) var(--tw-gradient-to-position);
 }
 .to-green-600 {
   --tw-gradient-to: #16a34a var(--tw-gradient-to-position);
@@ -4560,9 +4222,6 @@ body {
 .pb-3 {
   padding-bottom: 0.75rem;
 }
-.pb-4 {
-  padding-bottom: 1rem;
-}
 .pb-6 {
   padding-bottom: 1.5rem;
 }
@@ -4641,9 +4300,6 @@ body {
 .text-\[8px\] {
   font-size: 8px;
 }
-.text-\[9px\] {
-  font-size: 9px;
-}
 .text-base {
   font-size: 1rem;
   line-height: 1.5rem;
@@ -4663,9 +4319,6 @@ body {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
-}
-.font-black {
-  font-weight: 900;
 }
 .font-bold {
   font-weight: 700;
@@ -4699,12 +4352,6 @@ body {
 }
 .tracking-tight {
   letter-spacing: -0.025em;
-}
-.tracking-wide {
-  letter-spacing: 0.025em;
-}
-.tracking-wider {
-  letter-spacing: 0.05em;
 }
 .tracking-widest {
   letter-spacing: 0.1em;
@@ -4743,10 +4390,6 @@ body {
 .text-card-foreground {
   --tw-text-opacity: 1;
   color: rgb(17 24 28 / var(--tw-text-opacity, 1));
-}
-.text-cyan-200 {
-  --tw-text-opacity: 1;
-  color: rgb(165 243 252 / var(--tw-text-opacity, 1));
 }
 .text-cyan-300 {
   --tw-text-opacity: 1;
@@ -5009,10 +4652,6 @@ body {
   --tw-shadow-color: rgb(30 58 138 / 0.1);
   --tw-shadow: var(--tw-shadow-colored);
 }
-.shadow-cyan-700\/20 {
-  --tw-shadow-color: rgb(14 116 144 / 0.2);
-  --tw-shadow: var(--tw-shadow-colored);
-}
 .shadow-emerald-500\/30 {
   --tw-shadow-color: rgb(16 185 129 / 0.3);
   --tw-shadow: var(--tw-shadow-colored);
@@ -5052,9 +4691,6 @@ body {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
   --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
   box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-}
-.ring-blue-500\/30 {
-  --tw-ring-color: rgb(59 130 246 / 0.3);
 }
 .ring-blue-500\/50 {
   --tw-ring-color: rgb(59 130 246 / 0.5);
@@ -5169,9 +4805,6 @@ body {
 .duration-700 {
   transition-duration: 700ms;
 }
-.ease-in-out {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
 .ease-out {
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
@@ -5210,9 +4843,6 @@ body {
 }
 .duration-700 {
   animation-duration: 700ms;
-}
-.ease-in-out {
-  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 .ease-out {
   animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
@@ -5395,9 +5025,6 @@ body {
 .hover\:border-blue-500\/70:hover {
   border-color: rgb(59 130 246 / 0.7);
 }
-.hover\:border-cyan-600\/30:hover {
-  border-color: rgb(8 145 178 / 0.3);
-}
 .hover\:border-cyan-800:hover {
   --tw-border-opacity: 1;
   border-color: rgb(21 94 117 / var(--tw-border-opacity, 1));
@@ -5414,6 +5041,9 @@ body {
   --tw-border-opacity: 1;
   border-color: rgb(71 85 105 / var(--tw-border-opacity, 1));
 }
+.hover\:bg-black\/80:hover {
+  background-color: rgb(0 0 0 / 0.8);
+}
 .hover\:bg-blue-200:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(191 219 254 / var(--tw-bg-opacity, 1));
@@ -5426,10 +5056,6 @@ body {
 }
 .hover\:bg-blue-500\/30:hover {
   background-color: rgb(59 130 246 / 0.3);
-}
-.hover\:bg-blue-600:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
 }
 .hover\:bg-blue-700:hover {
   --tw-bg-opacity: 1;
@@ -5463,9 +5089,6 @@ body {
 .hover\:bg-cyan-700:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(14 116 144 / var(--tw-bg-opacity, 1));
-}
-.hover\:bg-cyan-800\/20:hover {
-  background-color: rgb(21 94 117 / 0.2);
 }
 .hover\:bg-cyan-800\/50:hover {
   background-color: rgb(21 94 117 / 0.5);
@@ -5510,6 +5133,9 @@ body {
 }
 .hover\:bg-gray-700\/70:hover {
   background-color: rgb(55 65 81 / 0.7);
+}
+.hover\:bg-gray-700\/80:hover {
+  background-color: rgb(55 65 81 / 0.8);
 }
 .hover\:bg-gray-800:hover {
   --tw-bg-opacity: 1;
@@ -5558,6 +5184,10 @@ body {
 .hover\:bg-green-900\/40:hover {
   background-color: rgb(20 83 45 / 0.4);
 }
+.hover\:bg-indigo-700:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(67 56 202 / var(--tw-bg-opacity, 1));
+}
 .hover\:bg-pink-500\/30:hover {
   background-color: rgb(236 72 153 / 0.3);
 }
@@ -5571,9 +5201,6 @@ body {
 .hover\:bg-red-200:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(254 202 202 / var(--tw-bg-opacity, 1));
-}
-.hover\:bg-red-500\/20:hover {
-  background-color: rgb(239 68 68 / 0.2);
 }
 .hover\:bg-red-500\/30:hover {
   background-color: rgb(239 68 68 / 0.3);
@@ -5748,10 +5375,6 @@ body {
   --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
-.hover\:shadow-blue-500\/20:hover {
-  --tw-shadow-color: rgb(59 130 246 / 0.2);
-  --tw-shadow: var(--tw-shadow-colored);
-}
 .hover\:ring-2:hover {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
   --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
@@ -5802,6 +5425,9 @@ body {
 .focus\:ring-offset-2:focus {
   --tw-ring-offset-width: 2px;
 }
+.focus\:ring-offset-gray-800:focus {
+  --tw-ring-offset-color: #1f2937;
+}
 .focus-visible\:border-transparent:focus-visible {
   border-color: transparent;
 }
@@ -5840,9 +5466,6 @@ body {
 .group:hover .group-hover\:h-3 {
   height: 0.75rem;
 }
-.group:hover .group-hover\:w-full {
-  width: 100%;
-}
 .group:hover .group-hover\:scale-110 {
   --tw-scale-x: 1.1;
   --tw-scale-y: 1.1;
@@ -5854,13 +5477,6 @@ body {
 }
 .group:hover .group-hover\:opacity-100 {
   opacity: 1;
-}
-.group:hover .group-hover\:opacity-30 {
-  opacity: 0.3;
-}
-.group:hover .group-hover\:shadow-cyan-500\/30 {
-  --tw-shadow-color: rgb(6 182 212 / 0.3);
-  --tw-shadow: var(--tw-shadow-colored);
 }
 .peer:disabled ~ .peer-disabled\:cursor-not-allowed {
   cursor: not-allowed;
@@ -5988,9 +5604,6 @@ body {
 .data-\[state\=open\]\:slide-in-from-top-\[48\%\][data-state="open"] {
   --tw-enter-translate-y: -48%;
 }
-.group[data-state="active"] .group-data-\[state\=active\]\:opacity-60 {
-  opacity: 0.6;
-}
 .dark\:border-gray-100:is(.dark *) {
   --tw-border-opacity: 1;
   border-color: rgb(243 244 246 / var(--tw-border-opacity, 1));
@@ -6102,14 +5715,14 @@ body {
   .md\:col-span-3 {
     grid-column: span 3 / span 3;
   }
-  .md\:mr-1\.5 {
-    margin-right: 0.375rem;
-  }
   .md\:mt-0 {
     margin-top: 0px;
   }
   .md\:block {
     display: block;
+  }
+  .md\:inline {
+    display: inline;
   }
   .md\:hidden {
     display: none;
@@ -6132,14 +5745,17 @@ body {
   .md\:grid-cols-5 {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
+  .md\:grid-cols-7 {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+  .md\:grid-cols-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
   .md\:flex-row {
     flex-direction: row;
   }
   .md\:items-center {
     align-items: center;
-  }
-  .md\:p-3 {
-    padding: 0.75rem;
   }
   .md\:p-6 {
     padding: 1.5rem;
@@ -6236,8 +5852,341 @@ body {
   flex-shrink: 0;
 }
 
+/*!******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/modal-fix.css ***!
+  \******************************************************************************************************************************************************************************************************************************************************************/
+/* Estilos para corrigir o posicionamento dos modais */
+.fixed-modal {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  margin: 0 !important;
+  animation-name: modalFadeIn, modalGlow !important;
+  animation-duration: 0.3s, 2s !important;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1), ease-in-out !important;
+  animation-iteration-count: 1, infinite !important;
+  animation-direction: normal, alternate !important;
+  animation-fill-mode: forwards, none !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.7) !important;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes modalGlow {
+  0% {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.7), 0 0 0 rgba(0, 255, 240, 0);
+  }
+  100% {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 255, 240, 0.3);
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9998;
+}
+
+.card-selector-modal {
+  max-width: 95vw !important;
+  width: 800px !important;
+  max-height: 85vh !important;
+}
+
+.creation-modal {
+  max-width: 95vw !important;
+  width: 500px !important;
+}
+
+.delete-modal {
+  max-width: 95vw !important;
+  width: 450px !important;
+}
+
+.card-view-modal {
+  max-width: 95vw !important;
+  width: 1000px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}
+
+@media (max-width: 768px) {
+  .card-view-modal {
+    width: 95vw !important;
+    height: auto !important;
+    max-height: 85vh !important;
+  }
+  
+  .fixed-modal {
+    overflow: auto !important;
+  }
+}
+/*!****************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/card-modal-enhanced.css ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************/
+/* Estilos aprimorados para o modal de detalhes das cartas - Versão compacta */
+.card-modal-enhanced {
+  background: var(--glass-ultra, rgba(0, 0, 0, 0.95)) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+          backdrop-filter: blur(15px) !important;
+  border: 1px solid var(--primary-neon, #00fff0) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 240, 0.2) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  animation: modal-glow 3s infinite alternate !important;
+  max-width: 900px !important;
+}
+
+@keyframes modal-glow {
+  0% {
+    box-shadow: 0 0 10px rgba(0, 255, 240, 0.2) !important;
+  }
+  100% {
+    box-shadow: 0 0 25px rgba(0, 255, 240, 0.4) !important;
+  }
+}
+
+.card-modal-header {
+  border-bottom: 1px solid rgba(0, 255, 240, 0.3) !important;
+  padding-bottom: var(--space-sm, 0.25rem) !important;
+  margin-bottom: var(--space-sm, 0.25rem) !important;
+}
+
+.card-modal-title {
+  font-family: var(--font-display, 'Orbitron', system-ui, sans-serif) !important;
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  background: linear-gradient(135deg, #ffffff, var(--primary-neon)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-shadow: 0 0 5px rgba(0, 255, 240, 0.5) !important;
+}
+
+.card-modal-close {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.2s ease !important;
+}
+
+.card-modal-close:hover {
+  background: rgba(255, 0, 0, 0.2) !important;
+  border-color: rgba(255, 0, 0, 0.4) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  transform: rotate(90deg) !important;
+}
+
+.card-modal-section {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(0, 255, 240, 0.15) !important;
+  padding: var(--space-sm, 0.25rem) var(--space-md, 0.5rem) !important;
+  margin-bottom: var(--space-sm, 0.25rem) !important;
+}
+
+.card-modal-label {
+  color: rgba(0, 255, 240, 0.8) !important;
+  font-size: 0.7rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  margin-bottom: 1px !important;
+  font-weight: 600 !important;
+}
+
+.card-modal-value {
+  color: white !important;
+  font-weight: 500 !important;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.3) !important;
+}
+
+.card-modal-image {
+  border-radius: 12px !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5) !important;
+  transition: transform 0.3s ease !important;
+}
+
+.card-modal-image:hover {
+  transform: scale(1.02) !important;
+}
+
+.card-modal-button-primary {
+  background: linear-gradient(135deg, var(--primary-neon, #00fff0), #0099ff) !important;
+  color: black !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 0 10px rgba(0, 255, 240, 0.3) !important;
+  transition: all 0.2s ease !important;
+  letter-spacing: 0.02rem !important;
+}
+
+.card-modal-button-primary:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 0 15px rgba(0, 255, 240, 0.5) !important;
+}
+
+.card-modal-button-secondary {
+  background: rgba(0, 255, 240, 0.05) !important;
+  border: 1px solid var(--primary-neon, #00fff0) !important;
+  color: white !important;
+  transition: all 0.2s ease !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 3px rgba(0, 255, 240, 0.5) !important;
+}
+
+.card-modal-button-secondary:hover {
+  background: rgba(0, 255, 240, 0.15) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 0 8px rgba(0, 255, 240, 0.3) !important;
+}
+
+.card-modal-oracle {
+  font-family: var(--font-body, 'Inter', system-ui, sans-serif) !important;
+  line-height: 1.4 !important;
+  color: rgba(255, 255, 255, 1) !important;
+}
+
+.card-modal-oracle p {
+  font-size: 0.85rem !important;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.8) !important;
+  letter-spacing: 0.01rem !important;
+}
+
+.card-modal-badge {
+  background: rgba(0, 255, 240, 0.2) !important;
+  color: white !important;
+  border: 1px solid var(--primary-neon, #00fff0) !important;
+  font-weight: 700 !important;
+  padding: 1px 6px !important;
+  border-radius: 8px !important;
+  font-size: 0.7rem !important;
+  text-shadow: 0 0 3px rgba(0, 255, 240, 0.8) !important;
+  box-shadow: 0 0 5px rgba(0, 255, 240, 0.3) !important;
+}
+
+.card-modal-divider {
+  border-top: 1px solid rgba(0, 255, 240, 0.2) !important;
+  margin: var(--space-xs, 0.125rem) 0 !important;
+  padding-top: var(--space-xs, 0.125rem) !important;
+}
+
+/* Scrollbar personalizada */
+.quantum-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.quantum-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.quantum-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary-neon, #00fff0);
+  border-radius: 3px;
+}
+
+.quantum-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-neon, #8000ff);
+}
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[2].use[1]!./node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js??ruleSet[1].rules[12].oneOf[2].use[2]!./node_modules/next/font/google/target.css?{"path":"app\\layout.tsx","import":"Inter","arguments":[{"subsets":["latin"]}],"variableName":"inter"} ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/* cyrillic-ext */
+@font-face {
+  font-family: '__Inter_e8ce0c';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(/_next/static/media/55c55f0601d81cf3-s.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: '__Inter_e8ce0c';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(/_next/static/media/26a46d62cd723877-s.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: '__Inter_e8ce0c';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(/_next/static/media/97e0cb1ae144a2a9-s.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: '__Inter_e8ce0c';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(/_next/static/media/581909926a08bbc8-s.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: '__Inter_e8ce0c';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(/_next/static/media/df0a9ae256c0569c-s.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: '__Inter_e8ce0c';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(/_next/static/media/8e9860b6e62d6359-s.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: '__Inter_e8ce0c';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(/_next/static/media/e4af272ccee01ff0-s.p.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}@font-face {font-family: '__Inter_Fallback_e8ce0c';src: local("Arial");ascent-override: 90.20%;descent-override: 22.48%;line-gap-override: 0.00%;size-adjust: 107.40%
+}.__className_e8ce0c {font-family: '__Inter_e8ce0c', '__Inter_Fallback_e8ce0c';font-style: normal
+}
+
+/*!****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[2].use[1]!./node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js??ruleSet[1].rules[12].oneOf[2].use[2]!./node_modules/next/font/google/target.css?{"path":"app\\layout.tsx","import":"Orbitron","arguments":[{"subsets":["latin"],"variable":"--font-orbitron"}],"variableName":"orbitron"} ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/* latin */
+@font-face {
+  font-family: '__Orbitron_e087fb';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url(/_next/static/media/9a4ee768fed045da-s.p.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}@font-face {font-family: '__Orbitron_Fallback_e087fb';src: local("Arial");ascent-override: 81.14%;descent-override: 19.50%;line-gap-override: 0.00%;size-adjust: 124.60%
+}.__className_e087fb {font-family: '__Orbitron_e087fb', '__Orbitron_Fallback_e087fb';font-style: normal
+}.__variable_e087fb {--font-orbitron: '__Orbitron_e087fb', '__Orbitron_Fallback_e087fb'
+}
+
 /*!************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/card-collection.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/card-collection.css ***!
   \************************************************************************************************************************************************************************************************************************************************************************/
 /* Estilo para o componente de adição de cartas à coleção */
 
@@ -6319,7 +6268,7 @@ body {
 }
 
 /*!****************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/deck-viewer-compact.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/deck-viewer-compact.css ***!
   \****************************************************************************************************************************************************************************************************************************************************************************/
 /* Estilos compactos específicos para o DeckViewer */
 .quantum-card-dense {
@@ -6447,7 +6396,7 @@ body {
 }
 
 /*!***********************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/compact-layout.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/compact-layout.css ***!
   \***********************************************************************************************************************************************************************************************************************************************************************/
 /* Estilos compactos globais para todo o sistema */
 
@@ -6935,7 +6884,7 @@ body {
 }
 
 /*!******************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/quantum-compact-theme.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/quantum-compact-theme.css ***!
   \******************************************************************************************************************************************************************************************************************************************************************************/
 /* Quantum Compact Theme - Core Styles */
 
@@ -7001,7 +6950,7 @@ body {
 }
 
 /*!******************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/add-card-enhancements.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/add-card-enhancements.css ***!
   \******************************************************************************************************************************************************************************************************************************************************************************/
 /* Estilo refinado para a funcionalidade de adicionar cartas */
 
@@ -7153,7 +7102,7 @@ body {
 }
 
 /*!*****************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/card-search-enhanced.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/card-search-enhanced.css ***!
   \*****************************************************************************************************************************************************************************************************************************************************************************/
 /* Animações e estilos para a pesquisa de cartas */
 
@@ -7377,7 +7326,7 @@ body {
 }
 
 /*!**********************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/dropdown-menu.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/dropdown-menu.css ***!
   \**********************************************************************************************************************************************************************************************************************************************************************/
 /* Estilos para o menu dropdown */
 
@@ -7454,7 +7403,7 @@ body {
   }
 }
 /*!***********************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/dropdown-fixes.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/dropdown-fixes.css ***!
   \***********************************************************************************************************************************************************************************************************************************************************************/
 /* Correções para os dropdowns na página de coleção */
 
@@ -7515,7 +7464,7 @@ body {
   animation: dropdownFadeIn 0.2s ease-out;
 }
 /*!****************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/select-dropdown-fix.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/select-dropdown-fix.css ***!
   \****************************************************************************************************************************************************************************************************************************************************************************/
 /* Correção específica para os dropdowns do Select */
 
@@ -7550,7 +7499,7 @@ body {
   margin-top: 4px !important;
 }
 /*!************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/custom-dropdown.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/custom-dropdown.css ***!
   \************************************************************************************************************************************************************************************************************************************************************************/
 /* Estilos para o dropdown personalizado */
 
@@ -7627,7 +7576,7 @@ body {
   }
 }
 /*!*********************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/dialog-fixes.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/dialog-fixes.css ***!
   \*********************************************************************************************************************************************************************************************************************************************************************/
 /* Correções para z-index dos diálogos */
 
@@ -7665,7 +7614,7 @@ body {
   z-index: 10000 !important;
 }
 /*!******************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/dropdown-overflow-fix.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/dropdown-overflow-fix.css ***!
   \******************************************************************************************************************************************************************************************************************************************************************************/
 /* Correção para o problema de dropdown sendo cortado */
 
@@ -7693,7 +7642,7 @@ body {
   overflow: visible !important;
 }
 /*!***********************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/dropdown-z-fix.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/dropdown-z-fix.css ***!
   \***********************************************************************************************************************************************************************************************************************************************************************/
 /* Correção para o problema de dropdown sendo cortado */
 
@@ -7718,7 +7667,7 @@ body {
   z-index: 9999 !important;
 }
 /*!*******************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/button-fix.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/button-fix.css ***!
   \*******************************************************************************************************************************************************************************************************************************************************************/
 /* Correções para garantir que os botões sejam clicáveis */
 
@@ -7776,7 +7725,7 @@ input[type="checkbox"],
   cursor: pointer;
 }
 /*!*******************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/filter-fix.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/filter-fix.css ***!
   \*******************************************************************************************************************************************************************************************************************************************************************/
 /* Correções específicas para os filtros */
 
@@ -7871,7 +7820,7 @@ input[type="checkbox"] + label {
   pointer-events: none !important;
 }
 /*!*******************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/cyan-theme.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/cyan-theme.css ***!
   \*******************************************************************************************************************************************************************************************************************************************************************/
 /* Tema ciano para a aplicação usando rgba(8, 145, 178, 0.4) como base */
 
@@ -7973,7 +7922,7 @@ input[type="checkbox"] + label {
   opacity: 0.6 !important;
 }
 /*!***********************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/header-compact.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/header-compact.css ***!
   \***********************************************************************************************************************************************************************************************************************************************************************/
 /* Estilos para o header compacto */
 
@@ -8056,7 +8005,7 @@ input[type="checkbox"] + label {
   gap: 0.5rem;
 }
 /*!********************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/nav-compact.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/nav-compact.css ***!
   \********************************************************************************************************************************************************************************************************************************************************************/
 /* Estilos para a navegação compacta */
 
@@ -8135,7 +8084,7 @@ input[type="checkbox"] + label {
   opacity: 1;
 }
 /*!********************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/tab-buttons.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/tab-buttons.css ***!
   \********************************************************************************************************************************************************************************************************************************************************************/
 /* Estilos específicos para os botões de tab */
 
@@ -8155,7 +8104,7 @@ input[type="checkbox"] + label {
   color: white !important;
 }
 /*!************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/responsive-tabs.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/responsive-tabs.css ***!
   \************************************************************************************************************************************************************************************************************************************************************************/
 /* Estilos para tornar as tabs mais responsivas */
 
@@ -8230,7 +8179,7 @@ input[type="checkbox"] + label {
   display: none; /* Chrome, Safari, Opera */
 }
 /*!********************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./styles/tab-spacing.css ***!
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/tab-spacing.css ***!
   \********************************************************************************************************************************************************************************************************************************************************************/
 /* Ajustes adicionais de espaçamento para as tabs */
 

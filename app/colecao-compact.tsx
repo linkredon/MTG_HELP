@@ -12,6 +12,7 @@ import { useCardModal } from "@/contexts/CardModalContext"
 import { useAppContext } from "@/contexts/AppContext"
 import CardViewOptions from "@/components/CardViewOptions"
 import CardList from "@/components/CardList"
+import CardListWithFavorites from "@/components/CardListWithFavorites"
 import SearchCardList from "@/components/SearchCardList"
 import EnhancedSearchCardList from "@/components/EnhancedSearchCardList"
 import { translatePtToEn, cardMatchesSearchTerm } from '@/utils/translationService'

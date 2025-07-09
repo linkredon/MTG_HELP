@@ -1,0 +1,8 @@
+                <CardListWithFavorites
+                    cards={resultadoPesquisa}
+                    onAddCard={adicionarCarta}
+                    showActionButton={true}
+                    actionButtonLabel="Adicionar"
+                    onActionButtonClick={adicionarCarta}
+                    onCardClick={openModal}
+                  />

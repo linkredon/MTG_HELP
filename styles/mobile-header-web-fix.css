@@ -1,0 +1,28 @@
+/* Correções para o header mobile na versão web */
+
+@media (min-width: 1024px) {
+  /* Esconder o header mobile em telas maiores */
+  .mobile-header {
+    display: none;
+  }
+  
+  /* Esconder o botão de navegação mobile em telas maiores */
+  .mobile-nav-toggle {
+    display: none;
+  }
+  
+  /* Esconder o menu de navegação mobile em telas maiores */
+  .mobile-nav-menu {
+    display: none;
+  }
+  
+  /* Esconder o overlay do menu mobile em telas maiores */
+  .mobile-nav-overlay {
+    display: none;
+  }
+  
+  /* Esconder o botão flutuante em telas maiores */
+  .fixed.bottom-20.right-4 {
+    display: none;
+  }
+}

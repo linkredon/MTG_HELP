@@ -1,0 +1,83 @@
+/* Estilos para as abas no tema escuro */
+
+/* Container das abas */
+.mtg-tabs-list {
+  height: 3rem;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background-color: rgba(30, 41, 59, 0.5);
+  padding: 0.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+/* Botões das abas */
+.mtg-tab-trigger {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(209, 213, 219, 0.8);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Estado hover das abas */
+.mtg-tab-trigger:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(55, 65, 81, 0.3);
+}
+
+/* Estado ativo das abas */
+.mtg-tab-trigger[data-state="active"] {
+  background: linear-gradient(to bottom, rgba(79, 70, 229, 0.2), rgba(67, 56, 202, 0.3));
+  color: rgba(99, 102, 241, 1);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 0 0 1px rgba(99, 102, 241, 0.4);
+}
+
+/* Efeito de brilho para abas ativas */
+.mtg-tab-trigger[data-state="active"]::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 1), rgba(99, 102, 241, 0.3));
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+}
+
+/* Efeito de foco */
+.mtg-tab-trigger:focus-visible {
+  outline: none;
+  ring: 2px solid rgba(99, 102, 241, 0.6);
+  ring-offset: 2px;
+}
+
+/* Ícones nas abas */
+.mtg-tab-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Texto nas abas */
+.mtg-tab-text {
+  display: none;
+}
+
+/* Mostrar texto em telas médias e maiores */
+@media (min-width: 768px) {
+  .mtg-tab-text {
+    display: inline;
+  }
+}
