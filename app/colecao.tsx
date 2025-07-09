@@ -180,6 +180,19 @@ export default function Colecao({
   // Usar o contexto global para coleção
   const { currentCollection, adicionarCarta, removerCarta } = useAppContext();
   
+  // Wrapper para removerCarta que aceita string | MTGCard
+  const handleRemoveCard = (card: string | MTGCard) => {
+    if (typeof card === 'string') {
+      // Se for string, precisamos encontrar a carta correspondente na coleção
+      const cardObj = currentCollection?.cards.find(c => c.card.id === card)?.card;
+      if (cardObj) {
+        removerCarta(cardObj);
+      }
+    } else {
+      removerCarta(card);
+    }
+  };
+  
   // Estados para navegação entre tabs da coleção - apenas Pesquisa, Coleção e Estatísticas
   const [tab, setTab] = useState<string>("pesquisa")
   const [busca, setBusca] = useState("")
@@ -1060,7 +1073,7 @@ export default function Colecao({
             <ExpandableCardGrid
               collectionCards={cartasFiltradas}
               onAddCard={adicionarCarta}
-              onRemoveCard={removerCarta}
+              onRemoveCard={handleRemoveCard}
             />
           )}
         </div>

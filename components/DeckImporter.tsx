@@ -1,8 +1,11 @@
 "use client"
 
 import React, { useState } from 'react';
+import '../styles/deck-builder-enhanced.css';
+import '../styles/dropdown-fixes-enhanced.css';
+import '../styles/modal-fix-enhanced.css';
+import '../styles/deck-importer-enhanced.css';
 import { useAppContext } from '@/contexts/AppContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -70,9 +73,36 @@ Sideboard:
 
     setIsImporting(true);
     setImportStatus({ type: null, message: '' });
+    
+    // Verificar se a função importarDeckDeLista existe
+    if (!importarDeckDeLista) {
+      setImportStatus({
+        type: 'error',
+        message: 'Função de importação não disponível'
+      });
+      setIsImporting(false);
+      return;
+    }
 
     try {
-      await importarDeckDeLista(deckList, deckData);
+      // Processar a lista para garantir formato correto
+      const processedList = deckList
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .join('\n');
+      
+      // Adicionar cabeçalhos de seção se não existirem
+      let finalList = processedList;
+      if (!finalList.toLowerCase().includes('mainboard:') && 
+          !finalList.toLowerCase().includes('main deck:') && 
+          !finalList.toLowerCase().includes('sideboard:') && 
+          !finalList.toLowerCase().includes('commander:')) {
+        // Se não tem seções, assume que tudo é mainboard
+        finalList = 'Mainboard:\n' + finalList;
+      }
+      
+      const deckId = await importarDeckDeLista(finalList, deckData);
       
       setImportStatus({
         type: 'success',
@@ -91,7 +121,7 @@ Sideboard:
       setDeckList('');
       
       if (onImportSuccess) {
-        onImportSuccess(''); // We don't have the deck ID immediately
+        onImportSuccess(deckId);
       }
       
       // Close dialog after a brief delay
@@ -101,6 +131,7 @@ Sideboard:
       }, 2000);
       
     } catch (error) {
+      console.error('Erro ao importar deck:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao importar deck';
       setImportStatus({
         type: 'error',
@@ -149,130 +180,134 @@ Sideboard:
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className={`border-gray-600 text-gray-300 hover:bg-gray-700 ${className}`}
+        <button
+          className={`quantum-btn compact ${className}`}
         >
-          <Upload className="w-4 h-4 mr-2" />
+          <Upload className="w-4 h-4" />
           Importar Deck
-        </Button>
+        </button>
       </DialogTrigger>
       
-      <DialogContent className="rounded-lg text-card-foreground bg-gray-800/80 backdrop-blur-xl shadow-2xl overflow-hidden border-0 max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
+      <DialogContent className="quantum-card-dense p-0 max-w-4xl dialog-content max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="p-4 border-b border-gray-700/50">
+          <DialogTitle className="flex items-center gap-2 text-cyan-400">
             <FileText className="w-5 h-5" />
             Importar Lista de Deck
           </DialogTitle>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Informações do Deck */}
-          <div className="space-y-4">
-            <Card className="bg-gray-700/50 border-gray-600">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white text-sm">Informações do Deck</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Nome do Deck *
-                  </label>
-                  <Input
-                    value={deckData.name}
-                    onChange={(e) => setDeckData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Ex: Burn Vermelho"
-                    className="bg-gray-700/50 border-gray-600 text-white"
-                  />
+        <div className="p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Informações do Deck */}
+            <div className="space-y-4">
+              <div className="quantum-card-dense p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Package className="w-4 h-4 text-cyan-400" />
+                  <h3 className="text-sm font-medium text-white">Informações do Deck</h3>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Formato
-                  </label>
-                  <Select 
-                    value={deckData.format} 
-                    onValueChange={(value) => setDeckData(prev => ({ ...prev, format: value }))}
-                  >
-                    <SelectTrigger className="bg-gray-700/50 border-gray-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
+                <div className="space-y-3">
+                  <div>
+                    <label className="mtg-label" htmlFor="deck-name">
+                      Nome do Deck *
+                    </label>
+                    <input
+                      id="deck-name"
+                      type="text"
+                      value={deckData.name}
+                      onChange={(e) => setDeckData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Ex: Burn Vermelho"
+                      className="mtg-input w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="mtg-label" htmlFor="deck-format">
+                      Formato
+                    </label>
+                    <select
+                      id="deck-format"
+                      value={deckData.format}
+                      onChange={(e) => setDeckData(prev => ({ ...prev, format: e.target.value }))}
+                      className="mtg-select w-full"
+                    >
                       {formats.map(format => (
-                        <SelectItem key={format} value={format}>
+                        <option key={format} value={format}>
                           {format}
-                        </SelectItem>
+                        </option>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="mtg-label">
+                      Descrição (opcional)
+                    </label>
+                    <Textarea
+                      value={deckData.description}
+                      onChange={(e) => setDeckData(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Descrição do deck..."
+                      rows={3}
+                      className="mtg-textarea"
+                    />
+                  </div>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Descrição (opcional)
-                  </label>
-                  <Textarea
-                    value={deckData.description}
-                    onChange={(e) => setDeckData(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Descrição do deck..."
-                    rows={3}
-                    className="bg-gray-700/50 border-gray-600 text-white"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Preview das Cartas */}
-            {deckList.trim() && (
-              <Card className="bg-gray-700/50 border-gray-600">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-white text-sm">Preview</CardTitle>
-                </CardHeader>
-                <CardContent>
+              </div>
+              
+              {/* Preview das Cartas */}
+              {deckList.trim() && (
+                <div className="quantum-card-dense p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileText className="w-4 h-4 text-cyan-400" />
+                    <h3 className="text-sm font-medium text-white">Preview</h3>
+                  </div>
+                  
                   <div className="space-y-2">
                     {cardCounts.mainboard > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-300">Deck Principal:</span>
-                        <Badge variant="outline">{cardCounts.mainboard} cartas</Badge>
+                        <span className="text-gray-300 text-sm">Deck Principal:</span>
+                        <Badge className="mtg-badge-primary">{cardCounts.mainboard} cartas</Badge>
                       </div>
                     )}
                     {cardCounts.sideboard > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-300">Sideboard:</span>
-                        <Badge variant="outline">{cardCounts.sideboard} cartas</Badge>
+                        <span className="text-gray-300 text-sm">Sideboard:</span>
+                        <Badge className="mtg-badge-secondary">{cardCounts.sideboard} cartas</Badge>
                       </div>
                     )}
                     {cardCounts.commander > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-300">Commander:</span>
-                        <Badge variant="outline">{cardCounts.commander} cartas</Badge>
+                        <span className="text-gray-300 text-sm">Commander:</span>
+                        <Badge className="mtg-badge-success">{cardCounts.commander} cartas</Badge>
                       </div>
                     )}
-                    <div className="pt-2 border-t border-gray-600">
+                    <div className="pt-2 border-t border-gray-700/50">
                       <div className="flex justify-between items-center font-medium">
                         <span className="text-white">Total:</span>
-                        <Badge>{cardCounts.mainboard + cardCounts.sideboard + cardCounts.commander} cartas</Badge>
+                        <Badge className="bg-cyan-500/20 text-cyan-300 border-0">
+                          {cardCounts.mainboard + cardCounts.sideboard + cardCounts.commander} cartas
+                        </Badge>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-          
-          {/* Lista de Cartas */}
-          <div className="space-y-4">
-            <Card className="bg-gray-700/50 border-gray-600">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white text-sm">Lista de Cartas *</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+                </div>
+              )}
+            </div>
+            
+            {/* Lista de Cartas */}
+            <div className="quantum-card-dense p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-cyan-400" />
+                <h3 className="text-sm font-medium text-white">Lista de Cartas *</h3>
+              </div>
+              
+              <div className="space-y-3">
                 <Textarea
                   value={deckList}
                   onChange={(e) => setDeckList(e.target.value)}
                   placeholder={`Cole sua lista de deck aqui...\n\nExemplo:\n${exampleList}`}
                   rows={12}
-                  className="bg-gray-700/50 border-gray-600 text-white font-mono text-sm"
+                  className="mtg-textarea font-mono text-sm"
                 />
                 
                 <div className="text-xs text-gray-400">
@@ -284,71 +319,54 @@ Sideboard:
                     <li>Uma carta por linha</li>
                   </ul>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        {/* Status da Importação */}
-        {importStatus.type && (
-          <div className={`p-3 rounded-lg border flex items-center gap-2 ${
-            importStatus.type === 'success' 
-              ? 'bg-green-900/20 border-green-600 text-green-300'
-              : 'bg-red-900/20 border-red-600 text-red-300'
-          }`}>
-            {importStatus.type === 'success' ? (
-              <CheckCircle className="w-4 h-4" />
-            ) : (
-              <AlertCircle className="w-4 h-4" />
-            )}
-            <span className="text-sm">{importStatus.message}</span>
+          
+          {/* Status da Importação */}
+          {importStatus.type && (
+            <div className={`mt-4 p-3 rounded-lg border flex items-center gap-2 ${
+              importStatus.type === 'success' 
+                ? 'bg-green-900/20 border-green-600/50 text-green-300'
+                : 'bg-red-900/20 border-red-600/50 text-red-300'
+            }`}>
+              {importStatus.type === 'success' ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <AlertCircle className="w-4 h-4" />
+              )}
+              <span className="text-sm">{importStatus.message}</span>
+            </div>
+          )}
+          
+          {/* Ações */}
+          <div className="flex justify-end gap-2 pt-4 mt-4 border-t border-gray-700/50">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              disabled={isImporting}
+              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleImport}
+              disabled={!deckData.name.trim() || !deckList.trim() || isImporting}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white"
+            >
+              {isImporting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Importando...
+                </>
+              ) : (
+                <>
+                  <Package className="w-4 h-4 mr-2" />
+                  Importar Deck
+                </>
+              )}
+            </Button>
           </div>
-        )}
-        
-        {/* Ações */}
-        <div className="flex justify-end gap-2 pt-4 border-t border-gray-600">
-          <Button
-            variant="outline"
-            onClick={() => setIsOpen(false)}
-            disabled={isImporting}
-            className="border-gray-600 text-gray-300 hover:bg-gray-700"
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleImport}
-            disabled={!deckData.name.trim() || !deckList.trim() || isImporting}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            {isImporting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Importando...
-              </>
-            ) : (
-              <>
-                <Package className="w-4 h-4 mr-2" />
-                Importar Deck
-              </>
-            )}
-          </Button>
-                 <Button
-            onClick={handleImport}
-            disabled={!deckData.name.trim() || !deckList.trim() || isImporting}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            {isImporting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Importando...
-              </>
-            ) : (
-              <>
-                <Package className="w-4 h-4 mr-2" />
-                Importar Deck
-              </>
-            )}
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

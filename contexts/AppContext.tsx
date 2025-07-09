@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { safeLocalStorageSave } from '@/utils/storageUtils';
 import type { MTGCard, UserCollection, CollectionCard, Deck, DeckCard } from '@/types/mtg';
 import { collectionService, deckService, favoriteService } from '@/utils/apiService';
 import { useSession } from 'next-auth/react';
@@ -30,6 +31,7 @@ interface AppContextType {
   removerCartaDoDeck: (deckId: string, cardId: string, category?: 'mainboard' | 'sideboard' | 'commander') => Promise<void>;
   atualizarQuantidadeNoDeck: (deckId: string, cardId: string, novaQuantidade: number, category?: 'mainboard' | 'sideboard' | 'commander') => Promise<void>;
   getCartasUsadasEmDecks: (cardId: string) => Array<{deck: Deck, quantity: number, category: string}>;
+  importarDeckDeLista: (deckList: string, deckData: any) => Promise<string>;
   
   // Favoritos
   favorites: MTGCard[];
@@ -159,19 +161,19 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   // Salvar dados no localStorage quando não estiver autenticado
   useEffect(() => {
     if (!session) {
-      localStorage.setItem('mtg-collections', JSON.stringify(collections));
+      safeLocalStorageSave('mtg-collections', collections);
     }
   }, [collections, session]);
 
   useEffect(() => {
     if (!session) {
-      localStorage.setItem('mtg-decks', JSON.stringify(decks));
+      safeLocalStorageSave('mtg-decks', decks);
     }
   }, [decks, session]);
 
   useEffect(() => {
     if (!session) {
-      localStorage.setItem('mtg-favorites', JSON.stringify(favorites));
+      safeLocalStorageSave('mtg-favorites', favorites);
     }
   }, [favorites, session]);
 
@@ -698,6 +700,88 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     
     return result;
   };
+  
+  // Função para importar deck a partir de uma lista de texto
+  const importarDeckDeLista = async (deckList: string, deckData: any): Promise<string> => {
+    try {
+      // Criar o deck vazio primeiro
+      const deckId = await criarDeck({
+        name: deckData.name,
+        format: deckData.format,
+        description: deckData.description || '',
+        colors: deckData.colors || [],
+        cards: [],
+        isPublic: deckData.isPublic || false,
+        tags: deckData.tags || []
+      });
+      
+      // Processar a lista de cartas
+      const lines = deckList.split('\n').filter(line => line.trim());
+      let currentSection: 'mainboard' | 'sideboard' | 'commander' = 'mainboard';
+      const cardPromises = [];
+      
+      for (const line of lines) {
+        const trimmedLine = line.trim().toLowerCase();
+        
+        // Verificar se é uma linha de seção
+        if (trimmedLine.includes('sideboard')) {
+          currentSection = 'sideboard';
+          continue;
+        }
+        if (trimmedLine.includes('commander')) {
+          currentSection = 'commander';
+          continue;
+        }
+        if (trimmedLine.includes('mainboard') || trimmedLine.includes('main deck')) {
+          currentSection = 'mainboard';
+          continue;
+        }
+        
+        // Verificar se é uma linha de carta
+        const match = line.match(/^(\d+)x?\s+(.+)$/);
+        if (match) {
+          const quantity = parseInt(match[1]);
+          const cardName = match[2].trim();
+          
+          // Buscar a carta na API do Scryfall
+          cardPromises.push(
+            (async () => {
+              try {
+                const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
+                if (response.ok) {
+                  const cardData = await response.json();
+                  // Adicionar a carta ao deck
+                  await adicionarCartaAoDeck(deckId, cardData, currentSection, quantity);
+                  return { success: true, card: cardName };
+                } else {
+                  console.error(`Carta não encontrada: ${cardName}`);
+                  return { success: false, card: cardName };
+                }
+              } catch (error) {
+                console.error(`Erro ao buscar carta ${cardName}:`, error);
+                return { success: false, card: cardName };
+              }
+            })()
+          );
+        }
+      }
+      
+      // Aguardar todas as cartas serem processadas
+      const results = await Promise.allSettled(cardPromises);
+      const failedCards = results
+        .filter(result => result.status === 'fulfilled' && !(result.value as any).success)
+        .map(result => (result.status === 'fulfilled' ? (result.value as any).card : 'Unknown'));
+      
+      if (failedCards.length > 0) {
+        console.warn(`Algumas cartas não foram encontradas: ${failedCards.join(', ')}`);
+      }
+      
+      return deckId;
+    } catch (error) {
+      console.error('Erro ao importar deck:', error);
+      throw new Error('Falha ao importar deck. Verifique o formato da lista.');
+    }
+  };
 
   // ====== FUNÇÕES DE GERENCIAMENTO DE FAVORITOS ======
 
@@ -793,6 +877,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       removerCartaDoDeck,
       atualizarQuantidadeNoDeck,
       getCartasUsadasEmDecks,
+      importarDeckDeLista,
       favorites,
       addFavorite,
       removeFavorite,

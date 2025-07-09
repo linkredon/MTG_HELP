@@ -3,6 +3,9 @@
 import React, { useState, useMemo } from 'react';
 import '../styles/moxfield.css';
 import '../styles/deck-viewer-compact.css';
+import '../styles/deck-builder-enhanced.css';
+import '../styles/deck-viewer-enhanced.css';
+import EnhancedCardDisplay from './EnhancedCardDisplay';
 import { useAppContext } from '@/contexts/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { translatePtToEn, cardMatchesSearchTerm } from '@/utils/translationService';
@@ -30,7 +33,7 @@ interface DeckViewerProps {
 }
 
 const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
-  const { decks, editarDeck, deletarDeck, duplicarDeck, atualizarQuantidadeNoDeck, removerCartaDoDeck } = useAppContext();
+  const { decks, editarDeck, deletarDeck, duplicarDeck, atualizarQuantidadeNoDeck, removerCartaDoDeck, adicionarCartaAoDeck } = useAppContext();
   const { openModal } = useCardModal();
   
   const [editMode, setEditMode] = useState(false);
@@ -126,6 +129,26 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
 
   const handleRemoveCard = (cardId: string, category: 'mainboard' | 'sideboard' | 'commander') => {
     removerCartaDoDeck(deckId, cardId, category);
+  };
+  
+  // Função para mover cartas entre seções do deck
+  const handleMoveCard = (cardId: string, fromCategory: 'mainboard' | 'sideboard' | 'commander', toCategory: 'mainboard' | 'sideboard' | 'commander') => {
+    // Encontrar a carta no deck
+    const card = deck.cards.find(c => c.card.id === cardId && c.category === fromCategory);
+    if (!card) return;
+    
+    // Verificar se a carta já existe na categoria de destino
+    const existingCard = deck.cards.find(c => c.card.id === cardId && c.category === toCategory);
+    
+    if (existingCard) {
+      // Se já existe, aumentar a quantidade e remover da categoria original
+      atualizarQuantidadeNoDeck(deckId, cardId, existingCard.quantity + card.quantity, toCategory);
+      removerCartaDoDeck(deckId, cardId, fromCategory);
+    } else {
+      // Se não existe, adicionar à nova categoria e remover da original
+      adicionarCartaAoDeck(deckId, card.card, toCategory, card.quantity);
+      removerCartaDoDeck(deckId, cardId, fromCategory);
+    }
   };
 
   const exportDeckList = () => {
@@ -329,66 +352,42 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Layout compacto - 3 colunas */}
-      <div className="grid grid-cols-12 gap-2 p-2">
-        {/* Coluna esquerda - Lista de cartas */}
-        <div className="col-span-12 sm:col-span-3 space-y-2" style={{ maxHeight: 'calc(100vh - 140px)', overflow: 'auto' }}>
-          <div className="quantum-card-dense">
-            <div className="text-xs text-center p-1 border-b border-cyan-500/20 mb-2">
-              <span className="text-cyan-400">{stats.unique}</span> cartas únicas • <span className="text-cyan-400">{stats.total}</span> total
+      {/* Layout reorganizado - 2 colunas */}
+      <div className="grid grid-cols-12 gap-4 p-2">
+        {/* Coluna principal - Visualização */}
+        <div className="col-span-12 sm:col-span-8" style={{ maxHeight: 'calc(100vh - 140px)', overflow: 'auto' }}>
+          <div className="quantum-card-dense mb-4">
+            <div className="flex justify-between items-center border-b border-cyan-500/20 p-2">
+              <div>
+                <span className="text-sm font-semibold text-cyan-400">Visualização do Deck</span>
+                <div className="text-xs text-gray-400 mt-1">
+                  <span className="text-cyan-400">{stats.unique}</span> cartas únicas • <span className="text-cyan-400">{stats.total}</span> total
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded-md">Main: {stats.mainboard}</div>
+                {stats.sideboard > 0 && (
+                  <div className="text-xs bg-purple-600/20 text-purple-400 px-2 py-1 rounded-md">Side: {stats.sideboard}</div>
+                )}
+                {stats.commander > 0 && (
+                  <div className="text-xs bg-yellow-600/20 text-yellow-400 px-2 py-1 rounded-md">Cmd: {stats.commander}</div>
+                )}
+              </div>
             </div>
             
-            <DeckCardsList 
-              cards={filteredCards} 
-              onUpdateQuantity={handleUpdateQuantity}
-              onRemoveCard={handleRemoveCard}
-              onCardClick={openModal}
-            />
-          </div>
-        </div>
-
-        {/* Coluna central - Visualização */}
-        <div className="col-span-12 sm:col-span-6" style={{ maxHeight: 'calc(100vh - 140px)', overflow: 'auto' }}>
-          <div className="quantum-card-dense">
-            <VisualCardDisplay 
+            <EnhancedCardDisplay 
               cards={filteredCards} 
               viewMode={viewMode}
               onCardClick={openModal}
+              onMoveCard={handleMoveCard}
+              onUpdateQuantity={handleUpdateQuantity}
+              onRemoveCard={handleRemoveCard}
             />
           </div>
         </div>
 
         {/* Coluna direita - Estatísticas */}
-        <div className="col-span-12 sm:col-span-3 space-y-2" style={{ maxHeight: 'calc(100vh - 140px)', overflow: 'auto' }}>
-          <div className="quantum-card-dense">
-            <div className="flex justify-between items-center border-b border-cyan-500/20 p-1">
-              <span className="text-xs font-semibold text-cyan-400">Distribuição</span>
-            </div>
-            <div className="p-2">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-gray-400">Main Deck</span>
-                <span className="text-white font-mono">{stats.mainboard}</span>
-              </div>
-              {stats.commander > 0 && (
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-gray-400">Commander</span>
-                  <span className="text-white font-mono">{stats.commander}</span>
-                </div>
-              )}
-              {stats.sideboard > 0 && (
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-gray-400">Sideboard</span>
-                  <span className="text-white font-mono">{stats.sideboard}</span>
-                </div>
-              )}
-              <div className="h-px bg-gradient-to-r from-cyan-500/20 via-cyan-400/40 to-cyan-500/20 my-1"></div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-300">Total</span>
-                <span className="text-cyan-400 font-mono font-bold">{stats.total}</span>
-              </div>
-            </div>
-          </div>
-
+        <div className="col-span-12 sm:col-span-4 space-y-4" style={{ maxHeight: 'calc(100vh - 140px)', overflow: 'auto' }}>
           <ManaCurveDisplay manaCurve={stats.manaCurve} />
           <TypeDistributionDisplay cards={deck.cards.filter(c => c.category === 'mainboard')} />
 
@@ -430,190 +429,9 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
   );
 };
 
-// Componente para lista de cartas
-const DeckCardsList: React.FC<{
-  cards: any[];
-  onUpdateQuantity: (cardId: string, category: any, newQuantity: number) => void;
-  onRemoveCard: (cardId: string, category: any) => void;
-  onCardClick: (card: MTGCard) => void;
-}> = ({ cards, onUpdateQuantity, onRemoveCard, onCardClick }) => {
-  if (cards.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <Package className="w-8 h-8 mx-auto mb-2 text-gray-500" />
-        <p className="text-gray-400 text-sm">Nenhuma carta encontrada</p>
-      </div>
-    );
-  }
+// O componente DeckCardsList foi removido pois não é mais necessário
 
-  return (
-    <div className="space-y-2">
-      {cards.map((deckCard) => (
-        <div 
-          key={`${deckCard.card.id}-${deckCard.category}`}
-          className="flex items-center p-2 bg-gray-800/40 rounded border border-gray-700 hover:bg-gray-700/40 transition-colors group"
-        >
-          <div className="w-8 h-11 bg-gray-900 rounded overflow-hidden flex-shrink-0 mr-3">
-            {getImageUrl(deckCard.card, 'small') ? (
-              <Image
-                src={getImageUrl(deckCard.card, 'small')}
-                alt={deckCard.card.name}
-                width={32}
-                height={44}
-                className="object-cover cursor-pointer"
-                onClick={() => onCardClick(deckCard.card)}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
-                {deckCard.card.set_code}
-              </div>
-            )}
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <div 
-              className="text-sm text-gray-200 font-medium truncate cursor-pointer hover:text-blue-400" 
-              onClick={() => onCardClick(deckCard.card)}
-            >
-              {deckCard.card.name}
-            </div>
-            <div className="text-xs text-gray-400">{deckCard.card.type_line}</div>
-          </div>
-          
-          <div className="flex items-center gap-1">
-            <span className="text-sm text-gray-300 w-6 text-center">{deckCard.quantity}</span>
-            <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onUpdateQuantity(deckCard.card.id, deckCard.category, deckCard.quantity - 1)}
-                className="h-6 w-6 p-0 text-gray-400 hover:text-white"
-              >
-                <Minus className="h-3 w-3" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onUpdateQuantity(deckCard.card.id, deckCard.category, deckCard.quantity + 1)}
-                className="h-6 w-6 p-0 text-gray-400 hover:text-white"
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onRemoveCard(deckCard.card.id, deckCard.category)}
-                className="h-6 w-6 p-0 text-gray-400 hover:text-red-400"
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// Componente para visualização das cartas
-const VisualCardDisplay: React.FC<{
-  cards: any[];
-  viewMode: 'grid' | 'spoiler';
-  onCardClick: (card: MTGCard) => void;
-}> = ({ cards, viewMode, onCardClick }) => {
-  if (cards.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <Package className="w-12 h-12 mx-auto mb-3 text-gray-500 opacity-70" />
-        <p className="text-gray-400 text-sm">Nenhuma carta para exibir</p>
-      </div>
-    );
-  }
-
-  if (viewMode === 'grid') {
-    return (
-      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {cards.map((deckCard) => (
-          <div key={`${deckCard.card.id}-${deckCard.category}`} className="relative group">
-            <div className="aspect-[63/88] bg-gray-800/80 rounded-md overflow-hidden shadow-md">
-              {getImageUrl(deckCard.card) ? (
-                <Image
-                  src={getImageUrl(deckCard.card)}
-                  alt={deckCard.card.name}
-                  fill
-                  className="object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                  onClick={() => onCardClick(deckCard.card)}
-                  sizes="120px"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-2">
-                  {deckCard.card.name}
-                </div>
-              )}
-              
-              <div className="absolute top-1 left-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-md">
-                {deckCard.quantity}
-              </div>
-              
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-white text-xs font-medium truncate">{deckCard.card.name}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      {cards.map((deckCard) => (
-        <div 
-          key={`${deckCard.card.id}-${deckCard.category}`} 
-          className="flex gap-3 p-3 bg-gray-800/40 rounded border border-gray-700 hover:bg-gray-700/40 transition-colors"
-        >
-          <div className="w-16 h-22 bg-gray-800 rounded overflow-hidden flex-shrink-0">
-            {getImageUrl(deckCard.card, 'normal') ? (
-              <Image
-                src={getImageUrl(deckCard.card, 'normal')}
-                alt={deckCard.card.name}
-                width={64}
-                height={88}
-                className="object-cover cursor-pointer"
-                onClick={() => onCardClick(deckCard.card)}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-1">
-                {deckCard.card.name}
-              </div>
-            )}
-          </div>
-          
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-gray-100 font-bold cursor-pointer hover:text-blue-400" onClick={() => onCardClick(deckCard.card)}>
-                {deckCard.card.name}
-              </h3>
-              <Badge className="bg-blue-600/30 text-blue-200 border-0 text-xs">
-                {deckCard.quantity}x
-              </Badge>
-            </div>
-            
-            <p className="text-gray-300 text-sm">{deckCard.card.type_line}</p>
-            <p className="text-gray-400 text-xs">{deckCard.card.set_name}</p>
-            
-            {deckCard.card.oracle_text && (
-              <div className="mt-2 p-2 bg-gray-800/70 rounded text-gray-300 text-xs">
-                {deckCard.card.oracle_text.substring(0, 200)}
-                {deckCard.card.oracle_text.length > 200 && '...'}
-              </div>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
+// O componente VisualCardDisplay foi substituído pelo EnhancedCardDisplay
 
 // Componente para curva de mana
 const ManaCurveDisplay: React.FC<{ manaCurve: Record<number, number> }> = ({ manaCurve }) => {

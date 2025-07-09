@@ -1,0 +1,132 @@
+/* Estilos aprimorados para o construtor de decks */
+
+.mtg-section {
+  @apply space-y-6;
+}
+
+.mtg-section-title {
+  @apply text-2xl font-bold text-white mb-2;
+}
+
+.mtg-section-subtitle {
+  @apply text-gray-400;
+}
+
+.mtg-card {
+  @apply bg-gray-800/40 border border-gray-700/50 rounded-lg shadow-md overflow-hidden;
+}
+
+.mtg-card-header {
+  @apply flex items-center gap-3 p-4 border-b border-gray-700/50;
+}
+
+.mtg-card-icon {
+  @apply w-5 h-5 text-cyan-400;
+}
+
+.mtg-card-content {
+  @apply space-y-1;
+}
+
+.mtg-card-title {
+  @apply text-lg font-medium text-white;
+}
+
+.mtg-card-description {
+  @apply text-sm text-gray-400;
+}
+
+.mtg-card-mini {
+  @apply bg-gray-800/40 border border-gray-700/50 rounded-lg p-3 hover:bg-gray-800/60 transition-colors;
+}
+
+.mtg-grid {
+  @apply grid grid-cols-1 md:grid-cols-4 gap-4;
+}
+
+.mtg-grid-2 {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.mtg-grid-3 {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+}
+
+.mtg-grid-wide {
+  @apply grid grid-cols-1 lg:grid-cols-4 gap-4;
+}
+
+.mtg-label {
+  @apply block text-sm font-medium text-gray-300 mb-2;
+}
+
+.mtg-input {
+  @apply w-full bg-gray-900/50 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20;
+}
+
+.mtg-textarea {
+  @apply w-full bg-gray-900/50 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20;
+}
+
+.mtg-select {
+  @apply w-full bg-gray-900/50 border border-gray-700 rounded-md text-white;
+}
+
+.mtg-dropdown {
+  @apply bg-gray-800 border border-gray-700 text-white;
+}
+
+.mtg-dropdown-item {
+  @apply text-white hover:bg-gray-700;
+}
+
+.mtg-badge {
+  @apply inline-flex items-center px-2 py-1 rounded-md text-xs font-medium;
+}
+
+.mtg-badge-primary {
+  @apply bg-cyan-500/20 text-cyan-400;
+}
+
+.mtg-badge-secondary {
+  @apply bg-gray-700 text-gray-300;
+}
+
+.mtg-badge-success {
+  @apply bg-green-500/20 text-green-400;
+}
+
+.mtg-tabs {
+  @apply flex border-b border-gray-700;
+}
+
+.mtg-tab {
+  @apply flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-400 hover:text-white border-b-2 border-transparent;
+}
+
+.mtg-tab-active {
+  @apply text-cyan-400 border-cyan-400;
+}
+
+.mtg-status {
+  @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.mtg-status-info {
+  @apply bg-blue-500/20 text-blue-400;
+}
+
+.mtg-form-group {
+  @apply space-y-1;
+}
+
+/* Compatibilidade com o tema quantum */
+.quantum-card .mtg-card {
+  @apply bg-gray-900/50;
+}
+
+.quantum-card .mtg-input,
+.quantum-card .mtg-textarea,
+.quantum-card .mtg-select {
+  @apply bg-black/40;
+}

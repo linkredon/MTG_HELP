@@ -3,10 +3,23 @@
 export interface MTGCard {
   id: string
   name: string
-  type_line?: string
-  oracle_text?: string
+  set_name?: string
+  set_code?: string
+  collector_number?: string
+  rarity?: string
   mana_cost?: string
   cmc?: number
+  type_line?: string
+  oracle_text?: string
+  power?: string
+  toughness?: string
+  artist?: string
+  lang?: string
+  released_at?: string
+  color_identity?: string[]
+  foil?: boolean
+  nonfoil?: boolean
+  prints_search_uri?: string
   image_uris?: {
     small?: string
     normal?: string
@@ -15,12 +28,26 @@ export interface MTGCard {
     art_crop?: string
     border_crop?: string
   }
-  rarity?: string
-  set?: string
-  set_name?: string
-  set_code?: string
-  collector_number?: string
-  released_at?: string
+  prices?: {
+    usd: string | null;
+    usd_foil: string | null;
+    eur: string | null;
+    eur_foil: string | null;
+    tix: string | null;
+  }
+  card_faces?: Array<{
+    name: string
+    mana_cost?: string
+    type_line?: string
+    oracle_text?: string
+    power?: string
+    toughness?: string
+    image_uris?: {
+      normal?: string
+      small?: string
+      art_crop?: string
+    }
+  }>
 }
 
 export interface CollectionCard {

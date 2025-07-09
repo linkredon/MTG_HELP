@@ -1,0 +1,27 @@
+/* Correções para modais */
+
+/* Garantir que o overlay não bloqueie a interação com o modal */
+.dialog-overlay {
+  pointer-events: none !important;
+}
+
+/* Garantir que o conteúdo do modal tenha interação */
+[role="dialog"] {
+  pointer-events: auto !important;
+  z-index: 9999 !important;
+}
+
+/* Centralizar o modal na tela */
+.dialog-content {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}
+
+/* Garantir que o modal tenha um z-index maior que o overlay */
+.quantum-card-dense[role="dialog"] {
+  z-index: 9999 !important;
+}

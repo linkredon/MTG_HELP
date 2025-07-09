@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import RecentAchievements from "@/components/RecentAchievements"
+import type { User } from '@/types/mtg'
 import { 
   BarChart3, 
   TrendingUp, 
@@ -29,7 +31,8 @@ import {
   Sparkles,
   Shield,
   Flame,
-  Gem
+  Gem,
+  ChevronRight
 } from "lucide-react"
 
 export default function Painel({ onNavigate }: { onNavigate: (tab: string) => void }) {
@@ -84,40 +87,23 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
     };
   }, [currentCollection, decks]);
 
-  const [achievements] = useState<any[]>([
-    { 
-      name: "Colecionador Iniciante", 
-      description: "Possua 100 cartas únicas", 
-      progress: 100, 
-      icon: Star,
-      rarity: "common",
-      unlockedAt: "2024-01-15"
-    },
-    { 
-      name: "Construtor de Decks", 
-      description: "Crie 5 decks diferentes", 
-      progress: 80, 
-      icon: Target,
-      rarity: "uncommon",
-      unlockedAt: null
-    },
-    { 
-      name: "Explorador de Cores", 
-      description: "Tenha cartas de todas as 5 cores", 
-      progress: 100, 
-      icon: Trophy,
-      rarity: "rare",
-      unlockedAt: "2024-02-03"
-    },
-    { 
-      name: "Veterano MTG", 
-      description: "Possua cartas de 10 expansões diferentes", 
-      progress: 75, 
-      icon: Award,
-      rarity: "mythic",
-      unlockedAt: null
-    }
-  ])
+  // Mock do usuário para demonstração
+  const [mockUser] = useState<User>({
+    id: '1',
+    name: 'Usuário Teste',
+    email: 'usuario@teste.com',
+    avatar: '/avatar.jpg',
+    joinedAt: '2023-01-15T12:00:00Z',
+    collectionsCount: 3,
+    totalCards: 120,
+    achievements: [
+      'first_login',
+      'first_card',
+      'collector_novice',
+      'collector_apprentice',
+      'first_deck'
+    ]
+  });
 
   const [recentCards] = useState<any[]>([
     { 
@@ -314,77 +300,10 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
         </div>
 
         {/* Conquistas */}
-        <div className="quantum-card-dense">
-          <div className="p-3 border-b border-gray-800">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1.5">
-                <Award className="w-4 h-4 text-yellow-400" />
-                <h3 className="text-sm font-medium text-white">Conquistas</h3>
-              </div>
-              <span className="text-xs bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded text-[10px]">
-                {achievements.filter(a => a.progress === 100).length} desbloqueadas
-              </span>
-            </div>
-          </div>
-          
-          <div className="p-2">
-            {achievements.slice(0, 3).map((achievement, index) => {
-              const Icon = achievement.icon
-              const isUnlocked = achievement.progress === 100
-              
-              return (
-                <div 
-                  key={index} 
-                  className="p-2 hover:bg-gray-800/50 rounded-sm transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className={`w-6 h-6 rounded-md flex items-center justify-center 
-                      ${isUnlocked 
-                        ? 'bg-yellow-500/20 text-yellow-400' 
-                        : 'bg-gray-700/30 text-gray-500'}`
-                    }>
-                      <Icon className="w-3.5 h-3.5" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h4 className={`text-xs font-medium truncate
-                          ${isUnlocked ? 'text-white' : 'text-gray-400'}`
-                        }>
-                          {achievement.name}
-                        </h4>
-                        <Badge className={`h-4 text-[8px] px-1 ml-1 
-                          ${achievement.rarity === 'mythic' ? 'bg-red-900/30 text-red-400 hover:bg-red-900/40' :
-                          achievement.rarity === 'rare' ? 'bg-yellow-900/30 text-yellow-400 hover:bg-yellow-900/40' :
-                          achievement.rarity === 'uncommon' ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/40' :
-                          'bg-green-900/30 text-green-400 hover:bg-green-900/40'}`
-                        }>
-                          {achievement.rarity}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex-1 bg-gray-800/70 rounded-full h-1">
-                          <div 
-                            className={`h-1 rounded-full transition-all 
-                              ${isUnlocked 
-                                ? 'bg-yellow-500/80' 
-                                : 'bg-blue-500/70'}`
-                            }
-                            style={{ width: `${achievement.progress}%` }}
-                          />
-                        </div>
-                        <span className="text-[10px] text-gray-500 font-medium">
-                          {achievement.progress}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        <RecentAchievements 
+          user={mockUser} 
+          onViewAll={() => onNavigate('achievements')} 
+        />
       </div>
 
       {/* Cartas Recentes e Distribuição */}

@@ -1,0 +1,172 @@
+/* Estilos aprimorados para o visualizador de decks */
+
+/* Melhorar a aparência dos cards */
+.deck-card {
+  transition: all 0.2s ease;
+  border: 1px solid rgba(75, 85, 99, 0.4);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.deck-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Estilos para as seções do deck */
+.deck-section {
+  margin-bottom: 24px;
+}
+
+.deck-section-title {
+  font-size: 1rem;
+  font-weight: 500;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.mainboard-section .deck-section-title {
+  border-bottom: 1px solid rgba(74, 222, 128, 0.5);
+  color: rgba(74, 222, 128, 0.9);
+}
+
+.sideboard-section .deck-section-title {
+  border-bottom: 1px solid rgba(168, 85, 247, 0.5);
+  color: rgba(168, 85, 247, 0.9);
+}
+
+.commander-section .deck-section-title {
+  border-bottom: 1px solid rgba(234, 179, 8, 0.5);
+  color: rgba(234, 179, 8, 0.9);
+}
+
+/* Botões de movimentação de cartas */
+.move-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.move-button:hover {
+  transform: scale(1.1);
+}
+
+.move-button-main {
+  background-color: rgba(74, 222, 128, 0.2);
+  color: rgba(74, 222, 128, 0.9);
+}
+
+.move-button-main:hover {
+  background-color: rgba(74, 222, 128, 0.8);
+  color: white;
+}
+
+.move-button-side {
+  background-color: rgba(168, 85, 247, 0.2);
+  color: rgba(168, 85, 247, 0.9);
+}
+
+.move-button-side:hover {
+  background-color: rgba(168, 85, 247, 0.8);
+  color: white;
+}
+
+.move-button-commander {
+  background-color: rgba(234, 179, 8, 0.2);
+  color: rgba(234, 179, 8, 0.9);
+}
+
+.move-button-commander:hover {
+  background-color: rgba(234, 179, 8, 0.8);
+  color: white;
+}
+
+/* Melhorar a aparência dos badges de quantidade */
+.quantity-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background-color: rgba(59, 130, 246, 0.8);
+  color: white;
+  font-weight: bold;
+  font-size: 0.75rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Melhorar a aparência dos controles de quantidade */
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  background-color: rgba(55, 65, 81, 0.8);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.quantity-button {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.quantity-button-decrease {
+  color: rgba(239, 68, 68, 0.8);
+}
+
+.quantity-button-decrease:hover {
+  background-color: rgba(239, 68, 68, 0.8);
+  color: white;
+}
+
+.quantity-button-increase {
+  color: rgba(74, 222, 128, 0.8);
+}
+
+.quantity-button-increase:hover {
+  background-color: rgba(74, 222, 128, 0.8);
+  color: white;
+}
+
+/* Melhorar a aparência das estatísticas */
+.stats-card {
+  background-color: rgba(17, 24, 39, 0.4);
+  border: 1px solid rgba(75, 85, 99, 0.5);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.stats-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(209, 213, 219, 1);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(75, 85, 99, 0.5);
+}
+
+.stats-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: rgba(59, 130, 246, 0.9);
+}
+
+.stats-label {
+  font-size: 0.75rem;
+  color: rgba(156, 163, 175, 1);
+}
