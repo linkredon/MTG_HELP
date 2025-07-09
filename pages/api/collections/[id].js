@@ -1,6 +1,5 @@
 import { getSession } from 'next-auth/react';
-import dbConnect from '@/lib/dbConnect';
-import Collection from '@/models/Collection';
+import { collectionService } from '@/utils/awsApiService';
 
 export default async function handler(req, res) {
   const session = await getSession({ req });
@@ -11,45 +10,53 @@ export default async function handler(req, res) {
 
   const { id } = req.query;
 
-  await dbConnect();
-
   try {
-    // Verificar se a coleção existe e pertence ao usuário
-    const collection = await Collection.findOne({ 
-      _id: id,
-      user: session.user.id
-    });
-
-    if (!collection) {
-      return res.status(404).json({ success: false, message: 'Coleção não encontrada' });
-    }
-
     // GET - Obter detalhes da coleção
     if (req.method === 'GET') {
+      const result = await collectionService.getById(id);
+      
+      if (!result.success) {
+        return res.status(404).json({ success: false, message: 'Coleção não encontrada' });
+      }
+      
+      // Verificar se a coleção pertence ao usuário
+      if (result.data.userId !== session.user.id) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+      }
+      
       res.status(200).json({
         success: true,
-        data: collection
+        data: result.data
       });
     } 
     // PUT - Atualizar coleção
     else if (req.method === 'PUT') {
       const { name, description, backgroundImage } = req.body;
-
-      if (name) collection.name = name;
-      if (description !== undefined) collection.description = description;
-      if (backgroundImage !== undefined) collection.backgroundImage = backgroundImage;
-
-      await collection.save();
-
+      
+      const updates = {};
+      if (name) updates.name = name;
+      if (description !== undefined) updates.description = description;
+      if (backgroundImage !== undefined) updates.backgroundImage = backgroundImage;
+      
+      const result = await collectionService.update(id, updates);
+      
+      if (!result.success) {
+        return res.status(404).json({ success: false, message: 'Erro ao atualizar coleção' });
+      }
+      
       res.status(200).json({
         success: true,
-        data: collection
+        data: result.data
       });
     } 
     // DELETE - Excluir coleção
     else if (req.method === 'DELETE') {
-      await collection.remove();
-
+      const result = await collectionService.delete(id);
+      
+      if (!result.success) {
+        return res.status(404).json({ success: false, message: 'Erro ao excluir coleção' });
+      }
+      
       res.status(200).json({
         success: true,
         data: {}

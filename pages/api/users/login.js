@@ -1,5 +1,7 @@
-import dbConnect from '@/lib/dbConnect';
-import User from '@/models/User';
+import { dynamoDb, TABLES } from '@/lib/awsConfig';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,8 +9,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    await dbConnect();
-
     const { email, password } = req.body;
 
     // Verificar se o email e senha foram fornecidos
@@ -16,29 +16,44 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: 'Por favor, forneça email e senha' });
     }
 
-    // Verificar se o usuário existe
-    const user = await User.findOne({ email }).select('+password');
-
-    if (!user) {
+    // Buscar usuário pelo email
+    const params = {
+      TableName: TABLES.USERS,
+      IndexName: 'EmailIndex',
+      KeyConditionExpression: 'email = :email',
+      ExpressionAttributeValues: {
+        ':email': email
+      }
+    };
+    
+    const result = await dynamoDb.send(new QueryCommand(params));
+    
+    if (!result.Items || result.Items.length === 0) {
       return res.status(401).json({ success: false, message: 'Credenciais inválidas' });
     }
-
+    
+    const user = result.Items[0];
+    
     // Verificar se a senha está correta
-    const isMatch = await user.matchPassword(password);
-
+    const isMatch = await bcrypt.compare(password, user.password);
+    
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Credenciais inválidas' });
     }
-
+    
     // Gerar token JWT
-    const token = user.getSignedJwtToken();
-
+    const token = jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET || 'seu_segredo_jwt_muito_seguro',
+      { expiresIn: process.env.JWT_EXPIRE || '30d' }
+    );
+    
     // Retornar resposta com token
     res.status(200).json({
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         avatar: user.avatar,
