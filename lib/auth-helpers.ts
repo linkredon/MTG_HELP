@@ -1,5 +1,5 @@
 import { Amplify } from 'aws-amplify';
-import { Auth } from '@aws-amplify/auth';
+import { signIn as amplifySignIn, signUp as amplifySignUp, confirmSignUp as amplifyConfirmSignUp, signOut as amplifySignOut, getCurrentUser as amplifyGetCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { isDemoMode, authenticateDemoUser, registerDemoUser } from './demoMode';
 
 // Definindo tipos para os retornos das funções de autenticação
@@ -16,11 +16,20 @@ export async function signIn(email: string, password: string): Promise<AuthResul
     }
 
     // Login real com Amplify Auth
-    const user = await Auth.signIn(email, password);
-    return {
-      success: true,
-      user
-    };
+    const { isSignedIn, nextStep } = await amplifySignIn({ username: email, password });
+    
+    if (isSignedIn) {
+      const userInfo = await amplifyGetCurrentUser();
+      return {
+        success: true,
+        user: userInfo
+      };
+    } else {
+      return {
+        success: false,
+        error: `Autenticação incompleta: ${nextStep.signInStep}`
+      };
+    }
   } catch (error) {
     console.error('Erro ao fazer login:', error);
     return {
@@ -39,18 +48,20 @@ export async function signUp(email: string, password: string, name: string): Pro
     }
 
     // Registro real com Amplify Auth
-    const { user } = await Auth.signUp({
+    const { isSignUpComplete, userId, nextStep } = await amplifySignUp({
       username: email,
       password,
-      attributes: {
-        email,
-        name
+      options: {
+        userAttributes: {
+          email,
+          name
+        }
       }
     });
     
     return {
       success: true,
-      user
+      user: { userId, username: email, attributes: { email, name } }
     };
   } catch (error) {
     console.error('Erro ao registrar usuário:', error);
@@ -66,12 +77,17 @@ export async function confirmSignUp(email: string, code: string): Promise<AuthRe
   try {
     // Em modo de demonstração, sempre retorna sucesso
     if (isDemoMode()) {
-      return { success: true };
+      return { success: true, user: null };
     }
 
-    await Auth.confirmSignUp(email, code);
+    const { isSignUpComplete, nextStep } = await amplifyConfirmSignUp({
+      username: email,
+      confirmationCode: code
+    });
+    
     return {
-      success: true
+      success: isSignUpComplete,
+      user: null
     };
   } catch (error) {
     console.error('Erro ao confirmar registro:', error);
@@ -88,12 +104,13 @@ export async function signOut(): Promise<AuthResult> {
     // Em modo de demonstração, apenas limpa o localStorage
     if (isDemoMode()) {
       localStorage.removeItem('demo-user');
-      return { success: true };
+      return { success: true, user: null };
     }
 
-    await Auth.signOut();
+    await amplifySignOut();
     return {
-      success: true
+      success: true,
+      user: null
     };
   } catch (error) {
     console.error('Erro ao fazer logout:', error);
@@ -119,11 +136,23 @@ export async function getCurrentUser(): Promise<AuthResult> {
       throw new Error('Usuário não autenticado');
     }
 
-    const user = await Auth.currentAuthenticatedUser();
-    return {
-      success: true,
-      user
-    };
+    try {
+      const userInfo = await amplifyGetCurrentUser();
+      const session = await fetchAuthSession();
+      
+      return {
+        success: true,
+        user: {
+          ...userInfo,
+          attributes: session.tokens?.idToken?.payload || {}
+        }
+      };
+    } catch {
+      return {
+        success: false,
+        error: 'Usuário não autenticado'
+      };
+    }
   } catch (error) {
     console.error('Erro ao obter usuário atual:', error);
     return {

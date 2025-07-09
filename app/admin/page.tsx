@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Auth } from '@aws-amplify/auth';
-import { API } from '@aws-amplify/api';
-import { graphqlOperation } from '@aws-amplify/api-graphql';
+import { Amplify } from 'aws-amplify';
+import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
+import { generateClient } from 'aws-amplify/api';
 import { listUsers } from '../../src/graphql/queries';
 import { createUser, updateUser, deleteUser } from '../../src/graphql/mutations';
 
@@ -14,15 +14,20 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Cliente API para GraphQL
+  const client = generateClient();
+
   // Verificar se o usuário atual é um administrador
   useEffect(() => {
     const checkAdmin = async () => {
       try {
-        const user = await Auth.currentAuthenticatedUser();
-        const groups = user.signInUserSession.accessToken.payload['cognito:groups'] || [];
-        const isUserAdmin = groups.includes('Admin') || user.attributes['custom:role'] === 'admin';
+        const { username, userId, signInDetails } = await getCurrentUser();
+        const session = await fetchAuthSession();
+        const groups = session.tokens?.accessToken?.payload['cognito:groups'] || [];
+        const attributes = signInDetails?.attributes || {};
+        const isUserAdmin = groups.includes('Admin') || attributes['custom:role'] === 'admin';
         
-        setCurrentUser(user);
+        setCurrentUser({ username, userId });
         setIsAdmin(isUserAdmin);
         
         if (isUserAdmin) {
@@ -42,7 +47,9 @@ export default function AdminPage() {
   // Buscar todos os usuários
   const fetchUsers = async () => {
     try {
-      const result = await API.graphql(graphqlOperation(listUsers));
+      const result = await client.graphql({
+        query: listUsers
+      });
       setUsers(result.data.listUsers.items);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
@@ -53,7 +60,10 @@ export default function AdminPage() {
   // Criar um novo usuário
   const handleCreateUser = async (userData) => {
     try {
-      await API.graphql(graphqlOperation(createUser, { input: userData }));
+      await client.graphql({
+        query: createUser,
+        variables: { input: userData }
+      });
       fetchUsers();
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
@@ -64,7 +74,10 @@ export default function AdminPage() {
   // Atualizar um usuário existente
   const handleUpdateUser = async (id, userData) => {
     try {
-      await API.graphql(graphqlOperation(updateUser, { input: { id, ...userData } }));
+      await client.graphql({
+        query: updateUser,
+        variables: { input: { id, ...userData } }
+      });
       fetchUsers();
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
@@ -75,7 +88,10 @@ export default function AdminPage() {
   // Excluir um usuário
   const handleDeleteUser = async (id) => {
     try {
-      await API.graphql(graphqlOperation(deleteUser, { input: { id } }));
+      await client.graphql({
+        query: deleteUser,
+        variables: { input: { id } }
+      });
       fetchUsers();
     } catch (error) {
       console.error('Erro ao excluir usuário:', error);
