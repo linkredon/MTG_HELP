@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { safeLocalStorageSave } from '@/utils/storageUtils';
 import type { MTGCard, UserCollection, CollectionCard, Deck, DeckCard } from '@/types/mtg';
-import { collectionService, deckService, favoriteService } from '@/utils/apiService';
+import { collectionService, deckService, favoriteService } from '@/utils/awsApiService';
 import { useSession } from 'next-auth/react';
 
 interface AppContextType {
