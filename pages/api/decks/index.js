@@ -1,6 +1,5 @@
 import { getSession } from 'next-auth/react';
-import dbConnect from '@/lib/dbConnect';
-import Deck from '@/models/Deck';
+import { deckService } from '@/utils/awsApiService';
 
 export default async function handler(req, res) {
   const session = await getSession({ req });
@@ -9,17 +8,19 @@ export default async function handler(req, res) {
     return res.status(401).json({ success: false, message: 'Não autorizado' });
   }
 
-  await dbConnect();
-
   // GET - Listar todos os decks do usuário
   if (req.method === 'GET') {
     try {
-      const decks = await Deck.find({ user: session.user.id });
+      const result = await deckService.getAll();
+      
+      if (!result.success) {
+        return res.status(500).json({ success: false, message: 'Erro ao buscar decks' });
+      }
       
       res.status(200).json({
         success: true,
-        count: decks.length,
-        data: decks
+        count: result.data.length,
+        data: result.data
       });
     } catch (error) {
       console.error('Erro ao buscar decks:', error);
@@ -31,18 +32,23 @@ export default async function handler(req, res) {
     try {
       const { name, description, format, colors } = req.body;
       
-      const deck = await Deck.create({
+      const deckData = {
         name,
         description,
         format,
         colors: colors || [],
-        user: session.user.id,
         cards: []
-      });
+      };
+      
+      const result = await deckService.create(deckData);
+      
+      if (!result.success) {
+        return res.status(500).json({ success: false, message: 'Erro ao criar deck' });
+      }
       
       res.status(201).json({
         success: true,
-        data: deck
+        data: result.data
       });
     } catch (error) {
       console.error('Erro ao criar deck:', error);

@@ -1,6 +1,5 @@
 import { getSession } from 'next-auth/react';
-import dbConnect from '@/lib/dbConnect';
-import Favorite from '@/models/Favorite';
+import { favoriteService } from '@/utils/awsApiService';
 
 export default async function handler(req, res) {
   const session = await getSession({ req });
@@ -9,17 +8,19 @@ export default async function handler(req, res) {
     return res.status(401).json({ success: false, message: 'Não autorizado' });
   }
 
-  await dbConnect();
-
   // GET - Listar todos os favoritos do usuário
   if (req.method === 'GET') {
     try {
-      const favorites = await Favorite.find({ user: session.user.id });
+      const result = await favoriteService.getAll();
+      
+      if (!result.success) {
+        return res.status(500).json({ success: false, message: 'Erro ao buscar favoritos' });
+      }
       
       res.status(200).json({
         success: true,
-        count: favorites.length,
-        data: favorites
+        count: result.data.length,
+        data: result.data
       });
     } catch (error) {
       console.error('Erro ao buscar favoritos:', error);
@@ -31,29 +32,18 @@ export default async function handler(req, res) {
     try {
       const { card } = req.body;
       
-      // Verificar se a carta já está nos favoritos
-      const existingFavorite = await Favorite.findOne({
-        user: session.user.id,
-        'card.id': card.id
-      });
+      const result = await favoriteService.add(card);
       
-      if (existingFavorite) {
+      if (!result.success) {
         return res.status(400).json({
           success: false,
-          message: 'Carta já está nos favoritos'
+          message: result.message || 'Erro ao adicionar favorito'
         });
       }
       
-      // Adicionar aos favoritos
-      const favorite = await Favorite.create({
-        user: session.user.id,
-        card,
-        addedAt: new Date()
-      });
-      
       res.status(201).json({
         success: true,
-        data: favorite
+        data: result.data
       });
     } catch (error) {
       console.error('Erro ao adicionar favorito:', error);
