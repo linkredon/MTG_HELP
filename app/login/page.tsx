@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/utils/apiService';
+import { signIn, signUp } from '@/lib/auth-helpers';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,37 +21,24 @@ export default function LoginPage() {
     try {
       if (isLogin) {
         // Login
-        const result = await signIn('credentials', {
-          redirect: false,
-          email,
-          password,
-        });
+        const result = await signIn(email, password);
 
-        if (result?.error) {
-          setError('Email ou senha inválidos');
+        if (!result.success) {
+          setError(result.error || 'Email ou senha inválidos');
         } else {
           router.push('/');
           router.refresh();
         }
       } else {
         // Registro
-        const response = await authService.register({
-          name,
-          email,
-          password,
-        });
+        const result = await signUp(email, password, name);
 
-        if (response.success) {
+        if (result.success) {
           // Login automático após registro
-          await signIn('credentials', {
-            redirect: false,
-            email,
-            password,
-          });
-          router.push('/');
-          router.refresh();
+          setError('Conta criada! Verifique seu email para confirmar o registro.');
+          setIsLogin(true);
         } else {
-          setError(response.message || 'Erro ao registrar usuário');
+          setError(result.error || 'Erro ao registrar usuário');
         }
       }
     } catch (error: any) {

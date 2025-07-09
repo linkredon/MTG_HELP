@@ -57,10 +57,10 @@ async function fetchApi<T>(
 
 // Serviços de autenticação
 export const authService = {
-  register: (userData: any) => fetchApi<any>('/users/register', 'POST', userData),
-  login: (credentials: any) => fetchApi<any>('/users/login', 'POST', credentials),
-  getProfile: () => fetchApi<any>('/users/me'),
-  updateProfile: (userData: any) => fetchApi<any>('/users/me', 'PUT', userData),
+  register: (userData: any) => fetchApi<any>('/auth/register', 'POST', userData),
+  login: (credentials: any) => fetchApi<any>('/auth/login', 'POST', credentials),
+  getProfile: () => fetchApi<any>('/auth/me'),
+  updateProfile: (userData: any) => fetchApi<any>('/auth/me', 'PUT', userData),
 };
 
 // Serviços de coleção

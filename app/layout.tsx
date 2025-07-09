@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, Orbitron } from 'next/font/google'
 import './globals.css'
+import '../lib/amplifyClient' // Importar configuração do Amplify
 import '../styles/card-collection.css'
 import '../styles/deck-viewer-compact.css'
 import '../styles/compact-layout.css'
