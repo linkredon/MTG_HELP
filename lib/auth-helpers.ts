@@ -85,10 +85,17 @@ export async function confirmSignUp(email: string, code: string): Promise<AuthRe
       confirmationCode: code
     });
     
-    return {
-      success: isSignUpComplete,
-      user: null
-    };
+    if (isSignUpComplete) {
+      return {
+        success: true,
+        user: null
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Confirmação incompleta'
+      };
+    }
   } catch (error) {
     console.error('Erro ao confirmar registro:', error);
     return {
