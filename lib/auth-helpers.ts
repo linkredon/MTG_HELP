@@ -40,40 +40,67 @@ export async function signIn(email: string, password: string): Promise<AuthResul
 }
 
 // Função para registro
-export async function signUp(email: string, password: string, name: string): Promise<AuthResult> {
+export async function signUp(email: string, password: string, name: string, isAdmin: boolean = false): Promise<AuthResult> {
   try {
+    console.log('Iniciando registro de usuário:', { email, name, isAdmin });
+    
     // Verificar se estamos em modo de demonstração
     if (isDemoMode()) {
+      console.log('Modo de demonstração ativado, usando registerDemoUser');
       return registerDemoUser({ name, email, password });
     }
 
-    // Registro real com Amplify Auth
-    const { isSignUpComplete, userId, nextStep } = await amplifySignUp({
-      username: email,
-      password,
-      options: {
-        userAttributes: {
-          email,
-          name
-        },
-        // Configurar para auto-confirmar o usuário (apenas para desenvolvimento)
-        autoSignIn: true
-      }
-    });
+    console.log('Registrando usuário com Amplify Auth...');
     
-    // Tentar auto-confirmar o usuário (apenas para desenvolvimento)
+    // Registro real com Amplify Auth
     try {
-      await amplifyConfirmSignUp({
+      const signUpResult = await amplifySignUp({
         username: email,
-        confirmationCode: '000000' // Código fictício para tentar auto-confirmação
+        password,
+        options: {
+          userAttributes: {
+            email,
+            name,
+            // Adicionar atributo personalizado para administrador
+            'custom:role': isAdmin ? 'admin' : 'user'
+          },
+          // Configurar para auto-confirmar o usuário (apenas para desenvolvimento)
+          autoSignIn: true
+        }
       });
-    } catch (confirmError) {
-      console.log('Auto-confirmação não funcionou, mas isso é esperado');
+      
+      console.log('Resultado do registro:', signUpResult);
+      const { isSignUpComplete, userId, nextStep } = signUpResult;
+    
+    // Verificar se o usuário precisa de confirmação
+    if (nextStep && nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
+      console.log('Usuário precisa confirmar o registro. Tentando auto-confirmar...');
+      
+      try {
+        // Tentar auto-confirmar o usuário (apenas para desenvolvimento)
+        await amplifyConfirmSignUp({
+          username: email,
+          confirmationCode: '000000' // Código fictício para tentar auto-confirmação
+        });
+        console.log('Auto-confirmação bem-sucedida!');
+      } catch (confirmError) {
+        console.log('Auto-confirmação não funcionou:', confirmError);
+        
+        // Tentar definir o usuário como confirmado via AWS CLI ou Admin API
+        console.log('Você pode confirmar manualmente o usuário no console do AWS Cognito');
+      }
+    } else {
+      console.log('Usuário não precisa de confirmação ou já está confirmado');
+    }
+    
+    } catch (signUpError) {
+      console.error('Erro durante o registro com Amplify:', signUpError);
+      throw signUpError;
     }
     
     return {
       success: true,
-      user: { userId, username: email, attributes: { email, name } }
+      user: { userId, username: email, attributes: { email, name, 'custom:role': isAdmin ? 'admin' : 'user' } }
     };
   } catch (error) {
     console.error('Erro ao registrar usuário:', error);
