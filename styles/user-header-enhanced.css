@@ -1,0 +1,77 @@
+/* Estilos aprimorados para o UserHeader */
+
+.mtg-user-trigger {
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.mtg-user-trigger:hover {
+  background-color: rgba(30, 41, 59, 0.5);
+}
+
+.mtg-user-trigger:active {
+  transform: scale(0.98);
+}
+
+/* Efeito de brilho para o logo */
+.mtg-logo-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.mtg-logo-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  z-index: 1;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Animação para o menu dropdown */
+.mtg-dropdown-menu {
+  animation: fadeInDown 0.2s ease-out forwards;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Efeito de hover para os botões de ação */
+.mtg-action-button {
+  transition: all 0.2s ease;
+}
+
+.mtg-action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.mtg-action-button:active {
+  transform: translateY(1px);
+}
+
+/* Efeito de brilho para o contador de notificações */
+.mtg-notification-badge {
+  box-shadow: 0 0 8px rgba(79, 70, 229, 0.6);
+}
+
+/* Efeito de gradiente para o header */
+.mtg-header {
+  background: linear-gradient(to right, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(99, 102, 241, 0.1);
+}

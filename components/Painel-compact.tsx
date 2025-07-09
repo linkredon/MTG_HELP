@@ -38,6 +38,8 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
   const handleQuickAction = (action: string) => {
     if (action === 'add-card') {
       onNavigate('colecao');
+    } else if (action === 'favorites') {
+      onNavigate('favoritos');
     } else {
       alert(`A funcionalidade "${action}" está em desenvolvimento.`);
     }

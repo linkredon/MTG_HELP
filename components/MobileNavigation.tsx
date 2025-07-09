@@ -22,9 +22,9 @@ import {
 import type { User } from '@/types/mtg';
 
 interface MobileNavigationProps {
-  user: User | null
   activeTab: string
   onTabChange: (tab: string) => void
+  user?: User | null
   onLogout?: () => void
   onLogin?: () => void
 }
@@ -45,6 +45,7 @@ const MobileNavigation = ({
     { id: 'painel', label: 'Dashboard', icon: Grid3X3 },
     { id: 'colecao', label: 'Coleção', icon: Library },
     { id: 'decks', label: 'Deck Builder', icon: Hammer },
+    { id: 'favoritos', label: 'Favoritos', icon: Heart },
     { id: 'regras', label: 'Regras', icon: BookOpen },
     { id: 'extras', label: 'Recursos', icon: Sparkles }
   ]

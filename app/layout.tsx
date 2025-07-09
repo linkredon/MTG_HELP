@@ -23,13 +23,15 @@ import '../styles/tab-buttons.css'
 import '../styles/responsive-tabs.css'
 import '../styles/tab-spacing.css'
 import { AppProvider } from '@/contexts/AppContext'
+import { FavoritesProvider } from '@/contexts/FavoritesContext'
 import CardModalWrapper from '@/components/CardModalWrapper'
+import ClientLayout from './layout.client'
 
 const inter = Inter({ subsets: ['latin'] })
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' })
 
 export const metadata: Metadata = {
-  title: 'MTG Coleção - Gerenciador de Cartas Magic',
+  title: 'MTG Helper - Gerenciador de Cartas Magic',
   description: 'Gerencie sua coleção de cartas Magic: The Gathering',
 }
 
@@ -42,11 +44,15 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${inter.className} ${orbitron.variable} quantum-compact compact-app`}>
-        <AppProvider>
-          <CardModalWrapper>
-            {children}
-          </CardModalWrapper>
-        </AppProvider>
+        <ClientLayout>
+          <AppProvider>
+            <FavoritesProvider>
+              <CardModalWrapper>
+                {children}
+              </CardModalWrapper>
+            </FavoritesProvider>
+          </AppProvider>
+        </ClientLayout>
       </body>
     </html>
   )
