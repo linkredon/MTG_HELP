@@ -1,8 +1,13 @@
 import { Auth } from 'aws-amplify';
 import { isDemoMode, authenticateDemoUser, registerDemoUser } from './demoMode';
 
+// Definindo tipos para os retornos das funções de autenticação
+type AuthResult = 
+  | { success: true; user: any }
+  | { success: false; error: string };
+
 // Função para login
-export async function signIn(email: string, password: string) {
+export async function signIn(email: string, password: string): Promise<AuthResult> {
   try {
     // Verificar se estamos em modo de demonstração
     if (isDemoMode()) {
@@ -25,7 +30,7 @@ export async function signIn(email: string, password: string) {
 }
 
 // Função para registro
-export async function signUp(email: string, password: string, name: string) {
+export async function signUp(email: string, password: string, name: string): Promise<AuthResult> {
   try {
     // Verificar se estamos em modo de demonstração
     if (isDemoMode()) {
@@ -56,7 +61,7 @@ export async function signUp(email: string, password: string, name: string) {
 }
 
 // Função para confirmar registro (se necessário)
-export async function confirmSignUp(email: string, code: string) {
+export async function confirmSignUp(email: string, code: string): Promise<AuthResult> {
   try {
     // Em modo de demonstração, sempre retorna sucesso
     if (isDemoMode()) {
@@ -77,7 +82,7 @@ export async function confirmSignUp(email: string, code: string) {
 }
 
 // Função para logout
-export async function signOut() {
+export async function signOut(): Promise<AuthResult> {
   try {
     // Em modo de demonstração, apenas limpa o localStorage
     if (isDemoMode()) {
@@ -99,7 +104,7 @@ export async function signOut() {
 }
 
 // Função para obter usuário atual
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<AuthResult> {
   try {
     // Em modo de demonstração, retorna o usuário do localStorage
     if (isDemoMode()) {
