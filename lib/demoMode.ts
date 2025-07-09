@@ -90,8 +90,10 @@ export const initDemoData = () => {
   localStorage.setItem('demo-user', JSON.stringify(demoUser));
 };
 
+import { AuthResult } from './auth-helpers';
+
 // Função para autenticar usuário de demonstração
-export const authenticateDemoUser = (email: string, password: string) => {
+export const authenticateDemoUser = (email: string, password: string): AuthResult => {
   // Em modo de demonstração, aceitar qualquer email/senha
   if (isDemoMode()) {
     return {
@@ -106,7 +108,7 @@ export const authenticateDemoUser = (email: string, password: string) => {
 };
 
 // Função para registrar usuário de demonstração
-export const registerDemoUser = (userData: { name: string, email: string, password: string }) => {
+export const registerDemoUser = (userData: { name: string, email: string, password: string }): AuthResult => {
   if (isDemoMode()) {
     return {
       success: true,

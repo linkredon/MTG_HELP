@@ -3,7 +3,7 @@ import { signIn as amplifySignIn, signUp as amplifySignUp, confirmSignUp as ampl
 import { isDemoMode, authenticateDemoUser, registerDemoUser } from './demoMode';
 
 // Definindo tipos para os retornos das funções de autenticação
-type AuthResult = 
+export type AuthResult = 
   | { success: true; user: any }
   | { success: false; error: string };
 
