@@ -3282,6 +3282,252 @@
 .card-modal-enhanced .deck-selector-compact .space-y-3 {
   margin-top: 0 !important;
 }
+/*!******************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/mobile-header-web-fix.css ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************/
+/* Correções para o header mobile na versão web */
+
+@media (min-width: 1024px) {
+  /* Esconder o header mobile em telas maiores */
+  .mobile-header {
+    display: none;
+  }
+  
+  /* Esconder o botão de navegação mobile em telas maiores */
+  .mobile-nav-toggle {
+    display: none;
+  }
+  
+  /* Esconder o menu de navegação mobile em telas maiores */
+  .mobile-nav-menu {
+    display: none;
+  }
+  
+  /* Esconder o overlay do menu mobile em telas maiores */
+  .mobile-nav-overlay {
+    display: none;
+  }
+  
+  /* Esconder o botão flutuante em telas maiores */
+  .fixed.bottom-20.right-4 {
+    display: none;
+  }
+}
+/*!*****************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/user-header-enhanced.css ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************/
+/* Estilos aprimorados para o UserHeader */
+
+.mtg-user-trigger {
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.mtg-user-trigger:hover {
+  background-color: rgba(30, 41, 59, 0.5);
+}
+
+.mtg-user-trigger:active {
+  transform: scale(0.98);
+}
+
+/* Efeito de brilho para o logo */
+.mtg-logo-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.mtg-logo-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  z-index: 1;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Animação para o menu dropdown */
+.mtg-dropdown-menu {
+  animation: fadeInDown 0.2s ease-out forwards;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Efeito de hover para os botões de ação */
+.mtg-action-button {
+  transition: all 0.2s ease;
+}
+
+.mtg-action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.mtg-action-button:active {
+  transform: translateY(1px);
+}
+
+/* Efeito de brilho para o contador de notificações */
+.mtg-notification-badge {
+  box-shadow: 0 0 8px rgba(79, 70, 229, 0.6);
+}
+
+/* Efeito de gradiente para o header */
+.mtg-header {
+  background: linear-gradient(to right, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(99, 102, 241, 0.1);
+}
+/*!************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/tabs-dark-theme.css ***!
+  \************************************************************************************************************************************************************************************************************************************************************************/
+/* Estilos para as abas no tema escuro */
+
+/* Container das abas */
+.mtg-tabs-list {
+  height: 3rem;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background-color: rgba(30, 41, 59, 0.5);
+  padding: 0.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+/* Botões das abas */
+.mtg-tab-trigger {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(209, 213, 219, 0.8);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Estado hover das abas */
+.mtg-tab-trigger:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(55, 65, 81, 0.3);
+}
+
+/* Estado ativo das abas */
+.mtg-tab-trigger[data-state="active"] {
+  background: linear-gradient(to bottom, rgba(79, 70, 229, 0.2), rgba(67, 56, 202, 0.3));
+  color: rgba(99, 102, 241, 1);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 0 0 1px rgba(99, 102, 241, 0.4);
+}
+
+/* Efeito de brilho para abas ativas */
+.mtg-tab-trigger[data-state="active"]::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 1), rgba(99, 102, 241, 0.3));
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+}
+
+/* Efeito de foco */
+.mtg-tab-trigger:focus-visible {
+  outline: none;
+  ring: 2px solid rgba(99, 102, 241, 0.6);
+  ring-offset: 2px;
+}
+
+/* Ícones nas abas */
+.mtg-tab-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Texto nas abas */
+.mtg-tab-text {
+  display: none;
+}
+
+/* Mostrar texto em telas médias e maiores */
+@media (min-width: 768px) {
+  .mtg-tab-text {
+    display: inline;
+  }
+}
+/*!******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/favorites.css ***!
+  \******************************************************************************************************************************************************************************************************************************************************************/
+/* Estilos para a funcionalidade de favoritos */
+
+@keyframes ping-slow {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.animate-ping-slow {
+  animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.favorite-card {
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.favorite-card:hover {
+  transform: translateY(-4px);
+}
+
+.favorite-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+}
+
+.favorite-button-active {
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+}
+
+/* Efeito de brilho para cartas favoritas */
+.favorite-card-glow {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
 /*!******************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[12].oneOf[12].use[3]!./styles/mtg-print.css ***!
   \******************************************************************************************************************************************************************************************************************************************************************/
