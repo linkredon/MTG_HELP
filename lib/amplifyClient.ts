@@ -1,6 +1,17 @@
 import { Amplify } from 'aws-amplify';
-import awsconfig from '../src/aws-exports';
+import { getAmplifyConfig } from './demoMode';
 
-Amplify.configure(awsconfig);
+// Usar configurações do ambiente ou do arquivo aws-exports.js
+let config;
+try {
+  // Tentar importar aws-exports.js se existir
+  const awsconfig = require('../src/aws-exports').default;
+  config = awsconfig;
+} catch (e) {
+  // Usar configurações do ambiente
+  config = getAmplifyConfig();
+}
+
+Amplify.configure(config);
 
 export default Amplify;
