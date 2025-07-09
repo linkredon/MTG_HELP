@@ -1,0 +1,7 @@
+{
+  "AMPLIFY_API_ENDPOINT": "https://tgjs5yokcrexbjcijkmpsxpboi.appsync-api.us-east-1.amazonaws.com/graphql",
+  "AMPLIFY_API_KEY": "da2-zkfmwqyrvfa43pono2uqis7hpe",
+  "AMPLIFY_AUTH_USER_POOL_ID": "us-east-1_xp6aEKHJp",
+  "AMPLIFY_AUTH_USER_POOL_WEB_CLIENT_ID": "2kabivqe0q5kvv2e79lhh4eb4c",
+  "AMPLIFY_REGION": "us-east-1"
+}
