@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Auth } from 'aws-amplify';
-import { API, graphqlOperation } from 'aws-amplify';
+import { Auth } from '@aws-amplify/auth';
+import { API } from '@aws-amplify/api';
+import { graphqlOperation } from '@aws-amplify/api-graphql';
 import { listUsers } from '../../src/graphql/queries';
 import { createUser, updateUser, deleteUser } from '../../src/graphql/mutations';
 
