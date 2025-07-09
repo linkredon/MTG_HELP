@@ -360,12 +360,16 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         
         if (cardInCollection.quantity > 1) {
           // Atualizar quantidade
-          await collectionService.updateCard(currentCollectionId, cardInCollection._id, {
-            quantity: cardInCollection.quantity - 1
-          });
+          if (cardInCollection._id) {
+            await collectionService.updateCard(currentCollectionId, cardInCollection._id, {
+              quantity: cardInCollection.quantity - 1
+            });
+          }
         } else {
           // Remover carta
-          await collectionService.removeCard(currentCollectionId, cardInCollection._id);
+          if (cardInCollection._id) {
+            await collectionService.removeCard(currentCollectionId, cardInCollection._id);
+          }
         }
         
         // Atualizar estado local
@@ -507,7 +511,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           
           // Atualizar estado local
           const updatedResponse = await deckService.getById(response.data.id);
-          if (updatedResponse.success) {
+          if (updatedResponse.success && updatedResponse.data) {
             setDecks(prev => [...prev, updatedResponse.data]);
             return updatedResponse.data.id;
           }
@@ -600,7 +604,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const cardInDeck = deck.cards.find(c => c.card.id === cardId && c.category === category);
         if (!cardInDeck) return;
         
-        await deckService.removeCard(deckId, cardInDeck._id);
+        if (cardInDeck._id) {
+          await deckService.removeCard(deckId, cardInDeck._id);
+        }
         
         // Atualizar estado local
         const response = await deckService.getById(deckId);
@@ -647,7 +653,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const cardInDeck = deck.cards.find(c => c.card.id === cardId && c.category === category);
         if (!cardInDeck) return;
         
-        await deckService.updateCard(deckId, cardInDeck._id, { quantity: novaQuantidade });
+        if (cardInDeck._id) {
+          await deckService.updateCard(deckId, cardInDeck._id, { quantity: novaQuantidade });
+        }
         
         // Atualizar estado local
         const response = await deckService.getById(deckId);
