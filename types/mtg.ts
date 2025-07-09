@@ -3,8 +3,10 @@
 export interface MTGCard {
   id: string
   name: string
+  printed_name?: string  // Nome impresso (para cartas em outros idiomas)
   set_name: string
   set_code: string
+  set?: string  // Código do set (alias para set_code)
   collector_number: string
   rarity: string
   mana_cost?: string
@@ -52,6 +54,8 @@ export interface CollectionCard {
   quantity: number
   condition: string
   foil: boolean
+  language?: string
+  _id?: string  // ID interno usado pelo sistema
 }
 
 export interface UserCollection {
@@ -128,6 +132,7 @@ export interface DeckCard {
   card: MTGCard;
   quantity: number;
   category: 'mainboard' | 'sideboard' | 'commander';
+  _id?: string;  // ID interno usado pelo sistema
 }
 
 export interface Deck {

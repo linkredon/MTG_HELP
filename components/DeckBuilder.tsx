@@ -398,26 +398,31 @@ const DeckBuilder: React.FC<DeckBuilderProps> = ({ deckId, onSave, onCancel }) =
   }, [existingDeck, atualizarQuantidadeNoDeck]);
   
   // Salvar deck
-  const handleSaveDeck = useCallback(() => {
+  const handleSaveDeck = useCallback(async () => {
     if (!deckInfo.name.trim()) {
       alert('Por favor, digite um nome para o deck');
       return;
     }
     
-    if (existingDeck) {
-      editarDeck(existingDeck.id, deckInfo);
-      if (onSave) onSave(existingDeck.id);
-    } else {
-      const newDeckId = criarDeck({
-        name: deckInfo.name,
-        format: deckInfo.format,
-        description: deckInfo.description,
-        colors: deckInfo.colors,
-        cards: [],
-        isPublic: deckInfo.isPublic,
-        tags: deckInfo.tags
-      });
-      if (onSave) onSave(newDeckId);
+    try {
+      if (existingDeck) {
+        await editarDeck(existingDeck.id, deckInfo);
+        if (onSave) onSave(existingDeck.id);
+      } else {
+        const newDeckId = await criarDeck({
+          name: deckInfo.name,
+          format: deckInfo.format,
+          description: deckInfo.description,
+          colors: deckInfo.colors,
+          cards: [],
+          isPublic: deckInfo.isPublic,
+          tags: deckInfo.tags
+        });
+        if (onSave) onSave(newDeckId);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar deck:', error);
+      alert('Ocorreu um erro ao salvar o deck. Tente novamente.');
     }
   }, [deckInfo, existingDeck, editarDeck, criarDeck, onSave]);
   

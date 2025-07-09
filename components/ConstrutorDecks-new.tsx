@@ -70,42 +70,54 @@ export default function ConstrutorDecks() {
   }
 
   // Função para criar novo deck
-  const handleCreateDeck = () => {
+  const handleCreateDeck = async () => {
     if (!newDeckData.name.trim()) {
       showNotification('error', 'Nome do deck é obrigatório')
       return
     }
 
-    const deckId = criarDeck({
-      name: newDeckData.name,
-      format: newDeckData.format,
-      colors: newDeckData.colors,
-      cards: [],
-      isPublic: false,
-      tags: [],
-      description: newDeckData.description
-    })
-    setNewDeckData({ name: '', format: 'Standard', colors: [], description: '' })
-    setIsCreatingDeck(false)
-    showNotification('success', 'Deck criado com sucesso!')
-    
-    // Ir direto para o builder do novo deck
-    setSelectedDeck(deckId)
-    setViewMode('builder')
-  }
-
-  const handleDuplicateDeck = (deckId: string) => {
-    const newDeckId = duplicarDeck(deckId)
-    showNotification('success', 'Deck duplicado com sucesso!')
-  }
-
-  const handleDeleteDeck = (deckId: string) => {
-    deletarDeck(deckId)
-    if (selectedDeck === deckId) {
-      setSelectedDeck(null)
-      setViewMode('list')
+    try {
+      const deckId = await criarDeck({
+        name: newDeckData.name,
+        format: newDeckData.format,
+        colors: newDeckData.colors,
+        cards: [],
+        isPublic: false,
+        tags: [],
+        description: newDeckData.description
+      })
+      setNewDeckData({ name: '', format: 'Standard', colors: [], description: '' })
+      setIsCreatingDeck(false)
+      showNotification('success', 'Deck criado com sucesso!')
+      
+      // Ir direto para o builder do novo deck
+      setSelectedDeck(deckId)
+      setViewMode('builder')
+    } catch (error) {
+      showNotification('error', 'Erro ao criar deck')
     }
-    showNotification('success', 'Deck deletado com sucesso!')
+  }
+
+  const handleDuplicateDeck = async (deckId: string) => {
+    try {
+      const newDeckId = await duplicarDeck(deckId)
+      showNotification('success', 'Deck duplicado com sucesso!')
+    } catch (error) {
+      showNotification('error', 'Erro ao duplicar deck')
+    }
+  }
+
+  const handleDeleteDeck = async (deckId: string) => {
+    try {
+      await deletarDeck(deckId)
+      if (selectedDeck === deckId) {
+        setSelectedDeck(null)
+        setViewMode('list')
+      }
+      showNotification('success', 'Deck deletado com sucesso!')
+    } catch (error) {
+      showNotification('error', 'Erro ao deletar deck')
+    }
   }
 
   // Filtrar e ordenar decks
