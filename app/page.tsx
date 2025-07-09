@@ -17,6 +17,13 @@ import '../styles/mobile-header-web-fix.css'
 import '../styles/user-header-enhanced.css'
 import '../styles/tabs-dark-theme.css'
 import '../styles/favorites.css'
+import '../styles/achievements.css'
+import '../styles/achievements-enhanced.css'
+import '../styles/deck-builder-enhanced.css'
+import '../styles/card-search-enhanced.css'
+import '../styles/dropdown-fixes-enhanced.css'
+import '../styles/modal-fix-enhanced.css'
+import '../styles/deck-importer-enhanced.css'
 import { useState } from 'react'
 import Script from 'next/script'
 import Colecao from './colecao-compact'
@@ -25,6 +32,7 @@ import ConstrutorDecks from '@/components/ConstrutorDecks-compact'
 import Regras from '@/components/Regras-compact'
 import Spoiler from '@/components/Spoiler-compact'
 import Favoritos from '@/components/Favoritos-compact'
+import AchievementsPage from './achievements/page'
 import UserHeader from '@/components/UserHeader'
 import MobileNavigation from '@/components/MobileNavigation'
 import { useAppContext } from '@/contexts/AppContext'
@@ -46,7 +54,8 @@ import {
   Target,
   Star,
   Heart,
-  ExternalLink
+  ExternalLink,
+  Trophy
 } from "lucide-react"
 import type { MTGCard } from '@/types/mtg';
 
@@ -89,6 +98,12 @@ export default function Home() {
       label: 'Favoritos',
       icon: Heart,
       component: <Favoritos />
+    },
+    {
+      id: 'achievements',
+      label: 'Conquistas',
+      icon: Trophy,
+      component: <AchievementsPage />
     },
     {
       id: 'spoiler',
@@ -267,7 +282,7 @@ export default function Home() {
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="mtg-tabs-list grid grid-cols-3 md:grid-cols-7 gap-2 mb-6">
+          <TabsList className="mtg-tabs-list grid grid-cols-4 md:grid-cols-8 gap-2 mb-6">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (

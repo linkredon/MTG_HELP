@@ -157,7 +157,7 @@ export default function ExpandableCardGrid({
                 <div className="flex justify-between items-start">
                   <h4 className="font-medium text-sm truncate">{card.name}</h4>
                   <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
-                    {card.set_name} ({card.set_code.toUpperCase()})
+                    {card.set_name} {card.set_code && `(${card.set_code.toUpperCase()})`}
                   </span>
                 </div>
                 <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
@@ -268,7 +268,7 @@ export default function ExpandableCardGrid({
                 ))}
               </div>
               <div className="flex justify-between items-center mt-2 text-xs text-gray-400">
-                <div>{card.set_name} ({card.set_code.toUpperCase()})</div>
+                <div>{card.set_name} {card.set_code && `(${card.set_code.toUpperCase()})`}</div>
                 <div>{card.rarity}</div>
               </div>
             </div>

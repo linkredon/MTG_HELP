@@ -1,217 +1,162 @@
-/* Animações e estilos para a pesquisa de cartas */
+/* Estilos aprimorados para a pesquisa de cartas */
 
-/* Card Grid Layout */
-.card-grid {
-  position: relative;
-  background-color: rgba(17, 24, 39, 0.4);
-  backdrop-filter: blur(4px);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  border: 1px solid;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+/* Melhorar a aparência dos resultados de pesquisa */
+.search-results-container {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.5) rgba(17, 24, 39, 0.3);
 }
 
-.card-grid:hover {
-  border-color: rgba(66, 153, 225, 0.5);
+.search-results-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-results-container::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.3);
+  border-radius: 4px;
+}
+
+.search-results-container::-webkit-scrollbar-thumb {
+  background-color: rgba(59, 130, 246, 0.5);
+  border-radius: 4px;
+}
+
+/* Melhorar a aparência dos cards nos resultados */
+.search-card-item {
+  transition: all 0.2s ease-in-out;
+  border: 1px solid rgba(75, 85, 99, 0.4);
+}
+
+.search-card-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(66, 153, 225, 0.3);
-}
-
-/* Alternate version cards styling */
-.card-version {
-  outline: 2px solid rgba(59, 130, 246, 0.3);
-  outline-offset: -2px;
-  transform: scale(0.95);
-  transform-origin: top left;
-  background-color: rgba(17, 24, 39, 0.6);
-  box-shadow: 0 4px 8px -2px rgba(66, 153, 225, 0.2);
-}
-
-.card-version:hover {
-  outline: 2px solid rgba(59, 130, 246, 0.5);
-  transform: translateY(-1px) scale(0.96);
-  box-shadow: 0 6px 12px -3px rgba(66, 153, 225, 0.3);
-}
-
-/* Active card (showing versions) */
-.card-active {
-  outline: 2px solid rgb(59, 130, 246);
-  outline-offset: -2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   border-color: rgba(59, 130, 246, 0.5);
-  background-color: rgba(17, 24, 39, 0.8);
-  box-shadow: 0 8px 15px -5px rgba(59, 130, 246, 0.4);
 }
 
-@keyframes fadeIn {
+/* Melhorar a aparência dos botões de ação */
+.search-action-button {
+  transition: all 0.15s ease;
+}
+
+.search-action-button:hover {
+  transform: scale(1.05);
+}
+
+.search-action-button:active {
+  transform: scale(0.98);
+}
+
+/* Melhorar a aparência dos filtros de pesquisa */
+.search-filter-container {
+  background: rgba(17, 24, 39, 0.4);
+  border: 1px solid rgba(75, 85, 99, 0.5);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.search-filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(209, 213, 219, 1);
+  margin-bottom: 4px;
+}
+
+.search-filter-input {
+  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(75, 85, 99, 0.6);
+  border-radius: 6px;
+  color: white;
+  padding: 8px 12px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.search-filter-input:focus {
+  border-color: rgba(59, 130, 246, 0.8);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  outline: none;
+}
+
+/* Melhorar a aparência dos estados de carregamento e erro */
+.search-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.search-loading-icon {
+  color: rgba(59, 130, 246, 0.7);
+  animation: spin 1.5s linear infinite;
+}
+
+.search-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  color: rgba(239, 68, 68, 0.9);
+}
+
+@keyframes spin {
   from {
-    opacity: 0;
-    transform: translateY(10px);
+    transform: rotate(0deg);
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: rotate(360deg);
   }
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-.animate-slideDown {
-  animation: slideDown 0.2s ease-out forwards;
-}
-
-.shadow-glow-sm {
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(31, 41, 55, 0.5);
-  border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.5);
-  border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.7);
-}
-
-/* Version containers */
-.versions-container {
-  margin-top: 0.5rem;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  background-color: rgba(17, 24, 39, 0.9);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgb(31, 41, 55);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
-}
-
-.version-item {
+/* Melhorar a aparência dos botões de cores de mana */
+.mana-color-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem;
-  background-color: rgba(31, 41, 55, 0.5);
-  border-radius: 0.375rem;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(55, 65, 81, 0.5);
-}
-
-.version-item:hover {
-  background-color: rgb(31, 41, 55);
-}
-
-/* Estilos para badges de raridade */
-.rarity-common {
-  border-color: rgba(156, 163, 175, 0.5);
-}
-
-.rarity-uncommon {
-  border-color: rgba(74, 222, 128, 0.5);
-}
-
-.rarity-rare {
-  border-color: rgba(250, 204, 21, 0.5);
-}
-
-.rarity-mythic {
-  border-color: rgba(249, 115, 22, 0.5);
-}
-
-.rarity-special {
-  border-color: rgba(167, 139, 250, 0.5);
-}
-
-/* Efeito hover para cartas */
-.card-hover-effect {
+  justify-content: center;
+  font-weight: bold;
   transition: all 0.2s ease;
 }
 
-.card-hover-effect:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15);
+.mana-color-button:hover {
+  transform: scale(1.1);
 }
 
-/* Gradiente para indicadores de cores de cartas */
-.color-indicator {
-  width: 3px;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  border-top-left-radius: 0.375rem;
-  border-bottom-left-radius: 0.375rem;
+.mana-color-button.selected {
+  box-shadow: 0 0 0 2px white, 0 0 0 4px rgba(59, 130, 246, 0.5);
 }
 
-.color-W { background: linear-gradient(to bottom, #f9fafb, #e5e7eb); }
-.color-U { background: linear-gradient(to bottom, #3b82f6, #1d4ed8); }
-.color-B { background: linear-gradient(to bottom, #4b5563, #1f2937); }
-.color-R { background: linear-gradient(to bottom, #ef4444, #b91c1c); }
-.color-G { background: linear-gradient(to bottom, #22c55e, #15803d); }
-.color-C { background: linear-gradient(to bottom, #9ca3af, #6b7280); }
+.mana-color-W {
+  background: linear-gradient(135deg, #f7f7f7, #e6e0c5);
+  color: #211d15;
+}
 
-/* Estilos de notificação para adição de cartas */
-.card-added-notification {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(22, 163, 74, 0.9);
+.mana-color-U {
+  background: linear-gradient(135deg, #0e68ab, #00a1e0);
   color: white;
-  font-size: 0.75rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  backdrop-filter: blur(4px);
-  animation: fadeInOut 2s forwards;
-  z-index: 20;
 }
 
-@keyframes fadeInOut {
-  0% { opacity: 0; transform: translateY(-5px); }
-  10% { opacity: 1; transform: translateY(0); }
-  80% { opacity: 1; }
-  100% { opacity: 0; }
+.mana-color-B {
+  background: linear-gradient(135deg, #150f0f, #352b2b);
+  color: #d3c2c2;
 }
 
-/* Efeito de carregamento para imagens de carta */
-.card-image-loading {
-  position: relative;
-  overflow: hidden;
+.mana-color-R {
+  background: linear-gradient(135deg, #d32029, #f44336);
+  color: white;
 }
 
-.card-image-loading::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
-  transform: translateX(-100%);
-  animation: shimmer 1.5s infinite;
+.mana-color-G {
+  background: linear-gradient(135deg, #1a8c1f, #4caf50);
+  color: white;
 }
 
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
+.mana-color-C {
+  background: linear-gradient(135deg, #8c8c8c, #bdbdbd);
+  color: #333;
 }

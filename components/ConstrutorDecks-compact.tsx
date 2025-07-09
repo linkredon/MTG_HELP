@@ -36,6 +36,10 @@ import '../styles/deck-viewer-compact.css'
 import '../styles/modal-fix.css'
 import '../styles/filtros-fix.css'
 import '../styles/dropdown-z-fix.css'
+import '../styles/deck-builder-enhanced.css'
+import '../styles/dropdown-fixes-enhanced.css'
+import '../styles/deck-importer-enhanced.css'
+import '../styles/modal-fix-enhanced.css'
 
 export default function ConstrutorDecks() {
   const { decks, criarDeck, editarDeck, deletarDeck, duplicarDeck } = useAppContext()

@@ -14,7 +14,7 @@ declare module "next-auth" {
       joinedAt?: string;
       collectionsCount?: number;
       totalCards?: number;
-      achievements?: any[];
+      achievements?: string[];
     };
   }
 
@@ -30,7 +30,7 @@ declare module "next-auth" {
     joinedAt?: string;
     collectionsCount?: number;
     totalCards?: number;
-    achievements?: any[];
+    achievements?: string[];
   }
 }
 
@@ -45,6 +45,6 @@ declare module "next-auth/jwt" {
     joinedAt?: string;
     collectionsCount?: number;
     totalCards?: number;
-    achievements?: any[];
+    achievements?: string[];
   }
 }

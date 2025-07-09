@@ -16,7 +16,8 @@ import {
   LogOut,
   ChevronRight,
   Home,
-  Heart
+  Heart,
+  Trophy
 } from 'lucide-react'
 
 import type { User } from '@/types/mtg';
@@ -46,6 +47,7 @@ const MobileNavigation = ({
     { id: 'colecao', label: 'Coleção', icon: Library },
     { id: 'decks', label: 'Deck Builder', icon: Hammer },
     { id: 'favoritos', label: 'Favoritos', icon: Heart },
+    { id: 'achievements', label: 'Conquistas', icon: Trophy },
     { id: 'regras', label: 'Regras', icon: BookOpen },
     { id: 'extras', label: 'Recursos', icon: Sparkles }
   ]

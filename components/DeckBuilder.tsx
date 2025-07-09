@@ -1,6 +1,9 @@
 "use client"
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import '../styles/deck-builder-enhanced.css';
+import '../styles/dropdown-fixes-enhanced.css';
+import '../styles/card-search-enhanced.css';
 import { useAppContext } from '@/contexts/AppContext';
 import { translatePtToEn, cardMatchesSearchTerm } from '@/utils/translationService';
 import { getImageUrl } from '@/utils/imageService';
@@ -302,8 +305,9 @@ const DeckBuilder: React.FC<DeckBuilderProps> = ({ deckId, onSave, onCancel }) =
   
   // Buscar cartas na API Scryfall
   const searchCards = useCallback(async () => {
+    // Permitir pesquisa apenas com o nome da carta
     if (!searchTerm.trim() && raridade === 'all' && tipo === 'all' && !cmc && manaColors.length === 0) {
-      setSearchError('Por favor, defina pelo menos um filtro para pesquisar');
+      setSearchError('Por favor, digite o nome da carta ou defina pelo menos um filtro');
       return;
     }
     
@@ -311,29 +315,53 @@ const DeckBuilder: React.FC<DeckBuilderProps> = ({ deckId, onSave, onCancel }) =
     setSearchError(null);
     
     try {
+      // Construir query para Scryfall
       let queryParts = [];
       
-      if (searchTerm.trim()) queryParts.push(encodeURIComponent(searchTerm.trim()));
+      if (searchTerm.trim()) {
+        // Se tiver espaços, colocar entre aspas para busca exata
+        const nameQuery = searchTerm.includes(' ') ? `"${searchTerm.trim()}"` : searchTerm.trim();
+        queryParts.push(nameQuery);
+      }
+      
       if (raridade !== 'all') queryParts.push(`rarity:${raridade}`);
       if (tipo !== 'all') queryParts.push(`type:${tipo}`);
       if (cmc) queryParts.push(`cmc:${cmc}`);
+      
       if (manaColors.length > 0) {
-        const colorQuery = manaColors.map(c => `c:${c}`).join('');
-        queryParts.push(colorQuery);
+        // Formato correto para cores: c:wrg (sem separadores)
+        const colorString = manaColors.join('');
+        queryParts.push(`c:${colorString}`);
       }
       
-      const query = queryParts.join('+');
+      const query = queryParts.join(' ');
+      console.log('Buscando cartas com query:', query);
       
       // Usar o serviço de tradução para busca na API
       const response = await searchCardsWithTranslation(query);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          setSearchResults([]);
+          setSearchError('Nenhuma carta encontrada com os filtros especificados');
+        } else {
+          throw new Error(`Erro na API: ${response.status}`);
+        }
+        return;
+      }
+      
       const data = await response.json();
       
-      if (response.ok && data.data) {
+      if (data.data && Array.isArray(data.data)) {
         setSearchResults(data.data);
         setSearchError(null);
+        
+        if (data.data.length === 0) {
+          setSearchError('Nenhuma carta encontrada com os filtros especificados');
+        }
       } else {
         setSearchResults([]);
-        setSearchError(data.details || 'Nenhuma carta encontrada');
+        setSearchError('Formato de resposta inválido da API');
       }
     } catch (error) {
       console.error('Erro na pesquisa:', error);
@@ -599,7 +627,7 @@ const DeckBuilder: React.FC<DeckBuilderProps> = ({ deckId, onSave, onCancel }) =
       {activeTab === 'search' && (
         <div className="mtg-grid-wide gap-8">
           {/* Filtros de Busca */}
-          <div className="mtg-card">
+          <div className="mtg-card search-filter-container">
             <div className="mtg-card-header">
               <Filter className="mtg-card-icon" />
               <div className="mtg-card-content flex-1">
@@ -705,7 +733,7 @@ const DeckBuilder: React.FC<DeckBuilderProps> = ({ deckId, onSave, onCancel }) =
               </div>
               
               <Button 
-                className="quantum-btn w-full primary"
+                className="quantum-btn w-full primary search-action-button"
                 onClick={searchCards}
                 disabled={isSearching}
               >
@@ -730,19 +758,19 @@ const DeckBuilder: React.FC<DeckBuilderProps> = ({ deckId, onSave, onCancel }) =
             <div className="px-6 pb-6">
               <div className="min-h-[400px]">
                 {isSearching && (
-                  <div className="text-center py-12 text-slate-400">
-                    <Loader2 className="w-12 h-12 mx-auto mb-4 opacity-50 animate-spin" />
-                    <p>Pesquisando cartas...</p>
+                  <div className="search-loading-state">
+                    <Loader2 className="w-12 h-12 mx-auto mb-4 search-loading-icon" />
+                    <p className="text-blue-300">Pesquisando cartas...</p>
                   </div>
                 )}
                 
                 {!isSearching && searchError && (
-                  <div className="text-center py-12 text-slate-400">
-                    <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-50 text-red-400" />
-                    <p className="text-red-400">{searchError}</p>
+                  <div className="search-error-state">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
+                    <p className="text-red-400 mb-4">{searchError}</p>
                     <Button 
                       onClick={searchCards}
-                      className="quantum-btn compact mt-4"
+                      className="quantum-btn compact search-action-button"
                     >
                       Tentar novamente
                     </Button>
@@ -757,11 +785,13 @@ const DeckBuilder: React.FC<DeckBuilderProps> = ({ deckId, onSave, onCancel }) =
                 )}
                 
                 {!isSearching && !searchError && searchResults.length > 0 && (
-                  <SearchCardList 
-                    cards={searchResults}
-                    onAddCard={(card, quantity) => handleAddCardToDeck(card, 'mainboard', quantity)}
-                    className="mb-6"
-                  />
+                  <div className="search-results-container">
+                    <SearchCardList 
+                      cards={searchResults}
+                      onAddCard={(card, quantity) => handleAddCardToDeck(card, 'mainboard', quantity)}
+                      className="mb-6"
+                    />
+                  </div>
                 )}
               </div>
             </div>
