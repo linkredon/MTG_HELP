@@ -35,8 +35,16 @@ export default function LoginPage() {
 
         if (result.success) {
           // Login automático após registro
-          setError('Conta criada! Verifique seu email para confirmar o registro.');
-          setIsLogin(true);
+          setError('Conta criada! Fazendo login automático...');
+          // Tentar fazer login automaticamente
+          const loginResult = await signIn(email, password);
+          if (loginResult.success) {
+            router.push('/');
+            router.refresh();
+          } else {
+            setError('Conta criada! Por favor, faça login.');
+            setIsLogin(true);
+          }
         } else {
           setError(result.error || 'Erro ao registrar usuário');
         }

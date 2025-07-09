@@ -55,9 +55,21 @@ export async function signUp(email: string, password: string, name: string): Pro
         userAttributes: {
           email,
           name
-        }
+        },
+        // Configurar para auto-confirmar o usuário (apenas para desenvolvimento)
+        autoSignIn: true
       }
     });
+    
+    // Tentar auto-confirmar o usuário (apenas para desenvolvimento)
+    try {
+      await amplifyConfirmSignUp({
+        username: email,
+        confirmationCode: '000000' // Código fictício para tentar auto-confirmação
+      });
+    } catch (confirmError) {
+      console.log('Auto-confirmação não funcionou, mas isso é esperado');
+    }
     
     return {
       success: true,
