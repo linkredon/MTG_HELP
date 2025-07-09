@@ -65,8 +65,9 @@ Uma aplicação moderna e completa para gerenciar sua coleção, construir decks
 
 1. **Clone/Baixe o projeto:**
    ```bash
-   # Se baixou como ZIP, extraia para uma pasta
-   cd caminho/para/colecao-page
+   # Clone o repositório
+   git clone https://github.com/seu-usuario/mtg-helper.git
+   cd mtg-helper
    ```
 
 2. **Instale as dependências:**
@@ -85,12 +86,16 @@ Uma aplicação moderna e completa para gerenciar sua coleção, construir decks
    SCRYFALL_API_DELAY=100
    ```
 
-4. **Execute o projeto:**
+4. **Limpe o cache (se necessário):**
+   - Windows: Execute o arquivo `clean-cache.bat`
+   - Mac/Linux: Execute `sh clean-cache.sh`
+
+5. **Execute o projeto:**
    ```bash
    npm run dev
    ```
 
-5. **Acesse no navegador:**
+6. **Acesse no navegador:**
    ```
    http://localhost:3000
    ```
@@ -151,6 +156,15 @@ Para implantar o projeto em produção, consulte o [Guia de Implantação](./dep
 ## 📄 Licença
 
 Este projeto é licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
+
+## 🔧 Solução de Problemas
+
+Se você estiver enfrentando problemas com o header ou outros componentes após clonar o repositório:
+
+1. Limpe o cache do Next.js usando os scripts fornecidos (`clean-cache.bat` ou `clean-cache.sh`)
+2. Verifique se todos os arquivos foram baixados corretamente
+3. Certifique-se de que o arquivo `components/UserHeader.tsx` está presente e atualizado
+4. Reinicie o servidor de desenvolvimento
 
 ---
 

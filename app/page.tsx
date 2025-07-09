@@ -13,18 +13,23 @@ import '../styles/card-glow-effects-fixed.css'
 import '../styles/ambient-glow-enhanced.css'
 import '../styles/card-modal-enhanced.css'
 import '../styles/deck-selector-compact.css'
-import { useState, useEffect } from 'react'
+import '../styles/mobile-header-web-fix.css'
+import '../styles/user-header-enhanced.css'
+import '../styles/tabs-dark-theme.css'
+import '../styles/favorites.css'
+import { useState } from 'react'
 import Script from 'next/script'
 import Colecao from './colecao-compact'
 import Painel from '@/components/Painel-compact'
 import ConstrutorDecks from '@/components/ConstrutorDecks-compact'
 import Regras from '@/components/Regras-compact'
 import Spoiler from '@/components/Spoiler-compact'
+import Favoritos from '@/components/Favoritos-compact'
 import UserHeader from '@/components/UserHeader'
 import MobileNavigation from '@/components/MobileNavigation'
-import LoginDialog from '@/components/LoginDialog'
 import { useAppContext } from '@/contexts/AppContext'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { useSession } from 'next-auth/react'
 import {
   Grid3X3,
   Library,
@@ -39,80 +44,19 @@ import {
   Award,
   Zap,
   Target,
-  Star
+  Star,
+  Heart,
+  ExternalLink
 } from "lucide-react"
-import type { User, MTGCard, UserCollection } from '@/types/mtg';
+import type { MTGCard } from '@/types/mtg';
 
 export default function Home() {
-  // Estado do usuário
-  const [user, setUser] = useState<User | null>(null)
+  const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState('painel')
-  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false)
- 
-   // Estado para cartas disponíveis (pesquisa)
   const [allCards, setAllCards] = useState<MTGCard[]>([])
 
   // Usar o contexto global para coleção
-  const { currentCollection, setCurrentCollection, adicionarCarta, removerCarta } = useAppContext()
-
-  // Funções de autenticação
-  const handleLogin = (userData: User) => {
-    setUser(userData)
-    localStorage.setItem('mtg-user', JSON.stringify(userData))
-  }
-
-  const handleLogout = () => {
-    setUser(null)
-    localStorage.removeItem('mtg-user')
-  }
-
-  // Carregar usuário do localStorage ao inicializar
-  useEffect(() => {
-    const savedUser = localStorage.getItem('mtg-user')
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser)
-        const completeUser: User = {
-          id: parsedUser.id || '1',
-          name: parsedUser.name || 'Usuário',
-          email: parsedUser.email || '',
-          avatar: parsedUser.avatar,
-          joinedAt: parsedUser.joinedAt || new Date().toISOString(),
-          collectionsCount: parsedUser.collectionsCount || 0,
-          totalCards: parsedUser.totalCards || 0,
-          achievements: parsedUser.achievements || []
-        }
-        setUser(completeUser)
-      } catch (error) {
-        console.error('Erro ao carregar usuário salvo:', error)
-        localStorage.removeItem('mtg-user')
-      }
-    }
-  }, [])
-
-  // Função para exportar coleção para CSV no formato Manabox
-  const exportCollectionToCSV = (collection: UserCollection) => {
-    // Formato Manabox: Name,Set,Quantity,Foil,Condition,Language
-    const csvContent = [
-      ['Name', 'Set', 'Quantity', 'Foil', 'Condition', 'Language'],
-      ...collection.cards.map(c => [
-        c.card.name,
-        c.card.set_code,
-        c.quantity.toString(),
-        'Non-foil', // Padrão para não-foil
-        'Near Mint', // Padrão para condição
-        'English' // Padrão para idioma
-      ])
-    ].map(row => row.join(',')).join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${collection.name}_manabox.csv`
-    a.click()
-    window.URL.revokeObjectURL(url)
-  }
+  const { currentCollection, exportCollectionToCSV } = useAppContext()
 
   // Configuração das abas com design profissional
   const tabs = [
@@ -141,10 +85,16 @@ export default function Home() {
       component: <ConstrutorDecks />
     },
     {
+      id: 'favoritos',
+      label: 'Favoritos',
+      icon: Heart,
+      component: <Favoritos />
+    },
+    {
       id: 'spoiler',
       label: 'Spoilers',
       icon: Star,
-      component: <Spoiler isAdmin={user?.email === 'admin@example.com'} />
+      component: <Spoiler isAdmin={session?.user?.role === 'admin'} />
     },
     {
       id: 'regras',
@@ -171,6 +121,24 @@ export default function Home() {
 
           {/* Features Grid - Compact Version */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+            <div className="quantum-card-dense p-3 card-red cursor-pointer" onClick={() => setActiveTab('favoritos')}>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-md bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                  <Heart className="w-4 h-4 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-white mb-1">Cartas Favoritas</h3>
+                  <p className="text-xs text-gray-400 mb-2">
+                    Acesse suas cartas favoritas
+                  </p>
+                  <div className="flex items-center gap-1 text-[10px] text-red-400">
+                    <span>Acessar</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <div className="quantum-card-dense p-3 card-blue">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-md bg-blue-500/20 flex items-center justify-center flex-shrink-0">
@@ -289,11 +257,7 @@ export default function Home() {
       <Script src="/scripts/card-effects.js" strategy="lazyOnload" />
 
       {/* Header com informações do usuário */}
-      <UserHeader 
-        user={user} 
-        onLogin={() => setIsLoginDialogOpen(true)} 
-        onLogout={handleLogout}
-      />
+      <UserHeader />
 
       {/* Conteúdo principal */}
       <div className="container mx-auto px-4 py-6">
@@ -303,17 +267,17 @@ export default function Home() {
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-6">
+          <TabsList className="mtg-tabs-list grid grid-cols-3 md:grid-cols-7 gap-2 mb-6">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <TabsTrigger 
                   key={tab.id}
                   value={tab.id}
-                  className="flex items-center gap-2 py-2 px-3"
+                  className="mtg-tab-trigger"
                 >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden md:inline">{tab.label}</span>
+                  <Icon className="mtg-tab-icon w-4 h-4" />
+                  <span className="mtg-tab-text">{tab.label}</span>
                 </TabsTrigger>
               );
             })}
@@ -329,13 +293,6 @@ export default function Home() {
 
       {/* Navegação mobile */}
       <MobileNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {/* Modal de login */}
-      <LoginDialog 
-        isOpen={isLoginDialogOpen} 
-        setIsOpen={setIsLoginDialogOpen}
-        onLogin={handleLogin}
-      />
     </main>
   )
 }

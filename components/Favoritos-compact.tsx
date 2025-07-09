@@ -1,236 +1,137 @@
 "use client"
 
-import { useState } from 'react'
-import { useFavorites } from '@/contexts/FavoritesContext'
-import { Heart, Search, Filter, Grid, List, LayoutList } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import React, { useState } from 'react'
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Heart, Search, Trash2, ExternalLink, Info } from 'lucide-react'
 import { useCardModal } from '@/contexts/CardModalContext'
+import { useFavorites } from '@/contexts/FavoritesContext'
 import Image from 'next/image'
-import FavoriteButton from './FavoriteButton'
+import { getImageUrl } from '@/utils/imageService'
+import { Badge } from '@/components/ui/badge'
+import { useAppContext } from '@/contexts/AppContext'
 
-const FavoritosCompact = () => {
+export default function FavoritosCompact() {
   const { favorites, removeFavorite } = useFavorites()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'details'>('grid')
-  const [sortBy, setSortBy] = useState<'name' | 'cmc' | 'color' | 'date'>('name')
   const { openModal } = useCardModal()
-
-  // Filtrar favoritos com base na pesquisa
+  const { getQuantidadeNaColecao } = useAppContext()
+  const [searchTerm, setSearchTerm] = useState('')
+  
+  // Filtrar favoritos com base no termo de busca
   const filteredFavorites = favorites.filter(card => 
     card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    card.type_line?.toLowerCase().includes(searchTerm.toLowerCase())
+    (card.printed_name && card.printed_name.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
-  // Ordenar favoritos
-  const sortedFavorites = [...filteredFavorites].sort((a, b) => {
-    switch (sortBy) {
-      case 'name':
-        return a.name.localeCompare(b.name)
-      case 'cmc':
-        return (a.cmc || 0) - (b.cmc || 0)
-      case 'color':
-        return (a.color_identity?.join('') || '').localeCompare(b.color_identity?.join('') || '')
-      case 'date':
-        return new Date(b.released_at || '').getTime() - new Date(a.released_at || '').getTime()
-      default:
-        return 0
-    }
-  })
-
   return (
-    <div className="p-4">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="quantum-card-dense p-4 mb-4 card-red">
+      <div className="quantum-card-dense p-4 card-red">
         <div className="flex items-center gap-2">
           <Heart className="w-5 h-5 text-red-400" />
           <h2 className="text-lg font-semibold text-white">Cartas Favoritas</h2>
         </div>
         <p className="text-sm text-gray-400 mt-2">
-          Gerencie suas cartas favoritas de Magic: The Gathering
+          Acesse rapidamente suas cartas favoritas
         </p>
       </div>
-
-      {/* Barra de ferramentas */}
-      <div className="flex flex-col md:flex-row gap-3 mb-4">
-        <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      
+      {/* Barra de pesquisa */}
+      <div className="quantum-card-dense p-3">
+        <div className="relative">
           <Input
             type="text"
-            placeholder="Pesquisar favoritos..."
+            placeholder="Buscar nos favoritos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-gray-800 border-gray-700 text-white"
+            className="quantum-field pl-9"
           />
-        </div>
-        
-        <div className="flex gap-2">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-white"
-          >
-            <option value="name">Nome</option>
-            <option value="cmc">Custo de Mana</option>
-            <option value="color">Cor</option>
-            <option value="date">Data de Lançamento</option>
-          </select>
-          
-          <div className="flex rounded-md overflow-hidden border border-gray-700">
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
-              size="icon"
-              onClick={() => setViewMode('grid')}
-              className={`rounded-none ${viewMode === 'grid' ? 'bg-indigo-600' : 'bg-gray-800'}`}
-            >
-              <Grid className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="icon"
-              onClick={() => setViewMode('list')}
-              className={`rounded-none ${viewMode === 'list' ? 'bg-indigo-600' : 'bg-gray-800'}`}
-            >
-              <List className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'details' ? 'default' : 'ghost'}
-              size="icon"
-              onClick={() => setViewMode('details')}
-              className={`rounded-none ${viewMode === 'details' ? 'bg-indigo-600' : 'bg-gray-800'}`}
-            >
-              <LayoutList className="w-4 h-4" />
-            </Button>
-          </div>
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>
       </div>
-
-      {/* Conteúdo */}
-      <div className="quantum-card-dense p-4">
-        {favorites.length === 0 ? (
+      
+      {/* Lista de favoritos */}
+      <div className="quantum-card-dense p-3">
+        {filteredFavorites.length === 0 ? (
           <div className="text-center py-8">
-            <Heart className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">Nenhuma carta favorita</h3>
-            <p className="text-sm text-gray-400 mb-4">
-              Você ainda não adicionou nenhuma carta aos seus favoritos.
-            </p>
-            <p className="text-sm text-gray-400">
-              Adicione cartas aos favoritos clicando no ícone de coração nas páginas de pesquisa, coleção ou construtor de decks.
+            <Heart className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+            <h3 className="text-lg font-medium text-white mb-2">Nenhum favorito encontrado</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              {searchTerm ? 
+                'Nenhuma carta corresponde à sua busca.' : 
+                'Adicione cartas aos favoritos clicando no ícone de coração nas cartas.'}
             </p>
           </div>
         ) : (
-          <>
-            <div className="text-sm text-gray-400 mb-4">
-              {filteredFavorites.length} {filteredFavorites.length === 1 ? 'carta encontrada' : 'cartas encontradas'}
-            </div>
-
-            {/* Grid View */}
-            {viewMode === 'grid' && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {sortedFavorites.map(card => (
-                  <div key={card.id} className="relative group favorite-card favorite-card-glow">
-                    <div className="aspect-[745/1040] rounded-lg overflow-hidden">
-                      <Image 
-                        src={card.image_uris?.normal || card.card_faces?.[0].image_uris?.normal || '/placeholder-card.jpg'} 
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {filteredFavorites.map((card) => (
+              <div key={card.id} className="relative group">
+                <Card className="overflow-hidden border-0 rounded-lg shadow-md transition-all hover:shadow-lg bg-gray-800/50 hover:bg-gray-800/80">
+                  <div 
+                    className="relative cursor-pointer"
+                    onClick={() => openModal(card)}
+                  >
+                    <div className="aspect-[745/1040] overflow-hidden">
+                      <Image
+                        src={getImageUrl(card)}
                         alt={card.name}
-                        width={265}
-                        height={370}
+                        width={223}
+                        height={310}
                         className="w-full h-full object-cover"
-                        onClick={() => openModal(card)}
                       />
                     </div>
-                    <button
-                      onClick={() => removeFavorite(card.id)}
-                      className="absolute top-2 right-2 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center text-red-400 hover:bg-black/80 transition-colors favorite-button favorite-button-active"
-                    >
-                      <Heart className="w-4 h-4 fill-current" />
-                    </button>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end">
-                      <div className="p-2 w-full">
-                        <div className="text-sm font-medium text-white truncate">{card.name}</div>
-                        <div className="text-xs text-gray-300 truncate">{card.type_line}</div>
+                    
+                    {/* Overlay com informações */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
+                      <h3 className="text-sm font-medium text-white truncate">{card.name}</h3>
+                      <p className="text-xs text-gray-300 truncate">{card.type_line}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Badge className="bg-blue-600/80 text-[10px] py-0 px-1.5 h-4">
+                          {card.set_name}
+                        </Badge>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* List View */}
-            {viewMode === 'list' && (
-              <div className="space-y-2">
-                {sortedFavorites.map(card => (
-                  <div key={card.id} className="flex items-center gap-3 p-2 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors border-l-2 border-red-500">
-                    <div className="w-10 h-14 relative flex-shrink-0">
-                      <Image 
-                        src={card.image_uris?.small || card.card_faces?.[0].image_uris?.small || '/placeholder-card.jpg'} 
-                        alt={card.name}
-                        fill
-                        className="object-cover rounded"
-                        onClick={() => openModal(card)}
-                      />
-                    </div>
-                    <div className="flex-grow min-w-0" onClick={() => openModal(card)}>
-                      <div className="text-sm font-medium text-white">{card.name}</div>
-                      <div className="text-xs text-gray-400 truncate">{card.type_line}</div>
-                    </div>
-                    <div className="text-xs text-gray-400">{card.set_name}</div>
-                    <button
-                      onClick={() => removeFavorite(card.id)}
-                      className="w-8 h-8 bg-gray-700/60 rounded-full flex items-center justify-center text-red-400 hover:bg-gray-700/80 transition-colors"
-                    >
-                      <Heart className="w-4 h-4 fill-current" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Details View */}
-            {viewMode === 'details' && (
-              <div className="space-y-3">
-                {sortedFavorites.map(card => (
-                  <div key={card.id} className="p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0">
-                        <Image 
-                          src={card.image_uris?.art_crop || card.card_faces?.[0].image_uris?.art_crop || '/placeholder-card.jpg'} 
-                          alt={card.name}
-                          width={48}
-                          height={48}
-                          className="w-full h-full object-cover"
-                          onClick={() => openModal(card)}
-                        />
+                  
+                  <CardContent className="p-2 bg-gray-800/80">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-1">
+                        <Info className="w-3 h-3 text-blue-400" />
+                        <span className="text-xs text-gray-300">
+                          {getQuantidadeNaColecao(card.id) > 0 ? (
+                            <span className="text-green-400">{getQuantidadeNaColecao(card.id)}x na coleção</span>
+                          ) : (
+                            <span className="text-gray-500">Não na coleção</span>
+                          )}
+                        </span>
                       </div>
-                      <div className="flex-grow min-w-0" onClick={() => openModal(card)}>
-                        <div className="text-sm font-medium text-white">{card.name}</div>
-                        <div className="text-xs text-gray-400">{card.type_line}</div>
+                      <div className="flex gap-1">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-6 w-6 p-0 text-gray-400 hover:text-blue-400 hover:bg-blue-900/20"
+                          onClick={() => window.open(`https://scryfall.com/card/${card.set}/${card.collector_number}`, '_blank')}
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-6 w-6 p-0 text-gray-400 hover:text-red-400 hover:bg-red-900/20"
+                          onClick={() => removeFavorite(card.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
-                      <button
-                        onClick={() => removeFavorite(card.id)}
-                        className="w-8 h-8 bg-gray-700/60 rounded-full flex items-center justify-center text-red-400 hover:bg-gray-700/80 transition-colors"
-                      >
-                        <Heart className="w-4 h-4 fill-current" />
-                      </button>
                     </div>
-                    <div className="text-xs text-gray-300 mt-2" onClick={() => openModal(card)}>
-                      {card.oracle_text?.split('\n').map((text, i) => (
-                        <p key={i} className="mb-1">{text}</p>
-                      ))}
-                    </div>
-                    <div className="flex justify-between items-center mt-2 text-xs text-gray-400">
-                      <div>{card.set_name} ({card.set_code?.toUpperCase()})</div>
-                      <div>{card.rarity}</div>
-                    </div>
-                  </div>
-                ))}
+                  </CardContent>
+                </Card>
               </div>
-            )}
-          </>
+            ))}
+          </div>
         )}
       </div>
     </div>
   )
 }
-
-export default FavoritosCompact
