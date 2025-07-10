@@ -1,4 +1,7 @@
+
+
 "use client";
+import '../../lib/amplifyClient';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -101,6 +104,19 @@ export default function LoginPage() {
               {error}
             </div>
           )}
+
+          <button
+            type="button"
+            className="w-full flex items-center justify-center gap-2 bg-white text-gray-900 font-semibold py-2 px-4 rounded-md mb-4 hover:bg-gray-200 transition"
+            onClick={() => {
+              // Redireciona para o Hosted UI do Cognito para login social Google
+              window.location.href = `https://${process.env.NEXT_PUBLIC_COGNITO_DOMAIN}/oauth2/authorize?identity_provider=Google&redirect_uri=${encodeURIComponent(window.location.origin + '/')}\
+                &response_type=CODE&client_id=${process.env.NEXT_PUBLIC_USER_POOL_WEB_CLIENT_ID}&scope=openid+profile+email`;
+            }}
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+            Entrar com Google
+          </button>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
