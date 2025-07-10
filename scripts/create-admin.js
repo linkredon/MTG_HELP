@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
 // Configurações
-const REGION = process.env.AWS_REGION || 'us-east-1';
+const REGION = process.env.AWS_REGION || 'us-east-2';
 const TABLE_NAME = process.env.AWS_DYNAMODB_USERS_TABLE || 'mtg_users';
 
 // Dados do administrador

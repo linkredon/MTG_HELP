@@ -7,7 +7,7 @@
     }
   ],
   "env": {
-    "AWS_REGION": "us-east-1",
+    "AWS_REGION": "us-east-2",
     "AWS_DYNAMODB_USERS_TABLE": "mtg_users",
     "AWS_DYNAMODB_COLLECTIONS_TABLE": "mtg_collections",
     "AWS_DYNAMODB_DECKS_TABLE": "mtg_decks",

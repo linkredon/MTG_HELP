@@ -10,7 +10,7 @@ Este documento explica como configurar um usuário administrador para o MTG Help
    ```
    export AWS_ACCESS_KEY_ID=sua_access_key_id
    export AWS_SECRET_ACCESS_KEY=sua_secret_access_key
-   export AWS_REGION=us-east-1
+   export AWS_REGION=us-east-2
    ```
 
 2. Execute o script de criação de administrador:
