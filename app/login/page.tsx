@@ -50,7 +50,12 @@ export default function LoginPage() {
             setIsLogin(true);
           }
         } else {
-          setError('Erro ao registrar usuário: ' + (result.error || 'Erro desconhecido'));
+          // Mostra erro detalhado se o usuário já existe
+          if (result.error && result.error.includes('UsernameExistsException')) {
+            setError('Já existe uma conta com este e-mail. Faça login ou recupere sua senha.');
+          } else {
+            setError('Erro ao registrar usuário: ' + (result.error || 'Erro desconhecido'));
+          }
         }
       }
     } catch (error: any) {

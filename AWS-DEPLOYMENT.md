@@ -18,11 +18,11 @@ O backend do MTG Helper já está configurado com:
 
 ### Detalhes do Backend
 
-- **GraphQL Endpoint**: https://tgjs5yokcrexbjcijkmpsxpboi.appsync-api.us-east-1.amazonaws.com/graphql
+- **GraphQL Endpoint**: https://tgjs5yokcrexbjcijkmpsxpboi.appsync-api.us-east-2.amazonaws.com/graphql
 - **API Key**: da2-zkfmwqyrvfa43pono2uqis7hpe
-- **User Pool ID**: us-east-1_xp6aEKHJp
+- **User Pool ID**: us-east-2_xp6aEKHJp
 - **Web Client ID**: 2kabivqe0q5kvv2e79lhh4eb4c
-- **Região**: us-east-1
+- **Região**: us-east-2
 
 ## Conectando o Backend ao Hosting
 
@@ -33,11 +33,11 @@ Para conectar o backend ao ambiente de hospedagem do Amplify:
 3. Adicione as seguintes variáveis de ambiente:
 
 ```
-AMPLIFY_API_ENDPOINT=https://tgjs5yokcrexbjcijkmpsxpboi.appsync-api.us-east-1.amazonaws.com/graphql
+AMPLIFY_API_ENDPOINT=https://tgjs5yokcrexbjcijkmpsxpboi.appsync-api.us-east-2.amazonaws.com/graphql
 AMPLIFY_API_KEY=da2-zkfmwqyrvfa43pono2uqis7hpe
-AMPLIFY_AUTH_USER_POOL_ID=us-east-1_xp6aEKHJp
+AMPLIFY_AUTH_USER_POOL_ID=us-east-2_xp6aEKHJp
 AMPLIFY_AUTH_USER_POOL_WEB_CLIENT_ID=2kabivqe0q5kvv2e79lhh4eb4c
-AMPLIFY_REGION=us-east-1
+AMPLIFY_REGION=us-east-2
 ```
 
 4. Reimplante o aplicativo
@@ -58,7 +58,7 @@ amplify push
 Para criar um usuário administrador:
 
 1. Acesse o AWS Console > Cognito > User Pools
-2. Selecione o User Pool `us-east-1_xp6aEKHJp`
+2. Selecione o User Pool `us-east-2_xp6aEKHJp`
 3. Vá para "Users" (Usuários)
 4. Crie um novo usuário ou selecione um existente
 5. Adicione o atributo personalizado `custom:role` com valor `admin`
