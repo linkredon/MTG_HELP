@@ -10,6 +10,10 @@
     "setup-db": "node scripts/setup-dynamodb.js"
   },
   "dependencies": {
+    "@aws-amplify/api": "^6.0.12",
+    "@aws-amplify/api-graphql": "^4.0.12",
+    "@aws-amplify/auth": "^6.0.12",
+    "@aws-sdk/client-cognito-identity-provider": "^3.844.0",
     "@aws-sdk/client-dynamodb": "^3.840.0",
     "@aws-sdk/lib-dynamodb": "^3.840.0",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -21,9 +25,6 @@
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tabs": "^1.0.4",
     "aws-amplify": "^6.0.12",
-    "@aws-amplify/auth": "^6.0.12",
-    "@aws-amplify/api": "^6.0.12",
-    "@aws-amplify/api-graphql": "^4.0.12",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
