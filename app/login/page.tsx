@@ -24,7 +24,7 @@ export default function LoginPage() {
       if (isLogin) {
         // Login
         const result = await signIn(email, password);
-
+        console.log('Login result:', result);
         if (!result.success) {
           setError(result.error || 'Email ou senha inválidos');
         } else {
@@ -34,27 +34,27 @@ export default function LoginPage() {
       } else {
         // Verificar se é um registro de administrador
         const isAdmin = adminCode === process.env.NEXT_PUBLIC_ADMIN_CODE || adminCode === 'MTG_ADMIN_2024';
-        
         // Registro
         const result = await signUp(email, password, name, isAdmin);
-
+        console.log('SignUp result:', result);
         if (result.success) {
-          // Login automático após registro
           setError('Conta criada! Fazendo login automático...');
           // Tentar fazer login automaticamente
           const loginResult = await signIn(email, password);
+          console.log('Auto-login result:', loginResult);
           if (loginResult.success) {
             router.push('/');
             router.refresh();
           } else {
-            setError('Conta criada! Por favor, faça login.');
+            setError('Conta criada! Por favor, faça login. Erro: ' + (loginResult.error || 'Erro desconhecido'));
             setIsLogin(true);
           }
         } else {
-          setError(result.error || 'Erro ao registrar usuário');
+          setError('Erro ao registrar usuário: ' + (result.error || 'Erro desconhecido'));
         }
       }
     } catch (error: any) {
+      console.error('Erro no handleSubmit:', error);
       setError(error.message || 'Ocorreu um erro. Tente novamente.');
     } finally {
       setLoading(false);
