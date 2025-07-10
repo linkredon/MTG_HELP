@@ -10,8 +10,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [adminCode, setAdminCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showAdminField, setShowAdminField] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +32,11 @@ export default function LoginPage() {
           router.refresh();
         }
       } else {
+        // Verificar se é um registro de administrador
+        const isAdmin = adminCode === process.env.NEXT_PUBLIC_ADMIN_CODE || adminCode === 'MTG_ADMIN_2024';
+        
         // Registro
-        const result = await signUp(email, password, name);
+        const result = await signUp(email, password, name, isAdmin);
 
         if (result.success) {
           // Login automático após registro
@@ -94,19 +99,46 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
-                  Nome
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required={!isLogin}
-                />
-              </div>
+              <>
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
+                    Nome
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required={!isLogin}
+                  />
+                </div>
+                
+                <div className="flex items-center">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowAdminField(!showAdminField)}
+                    className="text-xs text-gray-400 hover:text-blue-400 focus:outline-none"
+                  >
+                    {showAdminField ? 'Ocultar opções avançadas' : 'Opções avançadas'}
+                  </button>
+                </div>
+                
+                {showAdminField && (
+                  <div>
+                    <label htmlFor="adminCode" className="block text-sm font-medium text-gray-300 mb-1">
+                      Código de Administrador
+                    </label>
+                    <input
+                      id="adminCode"
+                      type="password"
+                      value={adminCode}
+                      onChange={(e) => setAdminCode(e.target.value)}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             <div>

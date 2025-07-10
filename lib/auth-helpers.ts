@@ -70,7 +70,7 @@ export async function signUp(email: string, password: string, name: string, isAd
       });
       
       console.log('Resultado do registro:', signUpResult);
-      const { isSignUpComplete, userId, nextStep } = signUpResult;
+      const { isSignUpComplete, nextStep } = signUpResult;
     
     // Verificar se o usuário precisa de confirmação
     if (nextStep && nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
@@ -100,7 +100,7 @@ export async function signUp(email: string, password: string, name: string, isAd
     
     return {
       success: true,
-      user: { userId, username: email, attributes: { email, name, 'custom:role': isAdmin ? 'admin' : 'user' } }
+      user: { userId: email, username: email, attributes: { email, name, 'custom:role': isAdmin ? 'admin' : 'user' } }
     };
   } catch (error) {
     console.error('Erro ao registrar usuário:', error);
