@@ -7,12 +7,11 @@ const nextConfig = {
   generateBuildId: async () => {
     return 'build-' + Date.now();
   },
-  // Configurações para evitar problemas com o arquivo trace
-  experimental: {
-    outputFileTracingExcludes: {
-      '.next': ['**/*']
-    },
-  },
 }
 
-module.exports = nextConfig
+module.exports = {
+  ...nextConfig,
+  outputFileTracingExcludes: {
+    '.next': ['**/*']
+  },
+};

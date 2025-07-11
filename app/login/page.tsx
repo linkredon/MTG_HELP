@@ -77,6 +77,9 @@ export default function LoginPage() {
           <p className="text-gray-400">
             {isLogin ? 'Entre para acessar sua coleção' : 'Crie sua conta para começar'}
           </p>
+          <a href="/confirm-code" className="inline-block mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+            Confirmar Código de Registro
+          </a>
         </div>
 
         <div className="bg-gray-800/70 backdrop-blur-sm rounded-lg border border-gray-700 shadow-xl p-6">

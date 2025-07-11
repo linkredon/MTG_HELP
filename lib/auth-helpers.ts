@@ -1,15 +1,19 @@
-import { Amplify } from 'aws-amplify';
+// importação default removida, usar apenas métodos nomeados
 import { signIn as amplifySignIn, signUp as amplifySignUp, confirmSignUp as amplifyConfirmSignUp, signOut as amplifySignOut, getCurrentUser as amplifyGetCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { isDemoMode, authenticateDemoUser, registerDemoUser } from './demoMode';
 
 // Definindo tipos para os retornos das funções de autenticação
 export type AuthResult = 
   | { success: true; user: any }
-  | { success: false; error: string };
+  | { success: false, error: string };
 
 // Função para login
 export async function signIn(email: string, password: string): Promise<AuthResult> {
   try {
+    // Garantir que o usuário anterior foi deslogado
+  await amplifySignOut();
+    localStorage.clear();
+
     // Verificar se estamos em modo de demonstração
     if (isDemoMode()) {
       return authenticateDemoUser(email, password);

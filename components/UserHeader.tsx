@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Search, 
   Bell, 
@@ -22,10 +22,14 @@ interface UserHeaderProps {
 }
 
 const UserHeader = (props: UserHeaderProps) => {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const router = useRouter()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [notificationCount] = useState(2)
+
+  useEffect(() => {
+    update();
+  }, []);
 
   const handleLogin = () => {
     if (props.onLogin) {
@@ -35,18 +39,18 @@ const UserHeader = (props: UserHeaderProps) => {
     }
   }
 
-  const handleLogout = () => {
-    if (props.onLogout) {
-      props.onLogout();
-    } else {
-      signOut({ redirect: false });
-      setShowUserMenu(false);
-    }
-  }
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    signOut({ callbackUrl: '/login' });
+  };
+
+  const handleProfile = () => router.push('/user/profile');
+  const handleSettings = () => router.push('/user/settings');
 
   // Usar o usuário do NextAuth ou o usuário passado como prop
-  const user = session?.user || props.user;
-
+  const user = session?.user || props.user || { name: 'Usuário Desconhecido' };
+  console.log('UserHeader montado');
+  console.log('Session data:', session);
   return (
     <header className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-lg">
       <div className="container mx-auto">
@@ -137,11 +141,17 @@ const UserHeader = (props: UserHeaderProps) => {
                         <div className="text-sm font-medium text-white">{user?.name || 'Usuário'}</div>
                         <div className="text-xs text-slate-400">{user?.email || ''}</div>
                       </div>
-                      <button className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">
+                      <button 
+                        onClick={handleProfile}
+                        className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                      >
                         <User className="w-4 h-4" />
                         <span>Perfil</span>
                       </button>
-                      <button className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">
+                      <button 
+                        onClick={handleSettings}
+                        className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                      >
                         <Settings className="w-4 h-4" />
                         <span>Configurações</span>
                       </button>
