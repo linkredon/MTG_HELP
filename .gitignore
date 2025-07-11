@@ -26,7 +26,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
-.env.production
+[.env.production](http://_vscodecontentref_/1)
 
 # vercel
 .vercel
