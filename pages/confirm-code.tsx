@@ -19,8 +19,8 @@ export default function ConfirmCodePage() {
         throw new Error('Erro ao confirmar o código.');
       }
 
-      // Redirecionar após confirmação
-      router.push('/success');
+  // Redirecionar após confirmação
+  router.push('/');
     } catch (error) {
       alert((error as Error).message);
     }
