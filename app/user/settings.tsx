@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
 
+// Configuração para evitar pré-renderização estática
+export const dynamic = 'force-dynamic';
+
 export default function UserSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");

@@ -1,0 +1,366 @@
+"use client"
+
+// Configuração para evitar pré-renderização estática
+export const dynamic = 'force-dynamic';
+
+import '../styles/professional-mtg-interface.css'
+import '../styles/mobile-navigation.css'
+import '../styles/mobile-navigation-refined.css'
+import '../styles/header-enhancements.css'
+import '../styles/header-refined.css'
+import '../styles/tabs-enhanced.css'
+import '../styles/content-refinements.css'
+import '../styles/mobile-fixes.css'
+import '../styles/dropdown-menu.css'
+import '../styles/card-glow-effects-fixed.css'
+import '../styles/ambient-glow-enhanced.css'
+import '../styles/card-modal-enhanced.css'
+import '../styles/deck-selector-compact.css'
+import '../styles/mobile-header-web-fix.css'
+import '../styles/user-header-enhanced.css'
+import '../styles/tabs-dark-theme.css'
+import '../styles/favorites.css'
+import '../styles/achievements.css'
+import '../styles/achievements-enhanced.css'
+import '../styles/deck-builder-enhanced.css'
+import '../styles/card-search-enhanced.css'
+import '../styles/dropdown-fixes-enhanced.css'
+import '../styles/modal-fix-enhanced.css'
+import '../styles/deck-importer-enhanced.css'
+import { useState, Suspense } from 'react'
+import Script from 'next/script'
+import Colecao from './colecao-compact'
+import Painel from '@/components/Painel-compact'
+import ConstrutorDecks from '@/components/ConstrutorDecks-compact'
+import Regras from '@/components/Regras-compact'
+import Spoiler from '@/components/Spoiler-compact'
+import Favoritos from '@/components/Favoritos-compact'
+import AchievementsPage from './achievements/page'
+import UserHeader from '@/components/UserHeader'
+import MobileNavigation from '@/components/MobileNavigation'
+import { useAppContext } from '@/contexts/AppContext'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { useSession } from 'next-auth/react'
+import {
+  Grid3X3,
+  Library,
+  Hammer,
+  BookOpen,
+  Sparkles,
+  User as UserIcon,
+  Settings,
+  Bell,
+  Search,
+  TrendingUp,
+  Award,
+  Zap,
+  Target,
+  Star,
+  Heart,
+  ExternalLink,
+  Trophy
+} from "lucide-react"
+import type { MTGCard } from '@/types/mtg';
+
+// Componente interno que usa hooks de React
+function HomeContent() {
+  const { data: session } = useSession()
+  const [activeTab, setActiveTab] = useState('painel')
+  const [allCards, setAllCards] = useState<MTGCard[]>([])
+
+  // Usar o contexto global para coleção
+  const { currentCollection, exportCollectionToCSV } = useAppContext()
+  
+  // Configuração das abas com design profissional
+  const tabs = [
+    {
+      id: 'painel',
+      label: 'Dashboard',
+      icon: Grid3X3,
+      component: <Painel onNavigate={(tab: string) => setActiveTab(tab)} />
+    },
+    {
+      id: 'colecao',
+      label: 'Coleção',
+      icon: Library,
+      component: <Colecao allCards={allCards} setAllCards={setAllCards} exportCollectionToCSV={exportCollectionToCSV} />
+    },
+    {
+      id: 'decks',
+      label: 'Decks',
+      icon: Hammer,
+      component: <ConstrutorDecks />
+    },
+    {
+      id: 'regras',
+      label: 'Regras',
+      icon: BookOpen,
+      component: <Regras />
+    },
+    {
+      id: 'spoiler',
+      label: 'Novidades',
+      icon: Sparkles,
+      component: <Spoiler />
+    },
+    {
+      id: 'favoritos',
+      label: 'Favoritos',
+      icon: Heart,
+      component: <Favoritos />
+    },
+    {
+      id: 'achievements',
+      label: 'Conquistas',
+      icon: Trophy,
+      component: <AchievementsPage />
+    },
+    {
+      id: 'configuracoes',
+      label: 'Ajustes',
+      icon: Settings,
+      component: <div>Configurações em breve</div>
+    }
+  ]
+  
+  // Configuração das abas com design profissional
+  const tabs = [
+    {
+      id: 'painel',
+      label: 'Painel',
+      icon: <Grid3X3 className="mr-2 h-4 w-4" />,
+      content: <Painel onNavigate={(tab) => setActiveTab(tab)} />
+    },
+    {
+      id: 'colecao',
+      label: 'Coleção',
+      icon: <Library className="mr-2 h-4 w-4" />,
+      content: <Colecao allCards={allCards} setAllCards={setAllCards} exportCollectionToCSV={exportCollectionToCSV} />
+    },
+    {
+      id: 'decks',
+      label: 'Decks',
+      icon: <Hammer className="mr-2 h-4 w-4" />,
+      content: <ConstrutorDecks />
+    },
+    {
+      id: 'regras',
+      label: 'Regras',
+      icon: <BookOpen className="mr-2 h-4 w-4" />,
+      content: <Regras />
+    },
+    {
+      id: 'spoilers',
+      label: 'Spoilers',
+      icon: <Sparkles className="mr-2 h-4 w-4" />,
+      content: <Spoiler />
+    },
+    {
+      id: 'favoritos',
+      label: 'Favoritos',
+      icon: <Heart className="mr-2 h-4 w-4" />,
+      content: <Favoritos />
+    },
+    {
+      id: 'conquistas',
+      label: 'Conquistas',
+      icon: <Trophy className="mr-2 h-4 w-4" />,
+      content: <AchievementsPage />
+    }
+  ]
+  
+  return (
+    <main className="flex min-h-screen flex-col bg-gradient-to-b from-slate-950 to-slate-900 text-white">
+      {/* Cabeçalho do usuário */}
+      <UserHeader user={session?.user} />
+
+      {/* Menu de navegação móvel */}
+      <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} tabs={tabs} />
+      
+      {/* Conteúdo principal */}
+      <div className="flex-grow container mx-auto px-4 py-8">
+        <Tabs 
+          defaultValue="painel" 
+          value={activeTab} 
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <div className="border-b border-slate-700 mb-6 hidden md:block">
+            <TabsList className="bg-transparent w-full justify-start">
+              {tabs.map(tab => (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 py-3 px-5"
+                >
+                  <div className="flex items-center">
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </div>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+          
+          {tabs.map(tab => (
+            <TabsContent key={tab.id} value={tab.id} className="mt-0">
+              {tab.content}
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+      
+      {/* Script para efeitos de brilho */}
+      <Script src="/glow-script.js" />
+    </main>
+  )
+}
+
+// Componente de fallback para o Suspense
+function HomeFallback() {
+  return (
+    <div className="flex justify-center items-center h-screen bg-slate-900">
+      <div className="flex flex-col items-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
+        <p className="text-white text-lg">Carregando...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function Home() {
+  // Envolver o conteúdo que usa hooks em um Suspense
+  return (
+    <Suspense fallback={<HomeFallback />}>
+      <HomeContent />
+    </Suspense>
+  );
+
+            <div className="quantum-card-dense p-3 card-purple">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-md bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                  <Bell className="w-4 h-4 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-white mb-1">Monitoramento de Preços</h3>
+                  <p className="text-xs text-gray-400 mb-2">
+                    Alertas sobre preços e tendências
+                  </p>
+                  <span className="inline-flex items-center h-5 px-2 rounded-md text-[10px] font-medium bg-yellow-900/30 text-yellow-400">
+                    Beta
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="quantum-card-dense p-3 card-green">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-md bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-4 h-4 text-green-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-white mb-1">Analytics Profissional</h3>
+                  <p className="text-xs text-gray-400 mb-2">
+                    Insights sobre sua coleção
+                  </p>
+                  <span className="inline-flex items-center h-5 px-2 rounded-md text-[10px] font-medium bg-green-900/30 text-green-400">
+                    Ativo
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="quantum-card-dense p-3 card-orange">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-md bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                  <UserIcon className="w-4 h-4 text-yellow-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-white mb-1">Comunidade MTG</h3>
+                  <p className="text-xs text-gray-400 mb-2">
+                    Conecte-se com colecionadores
+                  </p>
+                  <span className="inline-flex items-center h-5 px-2 rounded-md text-[10px] font-medium bg-blue-900/30 text-blue-400">
+                    Novo
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recursos Adicionais */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="quantum-card-dense p-4 card-blue">
+              <div className="flex items-center gap-2 mb-3">
+                <Award className="w-5 h-5 text-blue-400" />
+                <h3 className="text-sm font-medium text-white">Conquistas</h3>
+              </div>
+              <p className="text-xs text-gray-400 mb-3">
+                Desbloqueie conquistas ao expandir sua coleção e construir decks
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="w-full aspect-square rounded-md bg-blue-900/30 flex items-center justify-center">
+                    <Zap className={`w-5 h-5 ${i <= 2 ? 'text-blue-400' : 'text-gray-600'}`} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="quantum-card-dense p-4 card-purple">
+              <div className="flex items-center gap-2 mb-3">
+                <Target className="w-5 h-5 text-purple-400" />
+                <h3 className="text-sm font-medium text-white">Metas de Coleção</h3>
+              </div>
+              <p className="text-xs text-gray-400 mb-3">
+                Defina e acompanhe metas para sua coleção
+              </p>
+              <div className="space-y-2">
+                <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+
+
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+      {/* Script para efeitos visuais */}
+      <Script src="/scripts/card-effects.js" strategy="lazyOnload" />
+
+      {/* Header com informações do usuário */}
+      <UserHeader />
+
+      {/* Conteúdo principal */}
+      <div className="container mx-auto px-4 py-6">
+        <Tabs 
+          defaultValue={activeTab} 
+          value={activeTab} 
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <TabsList className="mtg-tabs-list grid grid-cols-4 md:grid-cols-8 gap-2 mb-6">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger 
+                  key={tab.id}
+                  value={tab.id}
+                  className="mtg-tab-trigger"
+                >
+                  <Icon className="mtg-tab-icon w-4 h-4" />
+                  <span className="mtg-tab-text">{tab.label}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+
+          {tabs.map((tab) => (
+            <TabsContent key={tab.id} value={tab.id} className="focus:outline-none">
+              {tab.component}
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+
+      {/* Navegação mobile */}
+      <MobileNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+    </main>
+  )
+}

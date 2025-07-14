@@ -1,5 +1,6 @@
 "use client";
 import '../../lib/amplifyClient';
+import '../../styles/login.css';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';

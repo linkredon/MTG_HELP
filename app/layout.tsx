@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Orbitron } from 'next/font/google'
 import './globals.css'
-import '../lib/amplifyClient' // Importar configuração do Amplify
 import '../styles/card-collection.css'
 import '../styles/deck-viewer-compact.css'
 import '../styles/compact-layout.css'
@@ -23,9 +22,6 @@ import '../styles/nav-compact.css'
 import '../styles/tab-buttons.css'
 import '../styles/responsive-tabs.css'
 import '../styles/tab-spacing.css'
-import { AppProvider } from '@/contexts/AppContext'
-import { FavoritesProvider } from '@/contexts/FavoritesContext'
-import CardModalWrapper from '@/components/CardModalWrapper'
 import ClientLayout from './layout.client'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -46,13 +42,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${inter.className} ${orbitron.variable} quantum-compact compact-app`}>
         <ClientLayout>
-          <AppProvider>
-            <FavoritesProvider>
-              <CardModalWrapper>
-                {children}
-              </CardModalWrapper>
-            </FavoritesProvider>
-          </AppProvider>
+          {children}
         </ClientLayout>
       </body>
     </html>

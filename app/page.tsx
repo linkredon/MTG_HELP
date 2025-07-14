@@ -1,5 +1,9 @@
 "use client"
 
+// Configuração para evitar pré-renderização estática
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge'; // Usar o runtime edge para evitar problemas com SSR
+
 import '../styles/professional-mtg-interface.css'
 import '../styles/mobile-navigation.css'
 import '../styles/mobile-navigation-refined.css'
@@ -24,7 +28,7 @@ import '../styles/card-search-enhanced.css'
 import '../styles/dropdown-fixes-enhanced.css'
 import '../styles/modal-fix-enhanced.css'
 import '../styles/deck-importer-enhanced.css'
-import { useState } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import Script from 'next/script'
 import Colecao from './colecao-compact'
 import Painel from '@/components/Painel-compact'
@@ -59,39 +63,82 @@ import {
 } from "lucide-react"
 import type { MTGCard } from '@/types/mtg';
 
-export default function Home() {
-  const { data: session } = useSession()
+// Fallback para quando o Suspense estiver carregando
+function HomeFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 flex items-center justify-center">
+      <div className="text-center animate-pulse">
+        <div className="inline-block rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 p-2 mb-4">
+          <div className="w-12 h-12 text-white flex items-center justify-center">
+            <svg className="animate-spin" width="24" height="24" viewBox="0 0 24 24">
+              <circle 
+                className="opacity-25" 
+                cx="12" cy="12" r="10" 
+                stroke="currentColor" 
+                strokeWidth="4"
+                fill="none"
+              />
+              <path 
+                className="opacity-75" 
+                fill="currentColor" 
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          </div>
+        </div>
+        <h2 className="text-xl font-semibold text-white mb-2">Carregando MTG Helper</h2>
+        <p className="text-blue-300 text-sm">Preparando sua experiência de Magic...</p>
+      </div>
+    </div>
+  )
+}
+
+// Componente interno que usa hooks de React
+function HomeContent() {
+  const { data: session, status } = useSession()
   const [activeTab, setActiveTab] = useState('painel')
   const [allCards, setAllCards] = useState<MTGCard[]>([])
+  
+  // Adicionar um efeito para garantir que estamos no lado do cliente
+  useEffect(() => {
+    // Código a ser executado apenas no lado do cliente
+    console.log('HomeContent montado no lado do cliente')
+  }, [])
 
   // Usar o contexto global para coleção
   const { currentCollection, exportCollectionToCSV } = useAppContext()
-
+  
   // Configuração das abas com design profissional
   const tabs = [
     {
       id: 'painel',
       label: 'Dashboard',
       icon: Grid3X3,
-      component: <Painel onNavigate={setActiveTab} />
+      component: <Painel onNavigate={(tab: string) => setActiveTab(tab)} />
     },
     {
       id: 'colecao',
       label: 'Coleção',
       icon: Library,
-      component: (
-        <Colecao
-          allCards={allCards}
-          setAllCards={setAllCards}
-          exportCollectionToCSV={exportCollectionToCSV}
-        />
-      )
+      component: <Colecao allCards={allCards} setAllCards={setAllCards} exportCollectionToCSV={exportCollectionToCSV} />
     },
     {
       id: 'decks',
-      label: 'Deck Builder',
+      label: 'Decks',
       icon: Hammer,
       component: <ConstrutorDecks />
+    },
+    {
+      id: 'regras',
+      label: 'Regras',
+      icon: BookOpen,
+      component: <Regras />
+    },
+    {
+      id: 'spoiler',
+      label: 'Novidades',
+      icon: Sparkles,
+      component: <Spoiler />
     },
     {
       id: 'favoritos',
@@ -106,176 +153,26 @@ export default function Home() {
       component: <AchievementsPage />
     },
     {
-      id: 'spoiler',
-      label: 'Spoilers',
-      icon: Star,
-      component: <Spoiler isAdmin={session?.user?.role === 'admin'} />
-    },
-    {
-      id: 'regras',
-      label: 'Regras',
-      icon: BookOpen,
-      component: <Regras />
-    },
-    {
-      id: 'extras',
-      label: 'Recursos',
-      icon: Sparkles,
-      component: (
-        <div className="p-4">
-          {/* Header Compacto */}
-          <div className="quantum-card-dense p-4 mb-4 card-purple">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-400" />
-              <h2 className="text-lg font-semibold text-white">Recursos Avançados</h2>
-            </div>
-            <p className="text-sm text-gray-400 mt-2">
-              Ferramentas premium para aprimorar sua experiência MTG
-            </p>
-          </div>
-
-          {/* Features Grid - Compact Version */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-            <div className="quantum-card-dense p-3 card-red cursor-pointer" onClick={() => setActiveTab('favoritos')}>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-md bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                  <Heart className="w-4 h-4 text-red-400" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-white mb-1">Cartas Favoritas</h3>
-                  <p className="text-xs text-gray-400 mb-2">
-                    Acesse suas cartas favoritas
-                  </p>
-                  <div className="flex items-center gap-1 text-[10px] text-red-400">
-                    <span>Acessar</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="quantum-card-dense p-3 card-blue">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-md bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                  <Search className="w-4 h-4 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-white mb-1">Pesquisa Avançada</h3>
-                  <p className="text-xs text-gray-400 mb-2">
-                    Filtros avançados com sintaxe Scryfall
-                  </p>
-                  <span className="inline-flex items-center h-5 px-2 rounded-md text-[10px] font-medium bg-blue-900/30 text-blue-400">
-                    Em Breve
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="quantum-card-dense p-3 card-purple">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-md bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                  <Bell className="w-4 h-4 text-purple-400" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-white mb-1">Monitoramento de Preços</h3>
-                  <p className="text-xs text-gray-400 mb-2">
-                    Alertas sobre preços e tendências
-                  </p>
-                  <span className="inline-flex items-center h-5 px-2 rounded-md text-[10px] font-medium bg-yellow-900/30 text-yellow-400">
-                    Beta
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="quantum-card-dense p-3 card-green">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-md bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="w-4 h-4 text-green-400" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-white mb-1">Analytics Profissional</h3>
-                  <p className="text-xs text-gray-400 mb-2">
-                    Insights sobre sua coleção
-                  </p>
-                  <span className="inline-flex items-center h-5 px-2 rounded-md text-[10px] font-medium bg-green-900/30 text-green-400">
-                    Ativo
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="quantum-card-dense p-3 card-orange">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-md bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
-                  <UserIcon className="w-4 h-4 text-yellow-400" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-white mb-1">Comunidade MTG</h3>
-                  <p className="text-xs text-gray-400 mb-2">
-                    Conecte-se com colecionadores
-                  </p>
-                  <span className="inline-flex items-center h-5 px-2 rounded-md text-[10px] font-medium bg-blue-900/30 text-blue-400">
-                    Novo
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recursos Adicionais */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="quantum-card-dense p-4 card-blue">
-              <div className="flex items-center gap-2 mb-3">
-                <Award className="w-5 h-5 text-blue-400" />
-                <h3 className="text-sm font-medium text-white">Conquistas</h3>
-              </div>
-              <p className="text-xs text-gray-400 mb-3">
-                Desbloqueie conquistas ao expandir sua coleção e construir decks
-              </p>
-              <div className="grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-full aspect-square rounded-md bg-blue-900/30 flex items-center justify-center">
-                    <Zap className={`w-5 h-5 ${i <= 2 ? 'text-blue-400' : 'text-gray-600'}`} />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="quantum-card-dense p-4 card-purple">
-              <div className="flex items-center gap-2 mb-3">
-                <Target className="w-5 h-5 text-purple-400" />
-                <h3 className="text-sm font-medium text-white">Metas de Coleção</h3>
-              </div>
-              <p className="text-xs text-gray-400 mb-3">
-                Defina e acompanhe metas para sua coleção
-              </p>
-              <div className="space-y-2">
-                <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-purple-500" style={{ width: '65%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-purple-400">65% completo</span>
-                  <span className="text-gray-400">Meta: 1000 cartas</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )
+      id: 'configuracoes',
+      label: 'Ajustes',
+      icon: Settings,
+      component: <div>Configurações em breve</div>
     }
   ]
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+    <main className="flex min-h-screen flex-col bg-gradient-to-b from-slate-950 to-slate-900 text-white">
       {/* Script para efeitos visuais */}
       <Script src="/scripts/card-effects.js" strategy="lazyOnload" />
 
       {/* Header com informações do usuário */}
-      <UserHeader />
+      <UserHeader user={session?.user} />
 
+      {/* Menu de navegação móvel */}
+      <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} tabs={tabs} />
+      
       {/* Conteúdo principal */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="flex-grow container mx-auto px-4 py-8">
         <Tabs 
           defaultValue={activeTab} 
           value={activeTab} 
@@ -305,9 +202,15 @@ export default function Home() {
           ))}
         </Tabs>
       </div>
-
-      {/* Navegação mobile */}
-      <MobileNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </main>
-  )
+  );
+}
+
+// Componente principal para a página
+export default function Home() {
+  return (
+    <Suspense fallback={<HomeFallback />}>
+      <HomeContent />
+    </Suspense>
+  );
 }

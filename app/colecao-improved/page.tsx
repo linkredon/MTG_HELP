@@ -1,5 +1,9 @@
 "use client";
 
+// Configuração para evitar pré-renderização estática
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge'; // Usar o runtime edge para evitar problemas com SSR
+
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useAppContext } from "@/contexts/AppContext";

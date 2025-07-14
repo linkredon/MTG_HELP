@@ -1,0 +1,79 @@
+'use client';
+
+import { Amplify } from 'aws-amplify';
+
+// Verifica o ambiente atual
+const isLocal = 
+  typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+// Configuração otimizada do Amplify
+export function configureAmplify() {
+  try {
+    // Buscar configurações do .env.local
+    const userPoolId = process.env.NEXT_PUBLIC_USER_POOL_ID || 'us-east-2_GIWZQN4d2';
+    const userPoolClientId = process.env.NEXT_PUBLIC_USER_POOL_WEB_CLIENT_ID || '55j5l3rcp164av86djhf9qpjch';
+    const region = process.env.NEXT_PUBLIC_REGION || 'us-east-2';
+    
+    // Obter o domínio do Cognito e garantir que tenha https://
+    let cognitoDomain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'mtghelper.auth.us-east-2.amazoncognito.com';
+    if (!cognitoDomain.startsWith('https://')) {
+      cognitoDomain = `https://${cognitoDomain}`;
+    }
+    
+    // URLs de redirecionamento com base no ambiente
+    const baseUrl = isLocal 
+      ? 'http://localhost:3000' 
+      : 'https://main.da2h2t88kn6qm.amplifyapp.com';
+      
+    const redirectSignIn = [
+      baseUrl,
+      'http://localhost:3001',
+      'http://localhost:3000',
+      'https://main.da2h2t88kn6qm.amplifyapp.com'
+    ];
+    
+    const redirectSignOut = [
+      baseUrl,
+      'http://localhost:3001',
+      'http://localhost:3000',
+      'https://main.da2h2t88kn6qm.amplifyapp.com'
+    ];
+
+    // Usar o formato de configuração Amplify v6 (legacy config)
+    const config = {
+      aws_project_region: region,
+      aws_cognito_region: region,
+      aws_user_pools_id: userPoolId,
+      aws_user_pools_web_client_id: userPoolClientId,
+      oauth: {
+        domain: cognitoDomain,
+        scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
+        redirectSignIn: redirectSignIn.join(','),
+        redirectSignOut: redirectSignOut.join(','),
+        responseType: 'code'
+      },
+      federationTarget: 'COGNITO_USER_POOLS'
+    };
+    
+    // Aplicar configuração
+    Amplify.configure(config);
+    
+    console.log('✅ Amplify configurado com sucesso usando formato legacy');
+    return true;
+  } catch (error) {
+    console.error('❌ Erro ao configurar Amplify:', error);
+    
+    // Tentar configuração minima
+    try {
+      Amplify.configure({});
+      console.log('⚠️ Usando configuração mínima para evitar erros');
+      return true;
+    } catch (e) {
+      console.error('Falha completa na configuração:', e);
+      return false;
+    }
+  }
+}
+
+export default configureAmplify;

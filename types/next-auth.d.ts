@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
   /**
@@ -7,24 +7,25 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      name: string;
-      email: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
       avatar?: string;
       role?: string;
       joinedAt?: string;
       collectionsCount?: number;
       totalCards?: number;
       achievements?: string[];
-    };
+    }
   }
 
   /**
    * Extending the built-in user types
+   * Removido o campo 'id' para evitar duplicação com o tipo padrão
    */
   interface User {
-    id: string;
-    name: string;
-    email: string;
+    // Nota: o campo 'id' já existe no tipo User padrão
+    sub?: string;         // Campo sub usado por OAuth providers como Google
     avatar?: string;
     role?: string;
     joinedAt?: string;

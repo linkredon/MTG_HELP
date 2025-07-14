@@ -11,7 +11,8 @@ const publicRoutes = [
   '/api/register',
   '/_next',
   '/favicon.ico',
-  '/auth-monitor' // Adicionada rota do monitor de autenticação
+  '/auth-monitor', // Adicionada rota do monitor de autenticação
+  '/api/auth/session' // Garantir que a rota da sessão seja pública
 ];
 
 // Função para diagnosticar fluxo de autenticação

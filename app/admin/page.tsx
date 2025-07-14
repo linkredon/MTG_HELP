@@ -6,6 +6,7 @@ import { generateClient } from 'aws-amplify/api';
 import { listUsers } from '../../src/graphql/queries';
 import { createUser, updateUser, deleteUser } from '../../src/graphql/mutations';
 import { User as AmplifyUser, CreateUserInput, UpdateUserInput, DeleteUserInput } from '../../lib/API';
+import './admin.css';
 
 export default function AdminPage() {
   // Usando o tipo do Amplify com algumas simplificações
@@ -155,8 +156,21 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-3xl font-bold mb-6">Painel de Administração</h1>
+    <div className="admin-container min-h-screen bg-gray-900 text-white p-6">
+      <h1 className="admin-title text-3xl font-bold mb-6">Painel de Administração</h1>
+      
+      {/* Adicionando links para ferramentas administrativas */}
+      <div className="admin-tools mb-8">
+        <h2 className="text-xl font-semibold mb-4">Ferramentas de Administração</h2>
+        <div className="tools-grid grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <a href="/admin/google-oauth-setup" className="tool-card bg-gray-800 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <div className="tool-icon text-4xl mb-2">🔑</div>
+            <h3 className="text-lg font-semibold">Configurar OAuth do Google</h3>
+            <p className="text-sm text-gray-400">Configure as credenciais para autenticação via Google</p>
+          </a>
+          {/* Adicione mais cards de ferramentas conforme necessário */}
+        </div>
+      </div>
       
       {error && (
         <div className="bg-red-900/30 border border-red-800 text-red-400 px-4 py-2 rounded-md mb-6">
@@ -179,8 +193,8 @@ export default function AdminPage() {
             <tbody>
               {users.map((user: AppUser) => (
                 <tr key={user.id} className="border-b border-gray-700">
-                  <td className="px-4 py-3">{user.name}</td>
-                  <td className="px-4 py-3">{user.email}</td>
+                  <td className="px-4 py-3">{user.name || 'Sem nome'}</td>
+                  <td className="px-4 py-3">{user.email || 'Sem email'}</td>
                   <td className="px-4 py-3">{user.role || 'user'}</td>
                   <td className="px-4 py-3 flex space-x-2">
                     <button 

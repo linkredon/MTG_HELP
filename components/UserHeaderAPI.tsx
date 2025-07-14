@@ -98,17 +98,17 @@ const UserHeader = () => {
                       {user.avatar ? (
                         <img 
                           className="aspect-square h-full w-full" 
-                          alt={user.name} 
+                          alt={user.name || "Avatar do usuário"} 
                           src={user.avatar}
                         />
                       ) : (
                         <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-medium">
-                          {user.name.charAt(0)}
+                          {user.name?.charAt(0) || "U"}
                         </div>
                       )}
                     </span>
                     <div className="hidden md:block text-left">
-                      <div className="text-sm font-medium text-white">{user.name}</div>
+                      <div className="text-sm font-medium text-white">{user.name || "Usuário"}</div>
                       <div className="text-xs text-slate-400">Online</div>
                     </div>
                     <ChevronDown className="w-4 h-4 text-slate-400 hidden md:block" />
@@ -118,8 +118,8 @@ const UserHeader = () => {
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg py-1 z-50">
                       <div className="px-4 py-2 border-b border-slate-700">
-                        <div className="text-sm font-medium text-white">{user.name}</div>
-                        <div className="text-xs text-slate-400">{user.email}</div>
+                        <div className="text-sm font-medium text-white">{user.name || "Usuário"}</div>
+                        <div className="text-xs text-slate-400">{user.email || "sem email"}</div>
                       </div>
                       <button className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2">
                         <User className="w-4 h-4" />

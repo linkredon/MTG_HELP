@@ -1,8 +1,13 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import AuthTroubleshooter from '@/components/AuthTroubleshooter';
 import AuthDebugger from '@/components/AuthDebugger';
+import GoogleOAuthDiagnostic from '@/components/GoogleOAuthDiagnostic';
+import GoogleAuthValidator from '@/components/GoogleAuthValidator';
+import CognitoHostedUIDebugger from '@/components/CognitoHostedUIDebugger';
+import CognitoCheckResult from '@/components/CognitoCheckResult';
 
 interface AuthEvent {
   timestamp: string;
@@ -16,6 +21,7 @@ export default function GoogleAuthMonitor() {
   const [hashParams, setHashParams] = useState<Record<string, string>>({});
   const [authUrl, setAuthUrl] = useState<string>('');
   const [debugMode, setDebugMode] = useState(false);
+  const [activeTab, setActiveTab] = useState('monitor'); // Adicionado estado para aba ativa
 
   // Função para adicionar eventos ao log
   const addEvent = (type: string, details: string) => {
@@ -256,10 +262,72 @@ export default function GoogleAuthMonitor() {
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <h1 className="text-2xl font-bold mb-6">Monitor de Autenticação Google</h1>
       
-      {/* Componente solucionador de problemas */}
-      <div className="mb-6">
-        <AuthTroubleshooter />
+      {/* Tabs de navegação */}
+      <div className="flex mb-6 border-b border-gray-700">
+        <div 
+          className={`px-4 py-2 cursor-pointer ${activeTab === 'monitor' 
+            ? 'border-b-2 border-blue-500 font-medium' 
+            : 'text-gray-400 hover:text-white'}`}
+          onClick={() => setActiveTab('monitor')}
+        >
+          Monitor
+        </div>
+        <div 
+          className={`px-4 py-2 cursor-pointer ${activeTab === 'diagnostic' 
+            ? 'border-b-2 border-blue-500 font-medium' 
+            : 'text-gray-400 hover:text-white'}`}
+          onClick={() => setActiveTab('diagnostic')}
+        >
+          Diagnóstico OAuth
+        </div>
+        <div 
+          className={`px-4 py-2 cursor-pointer ${activeTab === 'validator' 
+            ? 'border-b-2 border-blue-500 font-medium' 
+            : 'text-gray-400 hover:text-white'}`}
+          onClick={() => setActiveTab('validator')}
+        >
+          Validador OAuth
+        </div>
+        <div 
+          className={`px-4 py-2 cursor-pointer ${activeTab === 'debug' 
+            ? 'border-b-2 border-blue-500 font-medium' 
+            : 'text-gray-400 hover:text-white'}`}
+          onClick={() => setActiveTab('debug')}
+        >
+          Depurador
+        </div>
       </div>
+      
+      {activeTab === 'diagnostic' && (
+        <div className="bg-gray-800 p-6 rounded-lg mb-6">
+          <GoogleOAuthDiagnostic />
+        </div>
+      )}
+
+      {activeTab === 'validator' && (
+        <div className="bg-gray-800 p-6 rounded-lg mb-6">
+          <GoogleAuthValidator />
+          <CognitoCheckResult />
+        </div>
+      )}
+      
+      {activeTab === 'debug' && (
+        <div className="bg-gray-800 p-6 rounded-lg mb-6">
+          <AuthDebugger />
+          <div className="mt-6">
+            <CognitoHostedUIDebugger />
+          </div>
+        </div>
+      )}
+      
+      {activeTab === 'monitor' && (
+        <>
+          {/* Componente solucionador de problemas */}
+          <div className="mb-6">
+            <AuthTroubleshooter />
+          </div>
+        </>
+      )}
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-gray-800 p-4 rounded-lg">
@@ -279,6 +347,48 @@ export default function GoogleAuthMonitor() {
             >
               Usar Hosted UI do Cognito
             </button>
+            
+            <div className="border-t border-gray-700 pt-4 mt-4">
+              <h3 className="text-lg font-semibold mb-2">Ferramentas de Diagnóstico</h3>
+              
+              <div className="space-y-3">
+                <Link 
+                  href="/auth-monitor/dashboard" 
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md w-full block text-center"
+                >
+                  Dashboard de Autenticação
+                </Link>
+                
+                <Link 
+                  href="/auth-monitor/login-debugger" 
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full block text-center"
+                >
+                  Debugger de "Login pages unavailable"
+                </Link>
+              </div>
+            </div>
+            
+            <div className="border-t border-gray-700 pt-4 mt-4">
+              <h3 className="text-lg font-semibold mb-2">Documentação</h3>
+              
+              <div className="space-y-3">
+                <a 
+                  href="/docs/cognito-setup-guide.md" 
+                  target="_blank"
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md w-full block text-center"
+                >
+                  Guia de Configuração do Cognito
+                </a>
+                
+                <a 
+                  href="/docs/cognito-login-error-fix.md" 
+                  target="_blank"
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md w-full block text-center"
+                >
+                  Resolver "Login pages unavailable"
+                </a>
+              </div>
+            </div>
             
             <button
               onClick={checkSession}
@@ -381,6 +491,11 @@ export default function GoogleAuthMonitor() {
 
       {/* Depurador flutuante (só aparece quando ativado) */}
       {debugMode && <AuthDebugger />}
+
+      {/* Componente de diagnóstico OAuth (abaixo do monitor) */}
+      <div className="mt-6">
+        <GoogleOAuthDiagnostic />
+      </div>
     </div>
   );
 }

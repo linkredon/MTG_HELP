@@ -24,25 +24,35 @@ import type { User } from '@/types/mtg';
 
 interface MobileNavigationProps {
   activeTab: string
-  onTabChange: (tab: string) => void
+  onTabChange?: (tab: string) => void
+  setActiveTab?: (tab: string) => void
   user?: User | null
   onLogout?: () => void
   onLogin?: () => void
+  tabs?: Array<{
+    id: string
+    label: string
+    icon: any
+    content?: React.ReactElement
+    component?: React.ReactElement
+  }>
 }
 
 const MobileNavigation = ({
   user,
   activeTab,
   onTabChange,
+  setActiveTab,
   onLogout,
-  onLogin
+  onLogin,
+  tabs
 }: MobileNavigationProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [showFab, setShowFab] = useState(false)
   
-  // Tabs para navegação
-  const tabs = [
+  // Tabs para navegação - usar a prop tabs se fornecida, caso contrário usar tabs padrão
+  const navTabs = tabs || [
     { id: 'painel', label: 'Dashboard', icon: Grid3X3 },
     { id: 'colecao', label: 'Coleção', icon: Library },
     { id: 'decks', label: 'Deck Builder', icon: Hammer },
@@ -79,7 +89,12 @@ const MobileNavigation = ({
   }, [isMenuOpen])
 
   const handleTabChange = (tabId: string) => {
-    onTabChange(tabId)
+    // Use setActiveTab se disponível, caso contrário, use onTabChange
+    if (setActiveTab) {
+      setActiveTab(tabId)
+    } else if (onTabChange) {
+      onTabChange(tabId)
+    }
     setIsMenuOpen(false) // Fechar menu ao mudar de aba
   }
 
@@ -92,7 +107,7 @@ const MobileNavigation = ({
       <header className={`mobile-header ${isScrolled ? 'mobile-header-scrolled' : ''} mobile-header-animate-in`}>
         <div className="mobile-header-container mobile-header-content-animate">
           <div className="mobile-logo-container">
-            <div className="mobile-logo-badge" onClick={() => onTabChange('painel')}>
+            <div className="mobile-logo-badge" onClick={() => handleTabChange('painel')}>
               <span className="relative z-10">MTG</span>
             </div>
             <div className="mobile-logo-text">
@@ -122,15 +137,15 @@ const MobileNavigation = ({
               window.scrollTo({top: 0, behavior: 'smooth'})
             }}
           >
-            {tabs.find(tab => tab.id === activeTab)?.icon && (
+            {navTabs.find(tab => tab.id === activeTab)?.icon && (
               <div className="mobile-subheader-icon">
                 {(() => {
-                  const Icon = tabs.find(tab => tab.id === activeTab)?.icon || Home
+                  const Icon = navTabs.find(tab => tab.id === activeTab)?.icon || Home
                   return <Icon size={18} className="text-indigo-400" />
                 })()}
               </div>
             )}
-            <span>{tabs.find(tab => tab.id === activeTab)?.label || 'Início'}</span>
+            <span>{navTabs.find(tab => tab.id === activeTab)?.label || 'Início'}</span>
           </div>
           
           <div className="mobile-subheader-actions">
@@ -277,7 +292,7 @@ const MobileNavigation = ({
             <div className="text-xs font-medium uppercase text-gray-500 mb-2">Navegação</div>
           </div>
           <div className="mobile-nav-links">
-            {tabs.map((tab) => {
+            {navTabs.map((tab) => {
               const Icon = tab.icon
               return (
                 <button

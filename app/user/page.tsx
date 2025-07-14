@@ -2,6 +2,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 
+// Configuração para evitar pré-renderização estática
+export const dynamic = 'force-dynamic';
+
 export default function UserPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
