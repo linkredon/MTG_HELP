@@ -3,10 +3,10 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
 // Configuração do cliente DynamoDB
 const client = new DynamoDBClient({
-  region: process.env.AWS_REGION || 'us-east-2',
+  region: process.env.AMZ_REGION || 'us-east-2',
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
+    accessKeyId: process.env.AMZ_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AMZ_SECRET_ACCESS_KEY || ''
   }
 });
 
@@ -15,8 +15,8 @@ export const dynamoDb = DynamoDBDocumentClient.from(client);
 
 // Nomes das tabelas
 export const TABLES = {
-  USERS: process.env.AWS_DYNAMODB_USERS_TABLE || 'mtg_users',
-  COLLECTIONS: process.env.AWS_DYNAMODB_COLLECTIONS_TABLE || 'mtg_collections',
-  DECKS: process.env.AWS_DYNAMODB_DECKS_TABLE || 'mtg_decks',
-  FAVORITES: process.env.AWS_DYNAMODB_FAVORITES_TABLE || 'mtg_favorites'
+  USERS: process.env.DYNAMO_USERS_TABLE || 'mtg_users',
+  COLLECTIONS: process.env.DYNAMO_COLLECTIONS_TABLE || 'mtg_collections',
+  DECKS: process.env.DYNAMO_DECKS_TABLE || 'mtg_decks',
+  FAVORITES: process.env.DYNAMO_FAVORITES_TABLE || 'mtg_favorites'
 };

@@ -5,8 +5,8 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
 // Configurações
-const REGION = process.env.AWS_REGION || 'us-east-2';
-const TABLE_NAME = process.env.AWS_DYNAMODB_USERS_TABLE || 'mtg_users';
+const REGION = process.env.AMZ_REGION || 'us-east-2';
+const TABLE_NAME = process.env.DYNAMO_USERS_TABLE || 'mtg_users';
 
 // Dados do administrador
 const ADMIN_NAME = 'Administrador';
@@ -19,8 +19,8 @@ async function createAdmin() {
     const client = new DynamoDBClient({
       region: REGION,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+        accessKeyId: process.env.AMZ_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AMZ_SECRET_ACCESS_KEY
       }
     });
     
