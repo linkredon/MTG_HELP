@@ -15,17 +15,18 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showAdminField, setShowAdminField] = useState(false);
+  const [debugLog, setDebugLog] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+    let log: string[] = [];
     try {
       if (isLogin) {
         // Login
         const result = await signIn(email, password);
-        console.log('Login result:', result);
+        log.push('Login result: ' + JSON.stringify(result));
         if (!result.success) {
           setError(result.error || 'Email ou senha inválidos');
         } else {
@@ -37,12 +38,12 @@ export default function LoginPage() {
         const isAdmin = adminCode === process.env.NEXT_PUBLIC_ADMIN_CODE || adminCode === 'MTG_ADMIN_2024';
         // Registro
         const result = await signUp(email, password, name, isAdmin);
-        console.log('SignUp result:', result);
+        log.push('SignUp result: ' + JSON.stringify(result));
         if (result.success) {
           setError('Conta criada! Fazendo login automático...');
           // Tentar fazer login automaticamente
           const loginResult = await signIn(email, password);
-          console.log('Auto-login result:', loginResult);
+          log.push('Auto-login result: ' + JSON.stringify(loginResult));
           if (loginResult.success) {
             router.push('/');
             router.refresh();
@@ -60,10 +61,11 @@ export default function LoginPage() {
         }
       }
     } catch (error: any) {
-      console.error('Erro no handleSubmit:', error);
-      setError(error.message || 'Ocorreu um erro. Tente novamente.');
+      log.push('Erro no handleSubmit: ' + (error?.stack || error?.message || JSON.stringify(error)));
+      setError(error?.message || 'Ocorreu um erro. Tente novamente.');
     } finally {
       setLoading(false);
+      setDebugLog(log);
     }
   };
 
@@ -171,13 +173,18 @@ export default function LoginPage() {
             </button>
           </div>
           {error && <div className="text-red-400 text-center mt-4">{error}</div>}
-        </div>
-
-        <div className="mt-8 text-center text-xs text-gray-500">
-          <p>MTG Helper - Gerenciador de Coleção para Magic: The Gathering</p>
-          <p className="mt-1">© 2023-2024 - Todos os direitos reservados</p>
+          {debugLog.length > 0 && (
+            <div className="mt-4 p-2 bg-gray-900 border border-gray-700 rounded text-xs text-yellow-300 overflow-auto max-h-48">
+              <div className="font-bold text-yellow-400 mb-1">Log detalhado:</div>
+              {debugLog.map((line, idx) => (
+                <div key={idx}>{line}</div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
+// ...removido bloco duplicado fora do componente...
