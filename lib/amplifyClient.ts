@@ -1,40 +1,67 @@
 import { Amplify } from 'aws-amplify';
-import { getAmplifyConfig } from './demoMode';
 
-// Usar configurações do ambiente ou do arquivo aws-exports.js
-let config;
+// Configuração simples e direta para o Amplify
+// Usamos valores hardcoded porque já temos acesso ao arquivo aws-exports.js
+// e sabemos quais são os valores corretos das credenciais
+
 try {
-  // Tentar importar aws-exports.js se existir
-  const awsconfig = require('../src/aws-exports').default;
-  config = awsconfig;
-  console.log('Usando configurações do aws-exports.js');
-} catch (e) {
-  // Usar configurações do ambiente
-  config = getAmplifyConfig();
-  console.log('Usando configurações do ambiente');
-}
-
-// Garantir que as configurações estão corretas
-if (!config.aws_user_pools_id || !config.aws_user_pools_web_client_id) {
-  console.error('Configurações do Cognito ausentes ou inválidas!');
-  console.log('Configurações:', JSON.stringify(config, null, 2));
-}
-
-console.log('Configurando Amplify com:', {
-  region: config.aws_project_region,
-  userPoolId: config.aws_user_pools_id,
-  userPoolWebClientId: config.aws_user_pools_web_client_id,
-  authenticationFlowType: 'USER_PASSWORD_AUTH'
-});
-
-Amplify.configure({
-  ...config,
-  Auth: {
-    region: config.aws_project_region,
-    userPoolId: config.aws_user_pools_id,
-    userPoolWebClientId: config.aws_user_pools_web_client_id,
-    authenticationFlowType: 'USER_PASSWORD_AUTH'
+  console.log('Configurando Amplify para auth com Google');
+  
+  // Configuração simplificada com valores conhecidos
+  Amplify.configure({
+    Auth: {
+      Cognito: {
+        userPoolId: 'us-east-2_GIWZQN4d2',
+        userPoolClientId: '55j5l3rcp164av86djhf9qpjch',
+        loginWith: {
+          email: true,
+          oauth: {
+            domain: 'https://mtghelper.auth.us-east-2.amazoncognito.com',
+            scopes: ['email', 'profile', 'openid'],
+            redirectSignIn: [
+              'https://main.da2h2t88kn6qm.amplifyapp.com/', 
+              'http://localhost:3005/', 
+              'http://localhost:3004/', 
+              'http://localhost:3003/', 
+              'http://localhost:3001/',
+              'http://localhost:3000/',
+              'https://mtghelper.com/'
+            ],
+            redirectSignOut: [
+              'https://main.da2h2t88kn6qm.amplifyapp.com/', 
+              'http://localhost:3005/', 
+              'http://localhost:3004/', 
+              'http://localhost:3003/',
+              'http://localhost:3001/',
+              'http://localhost:3000/',
+              'https://mtghelper.com/'
+            ],
+            responseType: 'code',
+            providers: ['Google']
+          }
+        }
+      }
+    }
+  });
+  
+  console.log('✅ Amplify configurado com sucesso');
+} catch (error) {
+  console.error('❌ Erro ao configurar Amplify:', error);
+  
+  // Mesmo em caso de erro, vamos criar uma configuração mínima para evitar quebrar o app
+  try {
+    Amplify.configure({
+      Auth: {
+        Cognito: {
+          userPoolId: 'us-east-2_GIWZQN4d2',
+          userPoolClientId: '55j5l3rcp164av86djhf9qpjch'
+        }
+      }
+    });
+    console.log('⚠️ Configuração mínima aplicada');
+  } catch (e) {
+    console.error('Falha total na configuração do Amplify');
   }
-});
+}
 
 export default Amplify;
