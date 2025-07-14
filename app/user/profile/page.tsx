@@ -8,6 +8,14 @@ export default function UserProfilePage() {
 
   async function fetchUser() {
     setLoading(true);
+    // Logar status da sessão do NextAuth antes de buscar o usuário
+    try {
+      const sessionRes = await fetch("/api/auth/session");
+      const sessionData = await sessionRes.json();
+      console.log("[Perfil] Dados da sessão:", sessionData);
+    } catch (err) {
+      console.log("[Perfil] Erro ao buscar sessão:", err);
+    }
     try {
       const res = await fetch("/api/users/me");
       const data = await res.json();

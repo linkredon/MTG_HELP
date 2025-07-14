@@ -10,9 +10,9 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     success: true,
     user: {
-      name: session.user.name || session.user.email,
+      name: session.user.name || (session.user.email ? session.user.email.split('@')[0] : 'Usuário'),
       email: session.user.email,
-      avatar: session.user.avatar || session.user.image || '/default-avatar.png',
+      avatar: session.user.avatar || '/default-avatar.png',
       theme: 'dark',
       notifications: true
     }

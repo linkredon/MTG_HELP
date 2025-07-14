@@ -1,5 +1,3 @@
-
-
 "use client";
 import '../../lib/amplifyClient';
 
@@ -69,59 +67,18 @@ export default function LoginPage() {
     }
   };
 
+  // Adicionar botão de login do NextAuth (Google)
+  const handleGoogleLogin = async () => {
+    const { signIn } = await import('next-auth/react');
+    signIn('google');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black px-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">MTG Helper</h1>
-          <p className="text-gray-400">
-            {isLogin ? 'Entre para acessar sua coleção' : 'Crie sua conta para começar'}
-          </p>
-          <a href="/confirm-code" className="inline-block mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
-            Confirmar Código de Registro
-          </a>
-        </div>
-
-        <div className="bg-gray-800/70 backdrop-blur-sm rounded-lg border border-gray-700 shadow-xl p-6">
-          <div className="flex mb-6">
-            <button
-              className={`flex-1 py-2 text-center transition-colors ${
-                isLogin ? 'text-blue-400 border-b-2 border-blue-500' : 'text-gray-400'
-              }`}
-              onClick={() => setIsLogin(true)}
-            >
-              Login
-            </button>
-            <button
-              className={`flex-1 py-2 text-center transition-colors ${
-                !isLogin ? 'text-blue-400 border-b-2 border-blue-500' : 'text-gray-400'
-              }`}
-              onClick={() => setIsLogin(false)}
-            >
-              Registro
-            </button>
-          </div>
-
-          {error && (
-            <div className="bg-red-900/30 border border-red-800 text-red-400 px-4 py-2 rounded-md mb-4 text-sm">
-              {error}
-            </div>
-          )}
-
-          <button
-            type="button"
-            className="w-full flex items-center justify-center gap-2 bg-white text-gray-900 font-semibold py-2 px-4 rounded-md mb-4 hover:bg-gray-200 transition"
-            onClick={() => {
-              // Redireciona para o Hosted UI do Cognito para login social Google
-              window.location.href = `https://${process.env.NEXT_PUBLIC_COGNITO_DOMAIN}/oauth2/authorize?identity_provider=Google&redirect_uri=${encodeURIComponent(window.location.origin + '/')}\
-                &response_type=CODE&client_id=${process.env.NEXT_PUBLIC_USER_POOL_WEB_CLIENT_ID}&scope=openid+profile+email`;
-            }}
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-            Entrar com Google
-          </button>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-gray-800/70 backdrop-blur-sm rounded-lg border border-gray-700 shadow-xl p-8">
+          <h1 className="text-2xl font-bold text-white mb-4 text-center">{isLogin ? 'Login' : 'Criar Conta'}</h1>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {!isLogin && (
               <>
                 <div>
@@ -201,30 +158,19 @@ export default function LoginPage() {
               {loading ? 'Processando...' : isLogin ? 'Entrar' : 'Registrar'}
             </button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-gray-400">
-            {isLogin ? (
-              <p>
-                Não tem uma conta?{' '}
-                <button
-                  onClick={() => setIsLogin(false)}
-                  className="text-blue-400 hover:text-blue-300 focus:outline-none"
-                >
-                  Registre-se
-                </button>
-              </p>
-            ) : (
-              <p>
-                Já tem uma conta?{' '}
-                <button
-                  onClick={() => setIsLogin(true)}
-                  className="text-blue-400 hover:text-blue-300 focus:outline-none"
-                >
-                  Faça login
-                </button>
-              </p>
-            )}
+          <button
+            type="button"
+            className="mt-4 w-full bg-white text-indigo-700 font-bold py-2 px-4 rounded shadow hover:bg-indigo-50 transition-all"
+            onClick={handleGoogleLogin}
+          >
+            Entrar com Google
+          </button>
+          <div className="mt-4 text-center">
+            <button className="text-indigo-400 hover:underline" onClick={() => setIsLogin(!isLogin)}>
+              {isLogin ? 'Criar uma conta' : 'Já tem conta? Entrar'}
+            </button>
           </div>
+          {error && <div className="text-red-400 text-center mt-4">{error}</div>}
         </div>
 
         <div className="mt-8 text-center text-xs text-gray-500">

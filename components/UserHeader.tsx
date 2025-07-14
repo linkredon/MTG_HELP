@@ -48,7 +48,7 @@ const UserHeader = (props: UserHeaderProps) => {
   const handleSettings = () => router.push('/user/settings');
 
   // Usar o usuário do NextAuth ou o usuário passado como prop
-  const user = session?.user || props.user || { name: 'Usuário Desconhecido' };
+  const user = session?.user || props.user || { name: 'Usuário' };
   console.log('UserHeader montado');
   console.log('Session data:', session);
   return (
