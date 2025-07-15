@@ -1,5 +1,5 @@
 import NextAuth from 'next-auth';
-import authOptions from '../../../../lib/auth-config';
+import { authConfig as authOptions } from '../../../../lib/auth-config';
 import { NextResponse } from 'next/server';
 
 // Certificar-se de que o host é confiável (necessário para NextAuth em App Router)
