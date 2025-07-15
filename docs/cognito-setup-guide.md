@@ -46,8 +46,8 @@ Se alguma configuração estiver faltando, adicione-a e clique em **Save changes
 4. Se o Google não estiver configurado:
    - Clique em **Add identity provider** (Adicionar provedor de identidade).
    - Selecione **Google**.
-   - Insira seu **Google client ID**: `685564622798-1q3psi7781s8f97ebhm7cs45u49c1ktj.apps.googleusercontent.com`
-   - Insira seu **Google client secret**: `yaUyCC7eOalM-aTrC-etaXH_2_5m`
+   - Insira seu **Google client ID**: `SEU_GOOGLE_CLIENT_ID_AQUI`
+   - Insira seu **Google client secret**: `SEU_GOOGLE_CLIENT_SECRET_AQUI`
    - Em **Authorized scopes**, insira: `profile email openid`
    - Clique em **Add identity provider** (Adicionar provedor de identidade).
 
