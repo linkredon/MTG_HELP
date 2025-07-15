@@ -1,9 +1,9 @@
-"use client"
+﻿"use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { useSession } from 'next-auth/react'
 import type { MTGCard } from '@/types/mtg'
 import { favoriteService } from '@/utils/apiService'
+import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext'
 
 interface FavoritesContextType {
   favorites: MTGCard[]
@@ -16,7 +16,7 @@ interface FavoritesContextType {
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined)
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
-  const { data: session } = useSession()
+  const { user: authUser, isAuthenticated } = useAmplifyAuth()
   const [favorites, setFavorites] = useState<MTGCard[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -25,7 +25,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     const loadFavorites = async () => {
       setLoading(true)
       try {
-        if (session) {
+        if (isAuthenticated) {
           // Carregar da API
           const response = await favoriteService.getAll()
           if (response.success && response.data) {
@@ -51,18 +51,18 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     }
 
     loadFavorites()
-  }, [session])
+  }, [isAuthenticated])
 
-  // Salvar favoritos no localStorage quando não estiver autenticado
+  // Salvar favoritos no localStorage quando nÃ£o estiver autenticado
   useEffect(() => {
-    if (!session) {
+    if (!isAuthenticated) {
       localStorage.setItem('mtg-favorites', JSON.stringify(favorites))
     }
-  }, [favorites, session])
+  }, [favorites, isAuthenticated])
 
   const addFavorite = async (card: MTGCard) => {
     try {
-      if (session) {
+      if (isAuthenticated) {
         // Adicionar via API
         const response = await favoriteService.add(card)
         if (response.success) {
@@ -83,7 +83,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
   const removeFavorite = async (cardId: string) => {
     try {
-      if (session) {
+      if (isAuthenticated) {
         // Remover via API
         const response = await favoriteService.removeCard(cardId)
         if (response.success) {

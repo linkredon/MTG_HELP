@@ -1,6 +1,5 @@
 "use client"
 
-import { SessionProvider } from 'next-auth/react'
 import AmplifyInit from '@/components/AmplifyInit'
 import { useEffect, useState } from 'react'
 import useClearAmplifyErrors from '@/lib/amplifyErrorRecovery'
@@ -8,6 +7,7 @@ import React from 'react'
 import { AppProvider } from '@/contexts/AppContext'
 import { FavoritesProvider } from '@/contexts/FavoritesContext'
 import CardModalWrapper from '@/components/CardModalWrapper'
+import { AmplifyAuthProvider } from '@/contexts/AmplifyAuthContext'
 
 export default function ClientLayout({
   children,
@@ -49,7 +49,7 @@ export default function ClientLayout({
   
   // Componente completo com providers apenas no cliente
   return (
-    <SessionProvider session={null}>
+    <AmplifyAuthProvider>
       {shouldLoadAmplify && <AmplifyInit />}
       <AppProvider>
         <FavoritesProvider>
@@ -58,6 +58,6 @@ export default function ClientLayout({
           </CardModalWrapper>
         </FavoritesProvider>
       </AppProvider>
-    </SessionProvider>
+    </AmplifyAuthProvider>
   )
 }

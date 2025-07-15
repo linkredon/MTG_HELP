@@ -1,0 +1,46 @@
+# Plano de Ação para Resolução de Problemas de Autenticação
+
+## Problemas Identificados
+
+1. Inconsistências de URLs entre arquivos de configuração
+2. Credenciais vazias para acesso ao AWS (AMZ_ACCESS_KEY_ID e AMZ_SECRET_ACCESS_KEY)
+3. Falha na configuração de secrets no ambiente de build do Amplify
+4. Duplicação de variáveis de ambiente no arquivo .env.local
+
+## Ações Concluídas
+
+- ✅ Correção da URL do domínio do Amplify (da2h2t88kn6qm → da2ht88kn6qm)
+- ✅ Atualização do GOOGLE_CLIENT_SECRET para o valor correto
+- ✅ Remoção de duplicata do NEXTAUTH_SECRET
+
+## Próximos Passos
+
+1. Verificar no console do AWS Cognito:
+   - Confirmar User Pool ID: us-east-2_GIWZQN4d2
+   - Validar Web Client ID: 55j5l3rcp164av86djhf9qpjch
+
+2. Verificar no AWS Amplify Console:
+   - Configurar variáveis de ambiente para AMZ_ACCESS_KEY_ID e AMZ_SECRET_ACCESS_KEY
+   - Confirmar que todas as variáveis de ambiente do .env.local estão configuradas corretamente
+
+3. Verificar no Console do Google Cloud:
+   - Confirmar que o Client ID e Client Secret estão corretos
+   - Validar que os URIs de redirecionamento estão configurados corretamente
+   - Confirmar que a API OAuth está habilitada para o projeto
+
+4. Testar fluxo de autenticação:
+   - Em ambiente local com localhost:3000
+   - Em ambiente de produção com o domínio Amplify
+
+## Solução de Problemas Comuns
+
+- **Erro de Cross-Origin (CORS)**: Verificar configurações CORS nos serviços AWS
+- **Erro de Redirecionamento**: Confirmar que todas as URLs de redirecionamento estão corretas e registradas
+- **Falha na autenticação**: Verificar logs do aplicativo e do Cognito para identificar mensagens de erro específicas
+
+## Recursos Úteis
+
+- AWS Cognito: https://console.aws.amazon.com/cognito/
+- AWS Amplify Console: https://console.aws.amazon.com/amplify/
+- Google Cloud Console: https://console.cloud.google.com/apis/credentials
+- NextAuth.js Documentação: https://next-auth.js.org/

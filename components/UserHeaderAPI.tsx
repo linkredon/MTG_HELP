@@ -11,11 +11,11 @@ import {
   Trophy,
   Star
 } from 'lucide-react'
-import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext'
 
-const UserHeader = () => {
-  const { data: session, status } = useSession()
+const UserHeaderAPI = () => {
+  const { user, isAuthenticated, signOut: amplifySignOut } = useAmplifyAuth()
   const router = useRouter()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [notificationCount] = useState(2)
@@ -24,12 +24,11 @@ const UserHeader = () => {
     router.push('/login')
   }
 
-  const handleLogout = () => {
-    signOut({ redirect: false })
+  const handleLogout = async () => {
+    await amplifySignOut()
     setShowUserMenu(false)
+    router.push('/login')
   }
-
-  const user = session?.user
 
   return (
     <header className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-lg">
@@ -88,7 +87,7 @@ const UserHeader = () => {
 
             {/* User profile */}
             <div className="relative">
-              {status === 'authenticated' && user ? (
+              {isAuthenticated && user ? (
                 <div className="cursor-pointer">
                   <button 
                     className="mtg-user-trigger flex items-center gap-3 px-2 py-1 hover:bg-gray-800/50 relative z-10"
@@ -156,4 +155,4 @@ const UserHeader = () => {
   )
 }
 
-export default UserHeader
+export default UserHeaderAPI

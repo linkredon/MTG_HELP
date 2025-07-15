@@ -11,8 +11,8 @@ import {
   Trophy,
   Star
 } from 'lucide-react'
-import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext'
 
 // Definindo a interface de props para compatibilidade com código existente
 interface UserHeaderProps {
@@ -22,14 +22,10 @@ interface UserHeaderProps {
 }
 
 const UserHeader = (props: UserHeaderProps) => {
-  const { data: session, status, update } = useSession()
-  const router = useRouter()
-  const [showUserMenu, setShowUserMenu] = useState(false)
-  const [notificationCount] = useState(2)
-
-  useEffect(() => {
-    update();
-  }, []);
+  const { user: authUser, isAuthenticated, signOut: amplifySignOut, isLoading } = useAmplifyAuth();
+  const router = useRouter();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [notificationCount] = useState(2);
 
   const handleLogin = () => {
     if (props.onLogin) {
@@ -37,20 +33,26 @@ const UserHeader = (props: UserHeaderProps) => {
     } else {
       router.push('/login');
     }
-  }
+  };
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    signOut({ callbackUrl: '/login' });
+    try {
+      // Opcional: notificar o servidor sobre o logout
+      await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+      await amplifySignOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
   };
 
   const handleProfile = () => router.push('/user/profile');
   const handleSettings = () => router.push('/user/settings');
 
-  // Usar o usuário do NextAuth ou o usuário passado como prop
-  const user = session?.user || props.user || { name: 'Usuário' };
+  // Usar o usuário do Amplify Auth ou o usuário passado como prop
+  const user = authUser || props.user || { name: 'Usuário' };
   console.log('UserHeader montado');
-  console.log('Session data:', session);
+  console.log('Auth user:', authUser);
   return (
     <header className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-lg">
       <div className="container mx-auto">
@@ -108,7 +110,7 @@ const UserHeader = (props: UserHeaderProps) => {
 
             {/* User profile */}
             <div className="relative">
-              {(status === 'authenticated' || user) ? (
+              {(isAuthenticated || props.user) ? (
                 <div className="cursor-pointer">
                   <button 
                     className="mtg-user-trigger flex items-center gap-3 px-2 py-1 hover:bg-gray-800/50 relative z-10"

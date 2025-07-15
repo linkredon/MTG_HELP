@@ -1,9 +1,7 @@
-import { generateId, getCurrentTimestamp } from '@/lib/awsDbConnect';
+import { awsDbService, generateId, getCurrentTimestamp } from '@/lib/awsDbConnect';
 import { TABLES } from '@/lib/awsConfig';
 import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
 import { getUserSession } from '@/lib/authHelper';
-// Usar a versão estendida do awsDbService que inclui a função query
-import { awsDbService } from '@/lib/awsDbExtended';
 
 // Função auxiliar para obter o ID do usuário autenticado
 async function getAuthenticatedUserId() {
@@ -143,7 +141,7 @@ export const collectionService = {
     
     // Remover o card da coleção
     const cards = collection.data.cards || [];
-    const updatedCards = cards.filter((card: any) => card.id !== cardId);
+    const updatedCards = cards.filter(card => card.id !== cardId);
     
     // Atualizar a coleção
     return awsDbService.update(TABLES.COLLECTIONS, collectionId, {
@@ -172,7 +170,7 @@ export const collectionService = {
     
     // Atualizar o card na coleção
     const cards = collection.data.cards || [];
-    const updatedCards = cards.map((card: any) => {
+    const updatedCards = cards.map(card => {
       if (card.id === cardId) {
         return { ...card, ...updates };
       }
@@ -315,7 +313,7 @@ export const deckService = {
     
     // Remover o card do deck
     const cards = deck.data.cards || [];
-    const updatedCards = cards.filter((card: any) => card.id !== cardId);
+    const updatedCards = cards.filter(card => card.id !== cardId);
     
     // Atualizar o deck
     return awsDbService.update(TABLES.DECKS, deckId, {
@@ -344,7 +342,7 @@ export const deckService = {
     
     // Atualizar o card no deck
     const cards = deck.data.cards || [];
-    const updatedCards = cards.map((card: any) => {
+    const updatedCards = cards.map(card => {
       if (card.id === cardId) {
         return { ...card, ...updates };
       }
