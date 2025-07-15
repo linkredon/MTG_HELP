@@ -1,0 +1,48 @@
+# Configuração de Variáveis de Ambiente no AWS Amplify
+
+Este documento detalha as etapas para configurar as variáveis de ambiente no AWS Amplify para o projeto MTG_HELP.
+
+## Por que configurar variáveis de ambiente no Amplify?
+
+Algumas variáveis de ambiente, especialmente credenciais, não devem ser incluídas no repositório Git por motivos de segurança. O GitHub e outros serviços de hospedagem de repositórios bloqueiam commits contendo credenciais sensíveis.
+
+## Variáveis que devem ser configuradas no AWS Amplify
+
+As seguintes variáveis de ambiente devem ser configuradas diretamente no console do AWS Amplify:
+
+### Credenciais AWS
+```
+AMZ_ACCESS_KEY_ID=<sua_access_key>
+AMZ_SECRET_ACCESS_KEY=<sua_secret_key>
+```
+
+### Outras variáveis sensíveis
+```
+NEXTAUTH_SECRET=Qw8jK2l3p9s7vB1xYz4rT6uP0sLmNq2wXc5dE8fGhJkLzQwErT6uP0sLmNq2wXc5dE
+JWT_SECRET=seu_segredo_jwt_muito_seguro
+```
+
+## Como configurar variáveis de ambiente no AWS Amplify
+
+1. Acesse o [AWS Management Console](https://console.aws.amazon.com/)
+2. Navegue até o serviço Amplify
+3. Selecione o aplicativo MTG_HELP
+4. No painel de navegação à esquerda, selecione "Variáveis de ambiente"
+5. Clique no botão "Gerenciar variáveis"
+6. Adicione cada uma das variáveis acima com seus respectivos valores
+7. Marque "Todas as ramificações" para aplicar as variáveis a todas as ramificações
+8. Clique em "Salvar"
+
+## Verificação de variáveis de ambiente
+
+Para verificar se as variáveis de ambiente estão configuradas corretamente:
+
+1. No console do Amplify, inicie uma nova compilação
+2. Visualize os logs de compilação
+3. Verifique se não há erros relacionados a variáveis de ambiente ausentes
+
+## Observações importantes
+
+- As variáveis configuradas no AWS Amplify substituem as variáveis no arquivo .env.local
+- Lembre-se de manter essas credenciais seguras e nunca compartilhá-las
+- Considere rotacionar (mudar) periodicamente suas credenciais AWS como boa prática de segurança

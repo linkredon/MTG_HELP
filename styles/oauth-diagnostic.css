@@ -1,0 +1,159 @@
+.oauth-diagnostic {
+  background-color: #1e293b;
+  border-radius: 8px;
+  padding: 24px;
+  color: #f8fafc;
+}
+
+.oauth-diagnostic h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #f8fafc;
+}
+
+.oauth-diagnostic h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+  color: #f1f5f9;
+}
+
+.diagnostic-status {
+  background-color: #0f172a;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.diagnostic-status ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.diagnostic-status li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #334155;
+}
+
+.diagnostic-status li:last-child {
+  border-bottom: none;
+}
+
+.status-label {
+  font-weight: 500;
+  color: #cbd5e1;
+}
+
+.status-indicator {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.status-indicator.success {
+  background-color: #065f46;
+  color: #d1fae5;
+}
+
+.status-indicator.error {
+  background-color: #7f1d1d;
+  color: #fee2e2;
+}
+
+.diagnostic-logs {
+  background-color: #0f172a;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.logs-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 12px;
+  background-color: #1e293b;
+}
+
+.log-entry {
+  padding: 6px 0;
+  border-bottom: 1px solid #334155;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.diagnostic-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.action-button {
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.action-button.check {
+  background-color: #0284c7;
+  color: white;
+}
+
+.action-button.check:hover {
+  background-color: #0369a1;
+}
+
+.action-button.fix {
+  background-color: #ca8a04;
+  color: white;
+}
+
+.action-button.fix:hover {
+  background-color: #a16207;
+}
+
+.action-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.action-button.success {
+  background-color: #10b981;
+}
+
+.action-button.error {
+  background-color: #ef4444;
+}
+
+.action-button.pending {
+  background-color: #6b7280;
+}
+
+.manual-setup-link {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.manual-setup-link a {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+.manual-setup-link a:hover {
+  text-decoration: underline;
+}

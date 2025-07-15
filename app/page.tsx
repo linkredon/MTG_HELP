@@ -28,6 +28,7 @@ import '../styles/card-search-enhanced.css'
 import '../styles/dropdown-fixes-enhanced.css'
 import '../styles/modal-fix-enhanced.css'
 import '../styles/deck-importer-enhanced.css'
+
 import { useState, Suspense, useEffect } from 'react'
 import Script from 'next/script'
 import Colecao from './colecao-compact'
@@ -41,7 +42,7 @@ import UserHeader from '@/components/UserHeader'
 import MobileNavigation from '@/components/MobileNavigation'
 import { useAppContext } from '@/contexts/AppContext'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { useSession } from 'next-auth/react'
+import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext'
 import {
   Grid3X3,
   Library,
@@ -95,7 +96,7 @@ function HomeFallback() {
 
 // Componente interno que usa hooks de React
 function HomeContent() {
-  const { data: session, status } = useSession()
+  const { user: authUser, isAuthenticated, isLoading: authLoading } = useAmplifyAuth()
   const [activeTab, setActiveTab] = useState('painel')
   const [allCards, setAllCards] = useState<MTGCard[]>([])
   
@@ -166,7 +167,7 @@ function HomeContent() {
       <Script src="/scripts/card-effects.js" strategy="lazyOnload" />
 
       {/* Header com informações do usuário */}
-      <UserHeader user={session?.user} />
+      <UserHeader user={authUser} />
 
       {/* Menu de navegação móvel */}
       <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} tabs={tabs} />

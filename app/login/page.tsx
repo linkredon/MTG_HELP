@@ -11,9 +11,12 @@ import AuthDiagnostic from '@/components/AuthDiagnostic';
 import { printAuthDiagnostic } from '@/lib/authDiagnostic';
 import AuthDebugger from '@/components/AuthDebugger';
 import AuthTroubleshooter from '@/components/AuthTroubleshooter';
+import { signInWithRedirect, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { isAuthenticated, user, refreshUser } = useAmplifyAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,6 +25,14 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showAdminField, setShowAdminField] = useState(false);
+  
+  // Verificar se o usuário está autenticado e redirecionar se estiver
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('Usuário já autenticado, redirecionando...');
+      router.push('/');
+    }
+  }, [isAuthenticated, user, router]);
 
   // Verificar se o usuário acabou de fazer login com OAuth
   useEffect(() => {
@@ -81,8 +92,8 @@ export default function LoginPage() {
           setError(result.error || 'Email ou senha inválidos');
         } else {
           console.log('Login bem-sucedido, redirecionando...');
+          await refreshUser();
           router.push('/');
-          router.refresh();
         }
       } else {
         // Verificar se é um registro de administrador
@@ -98,6 +109,7 @@ export default function LoginPage() {
           console.log('Auto-login result:', loginResult);
           if (loginResult.success) {
             console.log('Auto-login bem-sucedido, redirecionando...');
+            await refreshUser();
             router.push('/');
             router.refresh();
           } else {
@@ -172,13 +184,10 @@ export default function LoginPage() {
 
         <button
           type="button"
-          className="w-full flex items-center justify-center gap-2 bg-white text-gray-900 font-semibold py-2 px-4 rounded-md mb-2 hover:bg-gray-200 transition"
+          className="w-full flex items-center justify-center gap-2 bg-white text-gray-900 font-semibold py-2 px-4 rounded-md mb-6 hover:bg-gray-200 transition"
           onClick={async () => {
             try {
               setLoading(true);
-              
-              // Importar dinamicamente o Amplify para economizar carregamento inicial
-              const { signInWithRedirect } = await import('@aws-amplify/auth');
               
               // Log para debug
               console.log('Iniciando fluxo de autenticação com Google via Amplify');

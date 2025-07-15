@@ -1,4 +1,4 @@
-import { getSession } from 'next-auth/react';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 // Tipos básicos para respostas da API
 interface ApiResponse<T> {
@@ -15,17 +15,20 @@ async function fetchApi<T>(
   body?: any
 ): Promise<ApiResponse<T>> {
   try {
-    const session = await getSession();
-    
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
 
-    if (session) {
-      // Se houver sessão, usar o ID do usuário como autenticação
-      // Nota: Normalmente usaríamos um token JWT, mas como não temos acesso ao token diretamente,
-      // estamos usando o ID do usuário como identificação
-      headers['Authorization'] = `Bearer ${session.user.id}`;
+    try {
+      // Tentar obter a sessão do Amplify
+      const authSession = await fetchAuthSession();
+      if (authSession?.tokens?.accessToken) {
+        // Usar o token de acesso JWT para autenticação
+        headers['Authorization'] = `Bearer ${authSession.tokens.accessToken.toString()}`;
+      }
+    } catch (authError) {
+      // Se não conseguir obter a sessão, continuar sem autenticação
+      console.log('Não foi possível obter sessão de autenticação:', authError);
     }
 
     const options: RequestInit = {

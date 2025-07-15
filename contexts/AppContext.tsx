@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { ApiResponse } from '@/types/api';
@@ -18,7 +18,7 @@ function asDeckArray(data: any[]): Deck[] {
 import { safeLocalStorageSave } from '@/utils/storageUtils';
 import type { MTGCard, UserCollection, CollectionCard, Deck, DeckCard } from '@/types/mtg';
 import { collectionService, deckService, favoriteService } from '@/utils/awsApiService';
-import { useSession } from 'next-auth/react';
+import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext';
 
 interface AppContextType {
   collections: UserCollection[];
@@ -56,7 +56,7 @@ interface AppContextType {
   // Estado de carregamento
   loading: boolean;
   
-  // Exportação
+  // ExportaÃ§Ã£o
   exportCollectionToCSV: (collection: UserCollection) => void;
 }
 
@@ -75,7 +75,7 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const { data: session } = useSession();
+  const { user: authUser, isAuthenticated } = useAmplifyAuth();
   const [collections, setCollections] = useState<UserCollection[]>([]);
   const [currentCollectionId, setCurrentCollectionId] = useState<string | null>(null);
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -86,13 +86,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     return collections.find(c => c.id === currentCollectionId);
   }, [collections, currentCollectionId]);
 
-  // Carregar dados da API quando o usuário estiver autenticado
+  // Carregar dados da API quando o usuÃ¡rio estiver autenticado
   useEffect(() => {
     const loadData = async () => {
-      if (session) {
+      if (isAuthenticated) {
         setLoading(true);
         try {
-          // Carregar coleções
+          // Carregar coleÃ§Ãµes
           const collectionsResponse = await collectionService.getAll();
           if (collectionsResponse.success && collectionsResponse.data) {
             setCollections(asUserCollectionArray(collectionsResponse.data));
@@ -118,7 +118,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           setLoading(false);
         }
       } else {
-        // Usuário não autenticado, usar localStorage como fallback
+        // UsuÃ¡rio nÃ£o autenticado, usar localStorage como fallback
         const savedCollections = localStorage.getItem('mtg-collections');
         if (savedCollections) {
           try {
@@ -128,14 +128,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
               setCurrentCollectionId(parsedCollections[0].id);
             }
           } catch (error) {
-            console.error('Erro ao carregar coleções salvas:', error);
+            console.error('Erro ao carregar coleÃ§Ãµes salvas:', error);
           }
         } else {
-          // Criar uma coleção padrão se não houver nenhuma
+          // Criar uma coleÃ§Ã£o padrÃ£o se nÃ£o houver nenhuma
           const defaultCollection: UserCollection = {
             id: '1',
-            name: 'Minha Coleção',
-            description: 'Coleção principal de cartas Magic',
+            name: 'Minha ColeÃ§Ã£o',
+            description: 'ColeÃ§Ã£o principal de cartas Magic',
             cards: [],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -170,30 +170,30 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     };
 
     loadData();
-  }, [session]);
+  }, [isAuthenticated]);
 
-  // Salvar dados no localStorage quando não estiver autenticado
+  // Salvar dados no localStorage quando nÃ£o estiver autenticado
   useEffect(() => {
-    if (!session) {
+    if (!isAuthenticated) {
       safeLocalStorageSave('mtg-collections', collections);
     }
-  }, [collections, session]);
+  }, [collections, isAuthenticated]);
 
   useEffect(() => {
-    if (!session) {
+    if (!isAuthenticated) {
       safeLocalStorageSave('mtg-decks', decks);
     }
-  }, [decks, session]);
+  }, [decks, isAuthenticated]);
 
   useEffect(() => {
-    if (!session) {
+    if (!isAuthenticated) {
       safeLocalStorageSave('mtg-favorites', favorites);
     }
-  }, [favorites, session]);
+  }, [favorites, isAuthenticated]);
 
-  // Funções de gerenciamento de coleção
+  // FunÃ§Ãµes de gerenciamento de coleÃ§Ã£o
   const createCollection = async (name: string, description: string = ''): Promise<string> => {
-    if (session) {
+    if (isAuthenticated) {
       try {
         const response = await collectionService.create({ name, description });
         if (response.success && response.data) {
@@ -201,9 +201,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           setCurrentCollectionId(response.data.id);
           return response.data.id;
         }
-        throw new Error('Erro ao criar coleção');
+        throw new Error('Erro ao criar coleÃ§Ã£o');
       } catch (error) {
-        console.error('Erro ao criar coleção:', error);
+        console.error('Erro ao criar coleÃ§Ã£o:', error);
         throw error;
       }
     } else {
@@ -224,14 +224,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   const updateCollection = async (id: string, updates: Partial<UserCollection>): Promise<void> => {
-    if (session) {
+    if (isAuthenticated) {
       try {
         const response = await collectionService.update(id, updates);
         if (response.success) {
           setCollections(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
         }
       } catch (error) {
-        console.error('Erro ao atualizar coleção:', error);
+        console.error('Erro ao atualizar coleÃ§Ã£o:', error);
         throw error;
       }
     } else {
@@ -241,7 +241,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   const deleteCollection = async (id: string): Promise<void> => {
-    if (session) {
+    if (isAuthenticated) {
       try {
         const response = await collectionService.delete(id);
         if (response.success) {
@@ -254,7 +254,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           });
         }
       } catch (error) {
-        console.error('Erro ao excluir coleção:', error);
+        console.error('Erro ao excluir coleÃ§Ã£o:', error);
         throw error;
       }
     } else {
@@ -273,17 +273,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     const collectionToDuplicate = collections.find(c => c.id === id);
     if (!collectionToDuplicate) return;
 
-    if (session) {
+    if (isAuthenticated) {
       try {
         const newCollection = {
-          name: `${collectionToDuplicate.name} (Cópia)`,
+          name: `${collectionToDuplicate.name} (CÃ³pia)`,
           description: collectionToDuplicate.description,
           isPublic: false
         };
         
         const response = await collectionService.create(newCollection);
         if (response.success && response.data) {
-          // Adicionar cartas à nova coleção
+          // Adicionar cartas Ã  nova coleÃ§Ã£o
           for (const cardItem of collectionToDuplicate.cards) {
             await collectionService.addCard(response.data.id, {
               card: cardItem.card,
@@ -301,7 +301,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           }
         }
       } catch (error) {
-        console.error('Erro ao duplicar coleção:', error);
+        console.error('Erro ao duplicar coleÃ§Ã£o:', error);
         throw error;
       }
     } else {
@@ -309,17 +309,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       const newCollection: UserCollection = {
         ...collectionToDuplicate,
         id: Date.now().toString(),
-        name: `${collectionToDuplicate.name} (Cópia)`,
+        name: `${collectionToDuplicate.name} (CÃ³pia)`,
       };
       setCollections(prev => [...prev, newCollection]);
     }
   };
 
-  // Função para adicionar carta à coleção
+  // FunÃ§Ã£o para adicionar carta Ã  coleÃ§Ã£o
   const adicionarCarta = async (card: MTGCard, quantidade: number = 1): Promise<void> => {
     if (!currentCollectionId) return;
     
-    if (session) {
+    if (isAuthenticated) {
       try {
         await collectionService.addCard(currentCollectionId, {
           card,
@@ -364,13 +364,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
-  // Função para remover carta da coleção
+  // FunÃ§Ã£o para remover carta da coleÃ§Ã£o
   const removerCarta = async (card: MTGCard): Promise<void> => {
     if (!currentCollectionId) return;
     
-    if (session) {
+    if (isAuthenticated) {
       try {
-        // Encontrar o ID da carta na coleção
+        // Encontrar o ID da carta na coleÃ§Ã£o
         const collection = collections.find(c => c.id === currentCollectionId);
         if (!collection) return;
         
@@ -421,17 +421,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
-  // Função para obter quantidade de uma carta na coleção
+  // FunÃ§Ã£o para obter quantidade de uma carta na coleÃ§Ã£o
   const getQuantidadeNaColecao = (cardId: string): number => {
     const card = currentCollection?.cards?.find(c => c.card.id === cardId);
     return card ? card.quantity : 0;
   };
 
-  // ====== FUNÇÕES DE GERENCIAMENTO DE DECKS ======
+  // ====== FUNÃ‡Ã•ES DE GERENCIAMENTO DE DECKS ======
 
   // Criar novo deck
   const criarDeck = async (deckData: Omit<Deck, 'id' | 'createdAt' | 'lastModified'>): Promise<string> => {
-    if (session) {
+    if (isAuthenticated) {
       try {
         const response = await deckService.create(deckData);
         if (response.success && response.data) {
@@ -458,7 +458,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Editar deck existente
   const editarDeck = async (deckId: string, updates: Partial<Deck>): Promise<void> => {
-    if (session) {
+    if (isAuthenticated) {
       try {
         const response = await deckService.update(deckId, updates);
         if (response.success) {
@@ -484,7 +484,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Deletar deck
   const deletarDeck = async (deckId: string): Promise<void> => {
-    if (session) {
+    if (isAuthenticated) {
       try {
         const response = await deckService.delete(deckId);
         if (response.success) {
@@ -505,10 +505,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     const originalDeck = decks.find(deck => deck.id === deckId);
     if (!originalDeck) return undefined;
 
-    if (session) {
+    if (isAuthenticated) {
       try {
         const newDeckData = {
-          name: newName || `${originalDeck.name} (Cópia)`,
+          name: newName || `${originalDeck.name} (CÃ³pia)`,
           description: originalDeck.description,
           format: originalDeck.format,
           colors: originalDeck.colors,
@@ -545,7 +545,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       const duplicatedDeck: Deck = {
         ...originalDeck,
         id: Date.now().toString(),
-        name: newName || `${originalDeck.name} (Cópia)`,
+        name: newName || `${originalDeck.name} (CÃ³pia)`,
         createdAt: new Date().toISOString(),
         lastModified: new Date().toISOString(),
       };
@@ -561,7 +561,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     category: 'mainboard' | 'sideboard' | 'commander' = 'mainboard',
     quantity: number = 1
   ): Promise<void> => {
-    if (session) {
+    if (isAuthenticated) {
       try {
         await deckService.addCard(deckId, {
           card,
@@ -614,7 +614,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     cardId: string, 
     category: 'mainboard' | 'sideboard' | 'commander' = 'mainboard'
   ): Promise<void> => {
-    if (session) {
+    if (isAuthenticated) {
       try {
         // Encontrar o ID da carta no deck
         const deck = decks.find(d => d.id === deckId);
@@ -663,7 +663,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       return;
     }
 
-    if (session) {
+    if (isAuthenticated) {
       try {
         // Encontrar o ID da carta no deck
         const deck = decks.find(d => d.id === deckId);
@@ -704,7 +704,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
-  // Obter cartas que estão sendo usadas em decks
+  // Obter cartas que estÃ£o sendo usadas em decks
   const getCartasUsadasEmDecks = (cardId: string): Array<{deck: Deck, quantity: number, category: string}> => {
     const result: Array<{deck: Deck, quantity: number, category: string}> = [];
     
@@ -723,7 +723,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     return result;
   };
   
-  // Função para importar deck a partir de uma lista de texto
+  // FunÃ§Ã£o para importar deck a partir de uma lista de texto
   const importarDeckDeLista = async (deckList: string, deckData: any): Promise<string> => {
     try {
       // Criar o deck vazio primeiro
@@ -745,7 +745,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       for (const line of lines) {
         const trimmedLine = line.trim().toLowerCase();
         
-        // Verificar se é uma linha de seção
+        // Verificar se Ã© uma linha de seÃ§Ã£o
         if (trimmedLine.includes('sideboard')) {
           currentSection = 'sideboard';
           continue;
@@ -759,7 +759,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           continue;
         }
         
-        // Verificar se é uma linha de carta
+        // Verificar se Ã© uma linha de carta
         const match = line.match(/^(\d+)x?\s+(.+)$/);
         if (match) {
           const quantity = parseInt(match[1]);
@@ -776,7 +776,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
                   await adicionarCartaAoDeck(deckId, cardData, currentSection, quantity);
                   return { success: true, card: cardName };
                 } else {
-                  console.error(`Carta não encontrada: ${cardName}`);
+                  console.error(`Carta nÃ£o encontrada: ${cardName}`);
                   return { success: false, card: cardName };
                 }
               } catch (error) {
@@ -795,7 +795,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         .map(result => (result.status === 'fulfilled' ? (result.value as any).card : 'Unknown'));
       
       if (failedCards.length > 0) {
-        console.warn(`Algumas cartas não foram encontradas: ${failedCards.join(', ')}`);
+        console.warn(`Algumas cartas nÃ£o foram encontradas: ${failedCards.join(', ')}`);
       }
       
       return deckId;
@@ -805,11 +805,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
-  // ====== FUNÇÕES DE GERENCIAMENTO DE FAVORITOS ======
+  // ====== FUNÃ‡Ã•ES DE GERENCIAMENTO DE FAVORITOS ======
 
   // Adicionar carta aos favoritos
   const addFavorite = async (card: MTGCard): Promise<void> => {
-    if (session) {
+    if (isAuthenticated) {
       try {
         const response = await favoriteService.add(card);
         if (response.success) {
@@ -830,7 +830,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Remover carta dos favoritos
   const removeFavorite = async (cardId: string): Promise<void> => {
-    if (session) {
+    if (isAuthenticated) {
       try {
         const response = await favoriteService.removeCard(cardId);
         if (response.success) {
@@ -846,12 +846,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
-  // Verificar se uma carta está nos favoritos
+  // Verificar se uma carta estÃ¡ nos favoritos
   const isFavorite = (cardId: string): boolean => {
     return favorites.some(card => card.id === cardId);
   };
 
-  // Função para exportar coleção para CSV no formato Manabox
+  // FunÃ§Ã£o para exportar coleÃ§Ã£o para CSV no formato Manabox
   const exportCollectionToCSV = (collection: UserCollection) => {
     // Formato Manabox: Name,Set,Quantity,Foil,Condition,Language
     const csvContent = [
@@ -911,4 +911,5 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     </AppContext.Provider>
   );
 };
+
 
