@@ -22,23 +22,31 @@ export function configureAmplify() {
     }
     
     // URLs de redirecionamento com base no ambiente
+    // Para produção, usamos o URL do Amplify ou um domínio personalizado se configurado
     const baseUrl = isLocal 
       ? 'http://localhost:3000' 
-      : 'https://main.da2h2t88kn6qm.amplifyapp.com';
+      : process.env.NEXT_PUBLIC_PRODUCTION_URL || 'https://main.da2h2t88kn6qm.amplifyapp.com';
       
-    const redirectSignIn = [
-      baseUrl,
-      'http://localhost:3001',
-      'http://localhost:3000',
-      'https://main.da2h2t88kn6qm.amplifyapp.com'
+    // Adicionar todos os domínios válidos para redirecionamento
+    const productionUrls = [
+      'https://main.da2h2t88kn6qm.amplifyapp.com',
+      'https://mtghelper.com',
+      'https://www.mtghelper.com'
     ];
     
-    const redirectSignOut = [
-      baseUrl,
-      'http://localhost:3001',
+    const localUrls = [
       'http://localhost:3000',
-      'https://main.da2h2t88kn6qm.amplifyapp.com'
+      'http://localhost:3001',
+      'http://localhost:3002'
     ];
+      
+    const redirectSignIn = isLocal
+      ? [...localUrls, ...productionUrls]
+      : [...productionUrls, ...localUrls];
+    
+    const redirectSignOut = isLocal
+      ? [...localUrls, ...productionUrls]
+      : [...productionUrls, ...localUrls];
 
     // Usar o formato de configuração Amplify v6 (legacy config)
     const config = {

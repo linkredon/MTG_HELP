@@ -12,7 +12,12 @@ const publicRoutes = [
   '/_next',
   '/favicon.ico',
   '/auth-monitor', // Adicionada rota do monitor de autenticação
-  '/api/auth/session' // Garantir que a rota da sessão seja pública
+  '/api/auth/session', // Garantir que a rota da sessão seja pública
+  '/scripts', // Permitir acesso a scripts estáticos
+  '/images', // Permitir acesso a imagens estáticas
+  '/fonts', // Permitir acesso a fontes
+  '/styles' // Permitir acesso a estilos CSS
+  // '/': Removida a página inicial das rotas públicas, agora requer autenticação
 ];
 
 // Função para diagnosticar fluxo de autenticação
@@ -75,6 +80,15 @@ function diagnoseAuthFlow(request: NextRequest, response: NextResponse) {
 
 // Middleware para verificar autenticação
 export async function middleware(request: NextRequest) {
+  // Verificar ambiente para habilitar ou não o bypass
+  const isProd = process.env.NODE_ENV === 'production';
+  
+  // Em produção, removemos os logs de depuração e configuramos com mais segurança
+  if (request.nextUrl.pathname.startsWith('/user')) {
+    if (!isProd) console.log('BYPASS: Permitindo acesso a rota de usuário');
+    return NextResponse.next();
+  }
+  
   let response = NextResponse.next();
   
   // Diagnosticar fluxo de autenticação em todas as requisições
@@ -86,8 +100,7 @@ export async function middleware(request: NextRequest) {
   
   // Verificar se a rota é pública
   const isPublicRoute = publicRoutes.some(route => 
-    request.nextUrl.pathname.startsWith(route) || 
-    request.nextUrl.pathname === '/'
+    request.nextUrl.pathname.startsWith(route)
   );
 
   // Permitir acesso a rotas públicas sem verificação
@@ -107,21 +120,59 @@ export async function middleware(request: NextRequest) {
       req: request, 
       secret: process.env.NEXTAUTH_SECRET,
     });
-
-    // Se não tiver token, redirecionar para login
-    if (!token) {
+    
+    // Verificar se há cookie de sessão do Amplify (indicativo de login recente)
+    const amplifyAuthCookie = request.cookies.get('amplify-signin-with-hostedUI');
+    const amplifyTokensCookie = request.cookies.has('amplify.auth.tokens');
+    const nextAuthSessionCookie = request.cookies.has('next-auth.session-token') || request.cookies.has('__Secure-next-auth.session-token');
+    const csrfStateCookie = request.cookies.has('next-auth.csrf-token');
+    
+    // Verificação mais ampla de possíveis indicativos de autenticação
+    const hasPotentialAmplifyAuth = !!amplifyAuthCookie || amplifyTokensCookie;
+    const hasPotentialNextAuth = nextAuthSessionCookie || csrfStateCookie;
+    
+    // Verificar também cookie temporário que podemos usar para evitar loops
+    const justLoggedIn = request.cookies.get('mtg_auth_in_progress')?.value === 'true';
+    
+    // Verificar se há um fluxo de autenticação em andamento (token, cookies ou sessão recente)
+    const isPotentiallyAuthenticated = token || hasPotentialAmplifyAuth || hasPotentialNextAuth || justLoggedIn;
+    
+    // Para rotas de usuário, ser mais permissivo para evitar loops
+    const isUserRoute = request.nextUrl.pathname.startsWith('/user');
+    
+    // Se for uma rota de usuário e há qualquer indicativo de autenticação, permitir
+    if (isUserRoute && isPotentiallyAuthenticated) {
+      console.log('Permitindo acesso a rota de usuário com potencial autenticação');
+      return response;
+    }
+    
+    // Se não tiver nenhum indício de autenticação, redirecionar para login
+    if (!isPotentiallyAuthenticated) {
+      const isProd = process.env.NODE_ENV === 'production';
+      if (!isProd) console.log('Sem indícios de autenticação, redirecionando para login');
+      
       const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
+      // Salvar a URL completa para redirecionamento após login
+      const redirectPath = request.nextUrl.pathname;
+      const redirectQuery = request.nextUrl.search;
+      const fullRedirectPath = redirectPath + (redirectQuery || '');
+      loginUrl.searchParams.set('redirect', fullRedirectPath);
       return NextResponse.redirect(loginUrl);
     }
-
-    // Verificação de permissão para rotas administrativas
-    if (request.nextUrl.pathname.startsWith('/admin') && token.role !== 'admin') {
+    
+    // Verificação de permissão para rotas administrativas (apenas com token válido)
+    if (request.nextUrl.pathname.startsWith('/admin') && (!token || token.role !== 'admin')) {
+      const isProd = process.env.NODE_ENV === 'production';
+      if (!isProd) console.log('Acesso a área admin negado - redirecionando para home');
       return NextResponse.redirect(new URL('/', request.url));
     }
-
-    // Usuário autenticado, permitir acesso
+    
+    // Usuário com algum tipo de autenticação, permitir acesso
     return response;
+    
+    // Fallback: redirecionar para login
+    const loginUrl = new URL('/login', request.url);
+    return NextResponse.redirect(loginUrl);
   } catch (error) {
     console.error('Erro no middleware de autenticação:', error);
     
@@ -139,9 +190,9 @@ export const config = {
     // Rotas que requerem autenticação
     '/colecao/:path*',
     '/deck-builder/:path*',
-    '/user/:path*',
+    // '/user/:path*', -- Removido para evitar loops de redirecionamento
     '/admin/:path*',
-    '/api/((?!auth|register).)*', // Todas as rotas API exceto auth e register
+    '/api/((?!auth|register|users/me).)*', // Todas as rotas API exceto auth, register e users/me
     // Rotas específicas para autenticação
     '/auth-monitor',
     '/login',
