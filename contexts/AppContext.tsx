@@ -832,9 +832,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const removeFavorite = async (cardId: string): Promise<void> => {
     if (isAuthenticated) {
       try {
-        const response = await favoriteService.removeCard(cardId);
-        if (response.success) {
-          setFavorites(prev => prev.filter(card => card.id !== cardId));
+        // Primeiro obter o ID do favorito e depois remover
+        const checkResult = await favoriteService.checkCard(cardId);
+        if (checkResult.success && checkResult.data && checkResult.data.favoriteId) {
+          const response = await favoriteService.remove(checkResult.data.favoriteId);
+          if (response.success) {
+            setFavorites(prev => prev.filter(card => card.id !== cardId));
+          }
         }
       } catch (error) {
         console.error('Erro ao remover favorito:', error);
