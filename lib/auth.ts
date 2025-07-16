@@ -1,98 +1,21 @@
-import { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
 import { dynamoDb, TABLES } from './awsConfig';
 import { GetCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+import { SimplifiedAuthOptions } from './fallbackAuth';
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: SimplifiedAuthOptions = {
   providers: [
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Senha", type: "password" }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        try {
-          // Buscar usuário pelo email
-          const params = {
-            TableName: TABLES.USERS,
-            IndexName: 'EmailIndex',
-            KeyConditionExpression: 'email = :email',
-            ExpressionAttributeValues: {
-              ':email': credentials.email
-            }
-          };
-          
-          const result = await dynamoDb.send(new QueryCommand(params));
-          
-          if (!result.Items || result.Items.length === 0) {
-            throw new Error('Email ou senha inválidos');
-          }
-          
-          const user = result.Items[0];
-          
-          // Verificar se a senha corresponde
-          const isMatch = await bcrypt.compare(credentials.password, user.password);
-          
-          if (!isMatch) {
-            throw new Error('Email ou senha inválidos');
-          }
-          
-          // Retornar objeto de usuário sem a senha
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-            role: user.role,
-            joinedAt: user.joinedAt,
-            collectionsCount: user.collectionsCount || 0,
-            totalCards: user.totalCards || 0,
-            achievements: user.achievements || []
-          };
-        } catch (error) {
-          console.error('Erro na autenticação:', error);
-          return null;
-        }
-      }
-    })
+    {
+      id: "credentials",
+      name: "Credentials"
+    }
   ],
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 dias
   },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.avatar = user.avatar;
-        token.joinedAt = user.joinedAt;
-        token.collectionsCount = user.collectionsCount;
-        token.totalCards = user.totalCards;
-        token.achievements = user.achievements;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.avatar = token.avatar;
-        session.user.joinedAt = token.joinedAt;
-        session.user.collectionsCount = token.collectionsCount;
-        session.user.totalCards = token.totalCards;
-        session.user.achievements = token.achievements;
-      }
-      return session;
-    }
-  },
+  callbacks: {},
   pages: {
     signIn: '/login',
     error: '/login',

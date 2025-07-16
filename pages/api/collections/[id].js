@@ -1,16 +1,26 @@
-import { getSession } from 'next-auth/react';
+// Código atualizado para usar AWS Amplify Auth em vez de next-auth
 import { collectionService } from '@/utils/awsApiService';
+import * as AmplifyAuth from '@aws-amplify/auth';
 
 export default async function handler(req, res) {
-  const session = await getSession({ req });
-
-  if (!session) {
-    return res.status(401).json({ success: false, message: 'Não autorizado' });
-  }
-
-  const { id } = req.query;
-
   try {
+    // Verificar autenticação com AWS Amplify
+    const user = await AmplifyAuth.getCurrentUser();
+    
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Não autorizado' });
+    }
+    
+    // Criar objeto de sessão compatível com o código existente
+    const session = {
+      user: {
+        id: user.userId,
+        username: user.username
+      }
+    };
+
+    const { id } = req.query;
+
     // GET - Obter detalhes da coleção
     if (req.method === 'GET') {
       const result = await collectionService.getById(id);
@@ -65,7 +75,7 @@ export default async function handler(req, res) {
       res.status(405).json({ success: false, message: 'Método não permitido' });
     }
   } catch (error) {
-    console.error(`Erro ao processar coleção ${id}:`, error);
+    console.error(`Erro ao processar coleção:`, error);
     res.status(500).json({ success: false, message: 'Erro ao processar coleção', error: error.message });
   }
 }
