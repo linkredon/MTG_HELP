@@ -2,8 +2,19 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { Session } from 'next-auth';
-import { signIn as nextAuthSignIn } from 'next-auth/react';
+import * as AmplifyAuth from '@aws-amplify/auth';
+
+// Tipo para sessão
+type Session = {
+  user?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    avatar?: string;
+    role?: string;
+    [key: string]: any;
+  };
+};
 
 // Tipo para usuários autenticados
 export type AuthUser = {
@@ -69,13 +80,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Tenta obter sessão da API
-        const res = await fetch('/api/auth/session');
-        const session = await res.json() as Session | null;
-
-        if (session?.user) {
-          setUser(session.user as AuthUser);
-        } else {
+        // Tenta obter usuário autenticado do Amplify
+        try {
+          const currentUser = await AmplifyAuth.getCurrentUser();
+          
+          if (currentUser) {
+            // Buscar atributos do usuário
+            const attributes = await AmplifyAuth.fetchUserAttributes();
+            
+            const authUser: AuthUser = {
+              id: currentUser.username || attributes.sub || '',
+              name: attributes.name || currentUser.username || '',
+              email: attributes.email || currentUser.signInDetails?.loginId || '',
+              avatar: attributes.picture || '',
+              role: attributes['custom:role'] || 'user'
+            };
+            
+            setUser(authUser);
+          } else {
+            setUser(null);
+          }
+        } catch (authError) {
+          console.log('Usuário não autenticado:', authError);
           setUser(null);
         }
       } catch (error) {
@@ -101,21 +127,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: true };
       }
 
-      // NextAuth
-      const result = await nextAuthSignIn('credentials', {
-        email,
-        password,
-        redirect: false
+      // AWS Amplify Authentication
+      await AmplifyAuth.signIn({
+        username: email,
+        password
       });
-
-      if (result?.error) {
-        return { success: false, message: result.error };
-      }
-
-      // Recarregar dados do usuário
-      await refreshUser();
       
-      return { success: true };
+      try {
+        const user = await AmplifyAuth.getCurrentUser();
+        const attributes = await AmplifyAuth.fetchUserAttributes();
+        
+        // Criar objeto de usuário a partir dos atributos do Cognito
+        const authUser: AuthUser = {
+          id: user.username || attributes.sub || '',
+          name: attributes.name || user.username || '',
+          email: attributes.email || email,
+          avatar: attributes.picture || '',
+          role: attributes['custom:role'] || 'user'
+        };
+        
+        setUser(authUser);
+        return { success: true };
+      } catch (userError) {
+        console.error("Erro ao obter detalhes do usuário:", userError);
+        return { success: false, message: 'Erro ao buscar detalhes do usuário' };
+      }
     } catch (error) {
       console.error('Erro ao fazer login:', error);
       return { 
@@ -127,7 +163,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      await nextAuthSignIn('google', { callbackUrl: '/' });
+      // Usar o Amplify para login com Google (redireciona para o provedor OAuth)
+      await AmplifyAuth.signInWithRedirect({
+        provider: 'Google'
+      });
       return { success: true };
     } catch (error) {
       console.error('Erro ao fazer login com Google:', error);
@@ -140,20 +179,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (name: string, email: string, password: string) => {
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+      // Registrar com AWS Amplify
+      const result = await AmplifyAuth.signUp({
+        username: email,
+        password,
+        options: {
+          userAttributes: {
+            email,
+            name
+          }
+        }
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Erro ao registrar usuário');
+      if (result.isSignUpComplete) {
+        // Login automático após registro
+        return signIn(email, password);
+      } else {
+        throw new Error('Falha ao criar usuário');
       }
-
-      // Login automático após registro
-      return signIn(email, password);
     } catch (error) {
       console.error('Erro ao registrar:', error);
       return { 
@@ -171,13 +214,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsDemoMode(false);
       }
 
-      // Fazer logout do NextAuth
-      const res = await fetch('/api/auth/signout', { method: 'POST' });
-      
-      if (res.ok) {
-        setUser(null);
-        router.push('/login');
-      }
+      // Fazer logout do Amplify
+      await AmplifyAuth.signOut();
+      setUser(null);
+      router.push('/login');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
     }
@@ -188,12 +228,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // No modo de demonstração, não precisa atualizar
       if (isDemoMode) return;
 
-      const res = await fetch('/api/auth/session');
-      const session = await res.json() as Session | null;
-
-      if (session?.user) {
-        setUser(session.user as AuthUser);
-      } else {
+      try {
+        // Buscar usuário atual do Amplify
+        const currentUser = await AmplifyAuth.getCurrentUser();
+        
+        if (currentUser) {
+          // Buscar atributos atualizados
+          const attributes = await AmplifyAuth.fetchUserAttributes();
+          
+          const authUser: AuthUser = {
+            id: currentUser.username || attributes.sub || '',
+            name: attributes.name || currentUser.username || '',
+            email: attributes.email || '',
+            avatar: attributes.picture || '',
+            role: attributes['custom:role'] || 'user'
+          };
+          
+          setUser(authUser);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.log('Usuário não autenticado ao atualizar');
         setUser(null);
       }
     } catch (error) {
