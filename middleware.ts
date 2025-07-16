@@ -11,7 +11,7 @@ const publicRoutes = [
   '/_next',
   '/favicon.ico',
   '/auth-monitor', // Adicionada rota do monitor de autenticação
-  '/api/auth/session', // Garantir que a rota da sessão seja pública
+  '/api/auth/session', // Garantir que a rota da sessão seja pública (mantido para compatibilidade)
   '/scripts', // Permitir acesso a scripts estáticos
   '/images', // Permitir acesso a imagens estáticas
   '/fonts', // Permitir acesso a fontes

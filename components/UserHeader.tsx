@@ -12,7 +12,9 @@ import {
   Star
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext'
+import { Amplify } from 'aws-amplify'
+// Importação correta do Auth para versão 6+
+import * as AmplifyAuth from '@aws-amplify/auth'
 
 // Definindo a interface de props para compatibilidade com código existente
 interface UserHeaderProps {
@@ -22,10 +24,26 @@ interface UserHeaderProps {
 }
 
 const UserHeader = (props: UserHeaderProps) => {
-  const { user: authUser, isAuthenticated, signOut: amplifySignOut, isLoading } = useAmplifyAuth();
-  const router = useRouter();
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [notificationCount] = useState(2);
+  const router = useRouter()
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [notificationCount] = useState(2)
+  const [authUser, setAuthUser] = useState<any>(null)
+  const [authStatus, setAuthStatus] = useState('loading')
+  
+  useEffect(() => {
+    async function checkUser() {
+      try {
+        const user = await AmplifyAuth.getCurrentUser()
+        setAuthUser(user)
+        setAuthStatus('authenticated')
+      } catch (error) {
+        setAuthUser(null)
+        setAuthStatus('unauthenticated')
+      }
+    }
+    
+    checkUser()
+  }, []);
 
   const handleLogin = () => {
     if (props.onLogin) {
@@ -33,13 +51,12 @@ const UserHeader = (props: UserHeaderProps) => {
     } else {
       router.push('/login');
     }
-  };
+  }
 
   const handleLogout = async () => {
     try {
-      // Opcional: notificar o servidor sobre o logout
-      await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
-      await amplifySignOut();
+      await fetch('/api/auth/logout', { method: 'POST' });
+      await AmplifyAuth.signOut();
       router.push('/login');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
@@ -50,9 +67,19 @@ const UserHeader = (props: UserHeaderProps) => {
   const handleSettings = () => router.push('/user/settings');
 
   // Usar o usuário do Amplify Auth ou o usuário passado como prop
-  const user = authUser || props.user || { name: 'Usuário' };
-  console.log('UserHeader montado');
-  console.log('Auth user:', authUser);
+  const user = authUser ? {
+    name: authUser.attributes?.name || authUser.username,
+    email: authUser.attributes?.email,
+    avatar: authUser.attributes?.picture,
+    role: authUser.attributes?.['custom:role']
+  } : props.user || { name: 'Usuário' };
+  
+  // Move console logs to useEffect to avoid rendering issues
+  useEffect(() => {
+    console.log('UserHeader montado');
+    console.log('Auth user data:', authUser);
+  }, [authUser]);
+  
   return (
     <header className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-lg">
       <div className="container mx-auto">
@@ -110,7 +137,7 @@ const UserHeader = (props: UserHeaderProps) => {
 
             {/* User profile */}
             <div className="relative">
-              {(isAuthenticated || props.user) ? (
+              {(authStatus === 'authenticated' || user) ? (
                 <div className="cursor-pointer">
                   <button 
                     className="mtg-user-trigger flex items-center gap-3 px-2 py-1 hover:bg-gray-800/50 relative z-10"
@@ -149,6 +176,13 @@ const UserHeader = (props: UserHeaderProps) => {
                       >
                         <User className="w-4 h-4" />
                         <span>Perfil</span>
+                      </button>
+                      <button 
+                        onClick={() => router.push('/user/personalization')}
+                        className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>Personalização</span>
                       </button>
                       <button 
                         onClick={handleSettings}
