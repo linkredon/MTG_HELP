@@ -47,7 +47,7 @@ const PdfGenerator = ({ missingCards, copiesPerCard, onComplete }: PdfGeneratorP
       const finalCardHeight = cardHeight * scale
       
       // Preparar as cartas para o PDF (apenas as primeiras 9 para teste)
-      const cardsForPdf = []
+      const cardsForPdf: any[] = []
       
       // Adicionar cada carta o número de vezes necessário
       for (const item of missingCards.slice(0, 9)) {

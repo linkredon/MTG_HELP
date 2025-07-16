@@ -161,7 +161,7 @@ export function printAuthDiagnostic() {
       }
       
       // Verificar se há itens relacionados ao Amplify
-      const amplifyKeys = [];
+      const amplifyKeys: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && (key.includes('amplify') || key.includes('CognitoIdentity') || key.includes('token'))) {
@@ -190,15 +190,22 @@ export function printAuthDiagnostic() {
  * Verifica se a autenticação pode ser bem-sucedida com base na configuração atual
  * @returns Um objeto com o resultado da verificação e possíveis problemas
  */
-export function validateAuthConfiguration() {
+interface ValidationResult {
+  isValid: boolean;
+  canProceed: boolean;
+  issues: string[];
+  warnings: string[];
+}
+
+export function validateAuthConfiguration(): ValidationResult {
   try {
     const config = Amplify.getConfig();
     const authConfig = config.Auth?.Cognito;
     const oauthConfig = authConfig?.loginWith?.oauth;
     const currentOrigin = window.location.origin;
     
-    const issues = [];
-    const warnings = [];
+    const issues: string[] = [];
+    const warnings: string[] = [];
     
     // Verificações críticas
     if (!authConfig?.userPoolId) {
@@ -225,13 +232,13 @@ export function validateAuthConfiguration() {
     if (!Array.isArray(oauthConfig?.redirectSignIn) || oauthConfig.redirectSignIn.length === 0) {
       issues.push('Não foram encontradas URLs de redirecionamento');
     } else {
-      const includesCurrentOrigin = oauthConfig.redirectSignIn.some(url => url.includes(currentOrigin));
+      const includesCurrentOrigin = oauthConfig.redirectSignIn.some((url: string) => url.includes(currentOrigin));
       if (!includesCurrentOrigin) {
         issues.push(`A origem atual (${currentOrigin}) não está nas URLs de redirecionamento`);
       }
       
       // Verificar formato das URLs
-      oauthConfig.redirectSignIn.forEach(url => {
+      oauthConfig.redirectSignIn.forEach((url: string) => {
         try {
           new URL(url);
         } catch (e) {

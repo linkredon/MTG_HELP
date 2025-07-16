@@ -207,11 +207,16 @@ function HomeContent() {
   );
 }
 
+// Importar o wrapper para fornecer o SessionProvider localmente
+import HomeContentWrapper from '@/components/HomeContentWrapper'
+
 // Componente principal para a página
 export default function Home() {
   return (
     <Suspense fallback={<HomeFallback />}>
-      <HomeContent />
+      <HomeContentWrapper>
+        <HomeContent />
+      </HomeContentWrapper>
     </Suspense>
   );
 }

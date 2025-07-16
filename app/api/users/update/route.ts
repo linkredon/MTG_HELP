@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import authOptions from '@/lib/authOptions';
 import type { UserUpdateData, User } from '@/types/user';
 
 export async function PUT(req: NextRequest) {
   // Verificar ambiente
   const isProd = process.env.NODE_ENV === 'production';
-  
-  // Verificar se o usuário está autenticado
-  const session = await getServerSession(authOptions);
   
   // Verificar cookies de autenticação do Amplify
   const amplifyAuth = req.cookies.get('amplify-signin-with-hostedUI')?.value;
@@ -18,14 +13,14 @@ export async function PUT(req: NextRequest) {
   let amplifyUser = false;
   
   // Verificar autenticação Amplify
-  if ((amplifyAuth || amplifyTokens) && (!session || !session.user)) {
+  if (amplifyAuth || amplifyTokens) {
     if (!isProd) console.log('API UPDATE: Autenticação Amplify detectada');
     amplifyUser = true;
     // Continuar processamento com usuário Amplify
   }
   // MODO DE EMERGÊNCIA: Permitir atualizações mesmo sem sessão autenticada
-  else if (!session || !session.user) {
-    if (!isProd) console.log('API UPDATE: Sessão não encontrada, usando modo temporário');
+  else {
+    if (!isProd) console.log('API UPDATE: Autenticação não encontrada, usando modo temporário');
     temporaryUser = true;
     
     // Em produção, exigimos algum tipo de autenticação
@@ -60,8 +55,20 @@ export async function PUT(req: NextRequest) {
     
     if (amplifyUser) {
       // Usuário autenticado pelo Amplify
+      let email = 'usuario@mtghelper.com';
+      try {
+        if (amplifyTokens) {
+          const tokensObj = JSON.parse(amplifyTokens);
+          if (tokensObj.idToken?.payload?.email) {
+            email = tokensObj.idToken.payload.email;
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao analisar token Amplify:', e);
+      }
+      
       userResponse = {
-        email: req.cookies.get('amplify_email')?.value || 'usuario@mtghelper.com',
+        email: email,
         name: userData.name,
         nickname: userData.nickname,
         avatar: userData.avatar,
@@ -69,7 +76,7 @@ export async function PUT(req: NextRequest) {
         theme: userData.theme,
         isAmplifyAuth: true
       };
-    } else if (temporaryUser) {
+    } else {
       // Usuário temporário
       userResponse = {
         email: 'usuario@temporario.com',
@@ -79,16 +86,6 @@ export async function PUT(req: NextRequest) {
         bio: userData.bio,
         theme: userData.theme,
         isTemporary: true
-      };
-    } else {
-      // Usuário autenticado pelo NextAuth
-      userResponse = {
-        ...session.user,
-        name: userData.name,
-        nickname: userData.nickname,
-        avatar: userData.avatar,
-        bio: userData.bio,
-        theme: userData.theme
       };
     }
     

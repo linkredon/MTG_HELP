@@ -316,7 +316,7 @@ const DeckBuilder: React.FC<DeckBuilderProps> = ({ deckId, onSave, onCancel }) =
     
     try {
       // Construir query para Scryfall
-      let queryParts = [];
+      let queryParts: string[] = [];
       
       if (searchTerm.trim()) {
         // Se tiver espaços, colocar entre aspas para busca exata

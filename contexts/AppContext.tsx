@@ -740,7 +740,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       // Processar a lista de cartas
       const lines = deckList.split('\n').filter(line => line.trim());
       let currentSection: 'mainboard' | 'sideboard' | 'commander' = 'mainboard';
-      const cardPromises = [];
+      const cardPromises: Promise<any>[] = [];
       
       for (const line of lines) {
         const trimmedLine = line.trim().toLowerCase();

@@ -1,15 +1,38 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 // Configuração para evitar pré-renderização estática
 export const dynamic = 'force-dynamic';
 
 export default function UserSettingsPage() {
+  // Usar o hook personalizado para proteção de autenticação
+  const { isAuthenticated, isAuthChecked } = useAuthGuard('/login');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [theme, setTheme] = useState("dark");
   const [notifications, setNotifications] = useState(true);
+  
+  // Carregar configurações quando a autenticação estiver verificada
+  useEffect(() => {
+    if (isAuthChecked) {
+      // Aqui poderíamos carregar as configurações do usuário do backend
+      console.log("Verificação de autenticação concluída, carregando configurações");
+    }
+  }, [isAuthChecked]);
+  
+  // Se estiver carregando, mostrar indicador de carregamento
+  if (!isAuthChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center px-4">
+        <div className="w-full max-w-md flex flex-col items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <p className="text-white">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();

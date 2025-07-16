@@ -1,24 +1,19 @@
 "use client";
 import React, { useState } from "react";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 // Configuração para evitar pré-renderização estática
 export const dynamic = 'force-dynamic';
 
 export default function UserProfilePage() {
+  // Usar o hook personalizado para proteção de autenticação
+  const { isAuthenticated, isAuthChecked } = useAuthGuard('/login');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   async function fetchUser() {
     setLoading(true);
-    // Logar status da sessão do NextAuth antes de buscar o usuário
-    try {
-      const sessionRes = await fetch("/api/auth/session");
-      const sessionData = await sessionRes.json();
-      console.log("[Perfil] Dados da sessão:", sessionData);
-    } catch (err) {
-      console.log("[Perfil] Erro ao buscar sessão:", err);
-    }
     try {
       const res = await fetch("/api/users/me");
       const data = await res.json();
@@ -34,8 +29,23 @@ export default function UserProfilePage() {
   }
 
   React.useEffect(() => {
-    fetchUser();
-  }, []);
+    // Buscar dados do usuário apenas quando a verificação de autenticação estiver concluída
+    if (isAuthChecked) {
+      fetchUser();
+    }
+  }, [isAuthChecked]);
+  
+  // Se estiver carregando, mostrar indicador de carregamento
+  if (!isAuthChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center px-4">
+        <div className="w-full max-w-md flex flex-col items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <p className="text-white">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center px-4">

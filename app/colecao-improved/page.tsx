@@ -103,7 +103,7 @@ export default function ColecaoImproved() {
 
     try {
       // Construir query para Scryfall
-      let queryParts = [];
+      let queryParts: string[] = [];
 
       if (searchTerm.trim()) queryParts.push(searchTerm.trim());
       if (rarityFilter !== "all") queryParts.push(`rarity:${rarityFilter}`);

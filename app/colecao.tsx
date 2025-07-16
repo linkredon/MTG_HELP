@@ -394,7 +394,7 @@ export default function Colecao({
     
     try {
       // Construir query para Scryfall
-      let queryParts = []
+      let queryParts: string[] = []
       
       if (busca.trim()) queryParts.push(busca.trim())
       if (raridade !== "all") queryParts.push(`rarity:${raridade}`)

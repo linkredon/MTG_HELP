@@ -1,159 +1,151 @@
-.oauth-diagnostic {
-  background-color: #1e293b;
+/* Estilos para o componente GoogleOAuthDiagnostic */
+.diagnostic-container {
+  background-color: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
-  padding: 24px;
-  color: #f8fafc;
-}
-
-.oauth-diagnostic h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  padding: 1rem;
   margin-bottom: 1.5rem;
-  color: #f8fafc;
 }
 
-.oauth-diagnostic h3 {
+.diagnostic-title {
   font-size: 1.25rem;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 1rem;
-  margin-top: 1.5rem;
-  color: #f1f5f9;
+  color: #3182ce;
 }
 
-.diagnostic-status {
-  background-color: #0f172a;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 24px;
-}
-
-.diagnostic-status ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.diagnostic-status li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #334155;
-}
-
-.diagnostic-status li:last-child {
-  border-bottom: none;
-}
-
-.status-label {
-  font-weight: 500;
-  color: #cbd5e1;
-}
-
-.status-indicator {
-  padding: 4px 8px;
+.diagnostic-item {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
   border-radius: 4px;
-  font-weight: 500;
 }
 
-.status-indicator.success {
-  background-color: #065f46;
-  color: #d1fae5;
+.diagnostic-item-success {
+  background-color: rgba(72, 187, 120, 0.1);
+  border-left: 4px solid #48bb78;
 }
 
-.status-indicator.error {
-  background-color: #7f1d1d;
-  color: #fee2e2;
+.diagnostic-item-warning {
+  background-color: rgba(237, 137, 54, 0.1);
+  border-left: 4px solid #ed8936;
 }
 
-.diagnostic-logs {
-  background-color: #0f172a;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 24px;
+.diagnostic-item-error {
+  background-color: rgba(245, 101, 101, 0.1);
+  border-left: 4px solid #f56565;
 }
 
-.logs-container {
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #334155;
-  border-radius: 4px;
-  padding: 12px;
-  background-color: #1e293b;
+.diagnostic-item-info {
+  background-color: rgba(66, 153, 225, 0.1);
+  border-left: 4px solid #4299e1;
 }
 
-.log-entry {
-  padding: 6px 0;
-  border-bottom: 1px solid #334155;
+.diagnostic-label {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.diagnostic-value {
   font-family: monospace;
-  font-size: 0.9rem;
-  color: #cbd5e1;
+  word-break: break-all;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.875rem;
 }
 
-.log-entry:last-child {
-  border-bottom: none;
+.diagnostic-toggle {
+  background: none;
+  border: none;
+  color: #4299e1;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  margin-top: 0.5rem;
+}
+
+.diagnostic-toggle:hover {
+  color: #2b6cb0;
+}
+
+.diagnostic-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .diagnostic-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
 }
 
-.action-button {
-  padding: 10px 16px;
+.diagnostic-button {
+  padding: 0.5rem 1rem;
   border-radius: 4px;
-  font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
-  border: none;
   transition: background-color 0.2s;
 }
 
-.action-button.check {
-  background-color: #0284c7;
+.diagnostic-button-primary {
+  background-color: #4299e1;
   color: white;
+  border: none;
 }
 
-.action-button.check:hover {
-  background-color: #0369a1;
+.diagnostic-button-primary:hover {
+  background-color: #3182ce;
 }
 
-.action-button.fix {
-  background-color: #ca8a04;
-  color: white;
+.diagnostic-button-secondary {
+  background-color: #e2e8f0;
+  color: #1a202c;
+  border: none;
 }
 
-.action-button.fix:hover {
-  background-color: #a16207;
+.diagnostic-button-secondary:hover {
+  background-color: #cbd5e0;
 }
 
-.action-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+.diagnostic-loading {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(66, 153, 225, 0.3);
+  border-radius: 50%;
+  border-top-color: #4299e1;
+  animation: diagnostic-spin 1s linear infinite;
+  margin-right: 0.5rem;
 }
 
-.action-button.success {
-  background-color: #10b981;
+@keyframes diagnostic-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.action-button.error {
-  background-color: #ef4444;
+.diagnostic-code {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  border-radius: 4px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #4a5568;
 }
 
-.action-button.pending {
-  background-color: #6b7280;
-}
-
-.manual-setup-link {
-  margin-top: 24px;
-  text-align: center;
-}
-
-.manual-setup-link a {
-  color: #60a5fa;
-  text-decoration: none;
-}
-
-.manual-setup-link a:hover {
-  text-decoration: underline;
+.diagnostic-url {
+  word-break: break-all;
+  font-family: monospace;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
 }

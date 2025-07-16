@@ -14,13 +14,16 @@ export default function AuthDebugger() {
   const [authStatus, setAuthStatus] = useState<any>(null);
 
   const addLog = (message: string, type: LogItem['type'] = 'info') => {
-    const now = new Date();
-    const timestamp = now.toLocaleTimeString() + '.' + now.getMilliseconds().toString().padStart(3, '0');
-    
-    setLogs(prev => [
-      { timestamp, message, type },
-      ...prev.slice(0, 99) // Manter apenas os últimos 100 logs
-    ]);
+    // Use setTimeout to ensure state updates happen outside of rendering cycle
+    setTimeout(() => {
+      const now = new Date();
+      const timestamp = now.toLocaleTimeString() + '.' + now.getMilliseconds().toString().padStart(3, '0');
+      
+      setLogs(prev => [
+        { timestamp, message, type },
+        ...prev.slice(0, 99) // Manter apenas os últimos 100 logs
+      ]);
+    }, 0);
   };
 
   // Verifica o status de autenticação atual
@@ -60,23 +63,51 @@ export default function AuthDebugger() {
     const originalConsoleWarn = console.warn;
     const originalConsoleInfo = console.info;
 
+    // Helper function to safely stringify objects
+    const safeStringify = (arg: any) => {
+      if (arg === null) return 'null';
+      if (arg === undefined) return 'undefined';
+      if (typeof arg !== 'object') return String(arg);
+      try {
+        return JSON.stringify(arg);
+      } catch (e) {
+        return '[Object cannot be stringified]';
+      }
+    };
+
     console.log = function(...args) {
-      addLog(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' '), 'info');
+      try {
+        addLog(args.map(safeStringify).join(' '), 'info');
+      } catch (e) {
+        // Silently fail if logging causes errors
+      }
       originalConsoleLog.apply(this, args);
     };
 
     console.error = function(...args) {
-      addLog(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' '), 'error');
+      try {
+        addLog(args.map(safeStringify).join(' '), 'error');
+      } catch (e) {
+        // Silently fail if logging causes errors
+      }
       originalConsoleError.apply(this, args);
     };
 
     console.warn = function(...args) {
-      addLog(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' '), 'warning');
+      try {
+        addLog(args.map(safeStringify).join(' '), 'warning');
+      } catch (e) {
+        // Silently fail if logging causes errors
+      }
       originalConsoleWarn.apply(this, args);
     };
 
     console.info = function(...args) {
-      addLog(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' '), 'success');
+      try {
+        addLog(args.map(safeStringify).join(' '), 'success');
+      } catch (e) {
+        // Silently fail if logging causes errors
+      }
       originalConsoleInfo.apply(this, args);
     };
 

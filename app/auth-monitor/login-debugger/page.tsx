@@ -68,10 +68,11 @@ export default function CognitoLoginDebugger() {
         const googleLoginUrl = `${env.cognitoDomain}/oauth2/authorize?client_id=${env.clientId}&response_type=code&redirect_uri=${encodeURIComponent(window.location.origin)}&identity_provider=Google`;
         
         // Pegar configuração do Amplify
-        let amplifyConfig = null;
+        let amplifyConfig: string | null = null;
         try {
           // Passando um objeto vazio para não alterar a configuração existente
-          amplifyConfig = Amplify.configure({});
+          Amplify.configure({}); 
+          amplifyConfig = "Configuração ativada";
         } catch (e) {
           console.error("Erro ao obter configuração do Amplify:", e instanceof Error ? e.message : "Erro desconhecido");
         }

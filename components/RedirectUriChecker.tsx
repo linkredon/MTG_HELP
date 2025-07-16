@@ -19,7 +19,7 @@ export default function RedirectUriChecker() {
   
   useEffect(() => {
     // Verificar problemas comuns com URIs de redirecionamento
-    const detectedProblems = [];
+    const detectedProblems: string[] = [];
     
     // Verificar se o URI específico do Cognito existe no Google
     if (!googleUris.some(uri => uri.includes('/oauth2/idpresp'))) {

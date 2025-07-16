@@ -101,7 +101,7 @@ export const loadSpoilerCards = (): SpoilerCard[] => {
 // Função para limpar o armazenamento de cartas de spoiler
 export const clearSpoilerCards = () => {
   // Obter todas as chaves do localStorage
-  const keys = []
+  const keys: string[] = []
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
     if (key && (key === 'mtg-spoiler-cards-data' || key.startsWith('mtg-spoiler-image-'))) {

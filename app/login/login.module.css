@@ -1,6 +1,6 @@
 /* Estilos para a página de login */
 
-.login-container {
+.loginContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9,7 +9,7 @@
   padding: 2rem;
 }
 
-.login-card {
+.loginCard {
   background-color: rgba(23, 25, 35, 0.9);
   border-radius: 0.75rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -19,23 +19,23 @@
   transition: all 0.3s ease;
 }
 
-.login-card:hover {
+.loginCard:hover {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
   transform: translateY(-3px);
 }
 
-.login-logo {
+.loginLogo {
   display: flex;
   justify-content: center;
   margin-bottom: 1.5rem;
 }
 
-.login-logo img {
+.loginLogo img {
   height: 80px;
   width: auto;
 }
 
-.login-heading {
+.loginHeading {
   color: #fff;
   font-size: 1.75rem;
   font-weight: 600;
@@ -43,14 +43,14 @@
   margin-bottom: 1.5rem;
 }
 
-.login-subtext {
+.loginSubtext {
   color: #a0aec0;
   text-align: center;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
 }
 
-.login-button {
+.loginButton {
   position: relative;
   display: flex;
   align-items: center;
@@ -64,76 +64,76 @@
   cursor: pointer;
 }
 
-.login-button-google {
+.loginButtonGoogle {
   background-color: #ffffff;
   color: #333;
   border: 1px solid #ddd;
 }
 
-.login-button-google:hover {
+.loginButtonGoogle:hover {
   background-color: #f8f9fa;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.login-button-cognito {
+.loginButtonCognito {
   background-color: #FF9900;
   color: #fff;
   border: none;
 }
 
-.login-button-cognito:hover {
+.loginButtonCognito:hover {
   background-color: #e68a00;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.login-button-demo {
+.loginButtonDemo {
   background-color: #4299e1;
   color: #fff;
   border: none;
 }
 
-.login-button-demo:hover {
+.loginButtonDemo:hover {
   background-color: #3182ce;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.login-button-icon {
+.loginButtonIcon {
   margin-right: 10px;
   font-size: 1.2rem;
 }
 
-.login-divider {
+.loginDivider {
   display: flex;
   align-items: center;
   margin: 1.5rem 0;
 }
 
-.login-divider::before,
-.login-divider::after {
+.loginDivider::before,
+.loginDivider::after {
   content: '';
   flex: 1;
   border-bottom: 1px solid #4a5568;
 }
 
-.login-divider-text {
+.loginDividerText {
   padding: 0 1rem;
   color: #a0aec0;
   font-size: 0.875rem;
 }
 
-.login-footer {
+.loginFooter {
   margin-top: 2rem;
   text-align: center;
   color: #a0aec0;
   font-size: 0.875rem;
 }
 
-.login-footer a {
+.loginFooter a {
   color: #63b3ed;
   text-decoration: none;
 }
 
-.login-footer a:hover {
+.loginFooter a:hover {
   text-decoration: underline;
 }
 
@@ -150,12 +150,12 @@
   }
 }
 
-.loading-indicator {
+.loadingIndicator {
   animation: pulse 1.5s infinite;
 }
 
 /* Estilos para notificações de erro */
-.login-error {
+.loginError {
   background-color: rgba(245, 101, 101, 0.1);
   border-left: 4px solid #f56565;
   color: #f56565;
@@ -166,7 +166,7 @@
 }
 
 /* Estilos para notificações de sucesso */
-.login-success {
+.loginSuccess {
   background-color: rgba(72, 187, 120, 0.1);
   border-left: 4px solid #48bb78;
   color: #48bb78;
@@ -178,11 +178,11 @@
 
 /* Estilos responsivos */
 @media (max-width: 640px) {
-  .login-card {
+  .loginCard {
     padding: 1.5rem;
   }
   
-  .login-heading {
+  .loginHeading {
     font-size: 1.5rem;
   }
 }

@@ -61,9 +61,12 @@ export interface CollectionCard {
 export interface UserCollection {
   id: string
   name: string
+  description?: string
   cards: CollectionCard[]
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
+  isPublic?: boolean
+  _id?: string
 }
 
 export interface User {
@@ -81,4 +84,24 @@ export interface SpoilerCard extends MTGCard {
   isNew?: boolean
   releaseDate?: string
   spoilerSource?: string
+}
+
+export interface DeckCard {
+  card: MTGCard
+  quantity: number
+  category: 'mainboard' | 'sideboard' | 'commander'
+  _id?: string
+}
+
+export interface Deck {
+  id: string
+  name: string
+  description?: string
+  format?: string
+  colors?: string[]
+  cards: DeckCard[]
+  createdAt: string
+  lastModified: string
+  isPublic?: boolean
+  tags?: string[]
 }

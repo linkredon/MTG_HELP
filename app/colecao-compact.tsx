@@ -411,7 +411,7 @@ export default function ColecaoCompact({
     
     try {
       // Construir query para Scryfall
-      let queryParts = []
+      let queryParts: string[] = []
       
       if (filters.busca.trim()) queryParts.push(filters.busca.trim())
       if (filters.raridade !== "all") queryParts.push(`rarity:${filters.raridade}`)
@@ -570,7 +570,7 @@ export default function ColecaoCompact({
     if (!nomePesquisaSalva.trim()) return;
     
     // Construir query para salvar
-    let queryParts = []
+    let queryParts: string[] = []
     
     if (filters.busca.trim()) queryParts.push(filters.busca.trim())
     if (filters.raridade !== "all") queryParts.push(`rarity:${filters.raridade}`)

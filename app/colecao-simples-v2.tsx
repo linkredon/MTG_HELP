@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,19 @@ export default function CollectionSimpleRefined() {
   // Contextos
   const { currentCollection = { cards: [] }, adicionarCarta } = useAppContext();
   const { openModal } = useCardModal();
+  
+  // Função helper para calcular o total de cartas (evitar problemas de tipo)
+  const getTotalCards = useCallback((): number => {
+    if (!currentCollection || !currentCollection.cards) return 0;
+    
+    let total = 0;
+    for (const item of currentCollection.cards) {
+      if (item && typeof item.quantity === 'number') {
+        total += item.quantity;
+      }
+    }
+    return total;
+  }, [currentCollection]);
 
   // Função de busca
   const searchCards = async () => {
@@ -192,7 +205,7 @@ export default function CollectionSimpleRefined() {
                     Minha Coleção: {currentCollection?.cards?.length || 0} cartas únicas
                   </h3>
                   <div className="text-sm text-gray-400">
-                    Total: {currentCollection?.cards?.reduce((sum, item) => sum + item.quantity, 0) || 0} cartas
+                    Total: {getTotalCards()} cartas
                   </div>
                 </div>
               </div>

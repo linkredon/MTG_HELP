@@ -77,6 +77,19 @@ export default function ColecaoImproved({
   const { currentCollection = { cards: [] }, adicionarCarta } = useAppContext();
   const { openModal } = useCardModal();
   
+  // Função helper para calcular o total de cartas (evitar problemas de tipo com reduce)
+  const getTotalCards = useCallback((): number => {
+    if (!currentCollection || !currentCollection.cards) return 0;
+    
+    let total = 0;
+    for (const item of currentCollection.cards) {
+      if (item && typeof item.quantity === 'number') {
+        total += item.quantity;
+      }
+    }
+    return total;
+  }, [currentCollection]);
+  
   // Função para buscar cartas
   const searchCards = async () => {
     if (!searchTerm || searchTerm.length < 2) return;
@@ -228,7 +241,7 @@ export default function ColecaoImproved({
             </Badge>
             <Badge variant="outline" className="py-1 px-3 border-purple-600 bg-purple-900/20 text-purple-300">
               <Sparkles className="w-4 h-4 mr-2" />
-              {currentCollection?.cards?.reduce((total, item) => total + item.quantity, 0) || 0} no total
+              {getTotalCards()} no total
             </Badge>
           </div>
         </div>
@@ -252,7 +265,7 @@ export default function ColecaoImproved({
                 className="flex-1 h-12 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-white"
               >
                 <Library className="w-4 h-4 mr-2" />
-                Coleção ({currentCollection?.cards?.reduce((total, item) => total + item.quantity, 0) || 0})
+                Coleção ({getTotalCards()})
               </TabsTrigger>
               <TabsTrigger
                 value="estatisticas"
@@ -1088,7 +1101,7 @@ export default function ColecaoImproved({
                   <CardContent className="p-4">
                     <h3 className="text-sm text-slate-400 mb-1">Total de Cartas</h3>
                     <div className="text-2xl font-bold text-slate-100">
-                      {currentCollection?.cards?.reduce((total, item) => total + item.quantity, 0) || 0}
+                      {getTotalCards()}
                     </div>
                   </CardContent>
                 </Card>

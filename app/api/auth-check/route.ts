@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -8,11 +7,26 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Buscar token JWT do NextAuth
-    const token = await getToken({ 
-      req: request, 
-      secret: process.env.NEXTAUTH_SECRET 
-    });
+    // Verificar token do Amplify
+    const amplifyTokens = request.cookies.get('amplify.auth.tokens')?.value;
+    const hasAmplifyAuth = !!amplifyTokens || !!request.cookies.get('amplify-signin-with-hostedUI')?.value;
+    
+    // Extrair informações básicas do token
+    let token: any = null;
+    if (amplifyTokens) {
+      try {
+        const tokensObj = JSON.parse(amplifyTokens);
+        if (tokensObj.idToken?.payload) {
+          token = {
+            email: tokensObj.idToken.payload.email,
+            name: tokensObj.idToken.payload.name || tokensObj.username,
+            sub: tokensObj.idToken.payload.sub
+          };
+        }
+      } catch (e) {
+        console.error('Erro ao analisar token Amplify:', e);
+      }
+    }
     
     // Analisar cookies
     const cookies: Record<string, string> = {};
@@ -48,7 +62,7 @@ export async function GET(request: NextRequest) {
     // Resultado final com informações de diagnóstico
     const result = {
       isAuthenticated: !!token,
-      authMethod: token ? 'nextauth' : 'none',
+      authMethod: token ? 'amplify' : 'none',
       user,
       hasCookies: Object.keys(cookies).length > 0,
       authCookies: cookies,

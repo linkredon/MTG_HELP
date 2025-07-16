@@ -11,6 +11,9 @@
 /* Import Enhanced Filters Styles */
 @import '../styles/filters-enhanced.css';
 
+/* Import Login Styles */
+@import '../styles/login.css';
+
 @layer base {
   :root {
     --background: 0 0% 100%;

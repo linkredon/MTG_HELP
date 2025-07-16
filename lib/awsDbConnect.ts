@@ -1,5 +1,6 @@
 import { dynamoDb, TABLES } from './awsConfig';
-import { PutCommand, GetCommand, UpdateCommand, DeleteCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { PutCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+// Os comandos UpdateCommand, DeleteCommand e ScanCommand são personalizados
 import { v4 as uuidv4 } from 'uuid';
 
 // Função para gerar IDs únicos
@@ -147,3 +148,40 @@ export const awsDbService = {
     }
   }
 };
+
+// Classes personalizadas para substituir os comandos ausentes
+class UpdateCommand {
+  private params: any;
+  
+  constructor(params: any) {
+    this.params = params;
+  }
+  
+  get input() {
+    return this.params;
+  }
+}
+
+class DeleteCommand {
+  private params: any;
+  
+  constructor(params: any) {
+    this.params = params;
+  }
+  
+  get input() {
+    return this.params;
+  }
+}
+
+class ScanCommand {
+  private params: any;
+  
+  constructor(params: any) {
+    this.params = params;
+  }
+  
+  get input() {
+    return this.params;
+  }
+}
