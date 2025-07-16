@@ -52,7 +52,7 @@ export default function UserPage() {
               <div className="flex gap-4 mt-4">
                 <Link href="/user/profile" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Perfil</Link>
                 <Link href="/user/settings" className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">Configurações</Link>
-                <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition" onClick={() => import('next-auth/react').then(mod => mod.signOut())}>Logout</button>
+                <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition" onClick={() => import('@aws-amplify/auth').then(mod => mod.signOut())}>Logout</button>
               </div>
             </div>
           ) : null}

@@ -1,4 +1,4 @@
-import { getSession } from 'next-auth/react';
+import * as AmplifyAuth from '@aws-amplify/auth';
 import dbConnect from '@/lib/dbConnect';
 
 // Função para adicionar delay entre requisições para evitar rate limiting
@@ -6,7 +6,20 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default async function handler(req, res) {
   // Verificar se o usuário está autenticado (opcional para pesquisa pública)
-  const session = await getSession({ req });
+  try {
+    const user = await AmplifyAuth.getCurrentUser();
+    
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Não autorizado' });
+    }
+    
+    // Criar objeto de sessão compatível com o código existente
+    const session = {
+      user: {
+        id: user.userId,
+        username: user.username
+      }
+    };
   
   // Conectar ao banco de dados para possível cache
   await dbConnect();
@@ -46,5 +59,9 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Erro ao buscar cartas no Scryfall:', error);
     res.status(500).json({ success: false, message: 'Erro ao buscar cartas', error: error.message });
+  }
+  } catch (authError) {
+    console.error('Erro de autenticação:', authError);
+    res.status(401).json({ success: false, message: 'Erro de autenticação', error: authError.message });
   }
 }

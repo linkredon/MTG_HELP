@@ -1,13 +1,22 @@
-import { getSession } from 'next-auth/react';
+import * as AmplifyAuth from '@aws-amplify/auth';
 import dbConnect from '@/lib/dbConnect';
 import Collection from '@/models/Collection';
 
 export default async function handler(req, res) {
-  const session = await getSession({ req });
-
-  if (!session) {
-    return res.status(401).json({ success: false, message: 'Não autorizado' });
-  }
+  try {
+    const user = await AmplifyAuth.getCurrentUser();
+    
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Não autorizado' });
+    }
+    
+    // Criar objeto de sessão compatível com o código existente
+    const session = {
+      user: {
+        id: user.userId,
+        username: user.username
+      }
+    };
 
   await dbConnect();
 
@@ -48,5 +57,9 @@ export default async function handler(req, res) {
     }
   } else {
     res.status(405).json({ success: false, message: 'Método não permitido' });
+  }
+  } catch (authError) {
+    console.error('Erro de autenticação:', authError);
+    res.status(401).json({ success: false, message: 'Erro de autenticação', error: authError.message });
   }
 }

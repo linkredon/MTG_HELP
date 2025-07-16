@@ -1,13 +1,22 @@
-import { getSession } from 'next-auth/react';
+import * as AmplifyAuth from '@aws-amplify/auth';
 import dbConnect from '@/lib/dbConnect';
 import Deck from '@/models/Deck';
 
 export default async function handler(req, res) {
-  const session = await getSession({ req });
-
-  if (!session) {
-    return res.status(401).json({ success: false, message: 'Não autorizado' });
-  }
+  try {
+    const user = await AmplifyAuth.getCurrentUser();
+    
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Não autorizado' });
+    }
+    
+    // Criar objeto de sessão compatível com o código existente
+    const session = {
+      user: {
+        id: user.userId,
+        username: user.username
+      }
+    };
 
   const { id } = req.query;
 
@@ -63,5 +72,9 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error(`Erro ao processar deck ${id}:`, error);
     res.status(500).json({ success: false, message: 'Erro ao processar deck', error: error.message });
+  }
+  } catch (authError) {
+    console.error('Erro de autenticação:', authError);
+    res.status(401).json({ success: false, message: 'Erro de autenticação', error: authError.message });
   }
 }
