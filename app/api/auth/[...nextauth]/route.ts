@@ -1,46 +1,24 @@
-import NextAuth from 'next-auth';
-import { authConfig as authOptions } from '../../../../lib/auth-config';
+// Removendo dependência de next-auth que foi removido do projeto
 import { NextResponse } from 'next/server';
 
-// Certificar-se de que o host é confiável (necessário para NextAuth em App Router)
-// @ts-ignore
-globalThis.trustHost = true;
+// Este arquivo é mantido apenas para compatibilidade com rotas existentes
+// A autenticação agora é feita pelo AWS Amplify/Cognito
 
-// Envolver o manipulador em try/catch para garantir que sempre retornamos JSON válido
-const handler = async (req: Request, context: any) => {
-  try {
-    // Registrar informações de diagnóstico para depurar problemas com a API
-    console.log("[NextAuth] Chamada para API NextAuth:", { 
-      url: req.url,
-      method: req.method
-    });
-    
-    // Criar manipulador com as opções de autenticação
-    const nextAuthHandler = NextAuth(authOptions);
-    
-    // Chamar o manipulador e obter a resposta
-    const response = await nextAuthHandler(req, context);
-    
-    // Garantir que o tipo de conteúdo é JSON
-    if (response && response.headers) {
-      response.headers.set('Content-Type', 'application/json');
-    }
-    
-    return response;
-  } catch (error) {
-    console.error("Erro no manipulador NextAuth:", error);
-    
-    // Garantir que sempre retornamos JSON em caso de erro
-    const errorResponse = NextResponse.json(
-      { error: "Falha na autenticação", details: error instanceof Error ? error.message : "Erro desconhecido" }, 
-      { status: 500 }
-    );
-    
-    // Garantir que o tipo de conteúdo é JSON
-    errorResponse.headers.set('Content-Type', 'application/json');
-    
-    return errorResponse;
-  }
+// Manipulador que retorna uma resposta para redirecionar para o novo sistema de autenticação
+const handler = async (req: Request) => {
+  console.log("[Auth API] Redirecionando para nova autenticação com Amplify:", { 
+    url: req.url,
+    method: req.method
+  });
+  
+  // Retornar resposta JSON informando sobre a migração
+  const response = NextResponse.json({ 
+    message: "API NextAuth desativada. O sistema agora usa AWS Amplify para autenticação.",
+    status: "redirect",
+    redirectTo: "/login"
+  }, { status: 307 });
+  
+  return response;
 };
 
 export { handler as GET, handler as POST };
