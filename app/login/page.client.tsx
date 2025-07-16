@@ -1,121 +1,218 @@
 "use client";
 import '../../lib/amplifyClient';
-import '../../styles/login.css';
+import '../../styles/login-updated.css';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, signUp } from '@/lib/auth-helpers';
-// Verificar se está em um ambiente com OAuth completo
+import { confirmSignUp as amplifyConfirmSignUp, fetchAuthSession } from '@aws-amplify/auth';
 import { Amplify } from 'aws-amplify';
 import AuthDiagnostic from '@/components/AuthDiagnostic';
 import { printAuthDiagnostic } from '@/lib/authDiagnostic';
 import AuthDebugger from '@/components/AuthDebugger';
 import AuthTroubleshooter from '@/components/AuthTroubleshooter';
-import { signInWithRedirect, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
-import { useAmplifyAuth, AmplifyUser, AmplifyAuthContextType } from '@/contexts/AmplifyAuthContext';
+import { useAmplifyAuth, AmplifyUser } from '@/contexts/AmplifyAuthContext';
 
 export default function LoginClientPage() {
   const router = useRouter();
-  // Use the correct type definition from AmplifyAuthContextType
-  const [authState, setAuthState] = useState<{
-    isAuthenticated: boolean;
-    user: AmplifyUser | null;
-    isLoading?: boolean;
-    signOut?: () => Promise<void>;
-    refreshUser: () => Promise<void>;
-  }>({
-    isAuthenticated: false,
-    user: null,
-    isLoading: false,
-    refreshUser: async () => {}
-  });
-  const [isLogin, setIsLogin] = useState(true);
+  
+  // Estado de autenticação
+  const [isClient, setIsClient] = useState(false);
+  const [mode, setMode] = useState<'login' | 'register' | 'verify'>('login');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [verificationInfo, setVerificationInfo] = useState<{email: string; name: string} | null>(null);
+  
+  // Campos do formulário
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [adminCode, setAdminCode] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
   const [showAdminField, setShowAdminField] = useState(false);
-  const [isClient, setIsClient] = useState(false);
   
   // Verificar se estamos no lado cliente
   useEffect(() => {
     setIsClient(true);
   }, []);
   
-  // Inicializar contexto de autenticação de forma segura apenas no cliente
+  // Setup a default fallback context
+  const defaultAuthContext = {
+    isAuthenticated: false,
+    user: null,
+    isLoading: false,
+    isInitialized: false,
+    refreshUser: async () => {},
+    signOut: async () => {}
+  };
+  
+  // Always call useAmplifyAuth to maintain consistent hook order
+  // Use try-catch to handle potential errors
+  let authContext;
+  try {
+    authContext = useAmplifyAuth();
+  } catch (error) {
+    console.error("Erro ao acessar contexto de autenticação:", error);
+    authContext = defaultAuthContext;
+  }
+  
+  // Create a safe version that we'll actually use
+  const safeAuthContext = isClient ? authContext : defaultAuthContext;
+
+  // Função para checar se o usuário tem uma sessão válida
+  const checkSession = useCallback(async () => {
+    try {
+      // Tentar obter sessão diretamente
+      const session = await fetchAuthSession();
+      
+      // Se temos tokens, significa que estamos autenticados
+      if (session?.tokens?.idToken) {
+        console.log('Sessão válida detectada');
+        return true;
+      }
+    } catch (error) {
+      console.log('Erro ao verificar sessão:', error);
+    }
+    
+    return false;
+  }, []);
+  
+  // Função para redirecionar para a página principal
+  const redirectToHome = useCallback(() => {
+    console.log('Redirecionando para página principal...');
+    router.push('/');
+  }, [router]);
+
+  // Update auth state when changes
   useEffect(() => {
     if (!isClient) return;
     
     try {
-      // Só usa o hook quando estamos no cliente
-      const authContext = useAmplifyAuth();
-      setAuthState(authContext);
-      
       // Verificar se o usuário está autenticado e redirecionar
-      if (authContext.isAuthenticated && authContext.user) {
-        console.log('Usuário já autenticado, redirecionando...');
-        router.push('/');
+      if (safeAuthContext.isAuthenticated && safeAuthContext.user) {
+        console.log('Usuário já autenticado via contexto, redirecionando...');
+        
+        // Adicionar pequeno delay para dar tempo ao contexto de ser totalmente inicializado
+        const timeoutId = setTimeout(() => {
+          // Verificar sessão diretamente para confirmar
+          checkSession().then(hasValidSession => {
+            if (hasValidSession) {
+              console.log('Sessão confirmada para usuário:', safeAuthContext.user?.email);
+              redirectToHome();
+            } else {
+              console.log('Sessão não confirmada, apesar do contexto indicar autenticação');
+              // Não redirecionar automaticamente, deixar o usuário usar o botão manual
+            }
+          });
+        }, 500);
+        
+        return () => clearTimeout(timeoutId);
       }
     } catch (error) {
       console.error('Erro ao acessar contexto de autenticação:', error);
     }
-  }, [isClient, router]);
+  }, [isClient, safeAuthContext, checkSession, redirectToHome]);
 
+  // Estado para controlar as verificações de OAuth
+  const [oauthChecked, setOauthChecked] = useState(false);
+  const [lastOauthCheck, setLastOauthCheck] = useState(0);
+  
   // Verificar se o usuário acabou de fazer login com OAuth
   useEffect(() => {
     if (!isClient) return;
     
+    // Evitar verificações excessivas
+    const now = Date.now();
+    if (oauthChecked && (now - lastOauthCheck) < 5000) {
+      // Só verificar uma vez a cada 5 segundos
+      return;
+    }
+    
+    let isMounted = true;
+    setLastOauthCheck(now);
+    
     async function checkOAuthResult() {
       try {
-        // Importar funções necessárias
-        const { getCurrentUser, fetchUserAttributes } = await import('aws-amplify/auth');
+        // Verificar sessão diretamente primeiro
+        const hasValidSession = await checkSession();
         
-        console.log('Verificando status do usuário OAuth...');
-        // Executar diagnóstico de autenticação
-        printAuthDiagnostic();
-        
-        // Verificar se há um usuário autenticado
-        try {
-          const user = await getCurrentUser();
-          console.log('Usuário atual detectado:', user);
+        if (hasValidSession && isMounted) {
+          console.log('Sessão válida encontrada, redirecionando...');
           
-          // Usuário está autenticado, obter atributos
-          try {
-            const attributes = await fetchUserAttributes();
-            console.log('Atributos do usuário:', attributes);
-            
-            // Atualizar o estado do usuário no contexto
-            if (authState.refreshUser) {
-              await authState.refreshUser();
-            }
-            
-            // Redirecionar para a página inicial
-            router.push('/');
-          } catch (attrError) {
-            console.error('Erro ao obter atributos:', attrError);
+          // Atualizar contexto em segundo plano
+          if (safeAuthContext.refreshUser) {
+            safeAuthContext.refreshUser().catch(e => 
+              console.log('Erro não crítico ao atualizar contexto:', e)
+            );
           }
-        } catch (userError) {
-          console.log('Nenhum usuário autenticado detectado');
+          
+          // Adicionar pequeno delay antes de redirecionar
+          setTimeout(() => {
+            if (isMounted) {
+              redirectToHome();
+            }
+          }, 200);
+          return;
         }
+        
+        console.log('Nenhuma sessão válida encontrada');
       } catch (error) {
-        console.error('Erro ao verificar resultado OAuth:', error);
+        console.error('Erro ao verificar sessão OAuth:', error);
+      } finally {
+        if (isMounted) {
+          setOauthChecked(true);
+        }
       }
     }
     
+    // Executar verificação
     checkOAuthResult();
-  }, [router, authState.refreshUser, isClient]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [isClient, checkSession, redirectToHome, safeAuthContext.refreshUser, oauthChecked, lastOauthCheck]);
 
   // Alternar entre login e registro
   const toggleAuthMode = () => {
-    setIsLogin(!isLogin);
+    if (mode === 'login') {
+      setMode('register');
+    } else {
+      setMode('login');
+    }
     setError('');
   };
 
   // Mostrar/ocultar campo de código de administrador
   const toggleAdminField = () => {
     setShowAdminField(!showAdminField);
+  };
+  
+  // Função para fazer logout de forma segura
+  const handleSignOut = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      if (safeAuthContext.isAuthenticated) {
+        console.log('Realizando logout...');
+        await safeAuthContext.signOut();
+        console.log('Logout realizado com sucesso');
+      } else {
+        // Tentar fazer logout diretamente via AWS Amplify
+        console.log('Tentando logout alternativo...');
+        const auth = await import('@aws-amplify/auth');
+        await auth.signOut({ global: true });
+      }
+      
+      // Limpar qualquer erro
+      setError('');
+    } catch (error: any) {
+      console.error('Erro ao fazer logout:', error);
+      setError(`Erro ao fazer logout: ${error.message || 'Erro desconhecido'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Autenticar com Google
@@ -124,46 +221,161 @@ export default function LoginClientPage() {
       setLoading(true);
       setError('');
       
+      console.log('Verificando estado de autenticação antes de login com Google...');
+      
+      // Verificar se já existe um usuário autenticado
+      if (safeAuthContext.isAuthenticated) {
+        console.log('Usuário já autenticado, fazendo logout primeiro...');
+        
+        // Usar nossa função de logout
+        await handleSignOut();
+        
+        // Pequena pausa para garantir que o logout foi processado
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      // Verificar novamente se o logout funcionou
+      try {
+        const auth = await import('@aws-amplify/auth');
+        try {
+          // Tentar obter o usuário atual para verificar se ainda está autenticado
+          await auth.getCurrentUser();
+          
+          // Se não lançou erro, ainda há um usuário autenticado - forçar logout
+          console.log('Usuário ainda autenticado, forçando logout...');
+          await auth.signOut({ global: true });
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (userError) {
+          // Se lançou erro, não há usuário autenticado, o que é bom
+          console.log('Nenhum usuário autenticado detectado, pronto para login');
+        }
+      } catch (checkError) {
+        console.warn('Erro ao verificar estado de autenticação:', checkError);
+        // Continuar mesmo com erro
+      }
+      
       console.log('Iniciando login com Google...');
+      // Importar dinamicamente para garantir que estamos no cliente
+      const { signInWithRedirect } = await import('@aws-amplify/auth');
       await signInWithRedirect({ provider: 'Google' });
       // A redireção ocorrerá aqui, então não precisamos de código adicional
     } catch (error: any) {
       console.error('Erro ao autenticar com Google:', error);
-      setError(`Erro ao autenticar com Google: ${error.message || 'Erro desconhecido'}`);
+      
+      // Tratamento de erros específicos
+      if (error.name === 'UserAlreadyAuthenticatedException' || 
+          error.message?.includes('already a signed in user')) {
+        setError(`Há um usuário já autenticado. Por favor, faça logout antes de tentar novamente. Use o botão "Sair da conta atual" abaixo.`);
+      } else {
+        setError(`Erro ao autenticar com Google: ${error.message || 'Erro desconhecido'}`);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Rastreamento de tentativas de autenticação para evitar rate limiting
+  const [authAttempts, setAuthAttempts] = useState(0);
+  const [lastAuthAttempt, setLastAuthAttempt] = useState(0);
+  
   // Enviar formulário de autenticação
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    // Verificar se não estamos fazendo muitas requisições
+    const now = Date.now();
+    if (authAttempts > 3 && (now - lastAuthAttempt) < 2000) {
+      setError('Muitas tentativas em um curto período. Aguarde alguns segundos antes de tentar novamente.');
+      return;
+    }
+    
     setLoading(true);
+    setAuthAttempts(prev => prev + 1);
+    setLastAuthAttempt(now);
     
     try {
-      if (isLogin) {
+      // Verificar se já está autenticado para evitar chamadas desnecessárias
+      const isAlreadyAuthenticated = await checkSession();
+      if (isAlreadyAuthenticated) {
+        console.log('Usuário já autenticado, redirecionando...');
+        redirectToHome();
+        return;
+      }
+      
+      if (mode === 'login') {
         // Login
         console.log('Tentando fazer login com email:', email);
-        await signIn(email, password);
+        const result = await signIn(email, password);
         
-        // Atualizar o estado do usuário no contexto
-        if (authState.refreshUser) {
-          await authState.refreshUser();
+        if (result.success) {
+          // Atualizar o contexto de autenticação
+          if (safeAuthContext.refreshUser) {
+            try {
+              await safeAuthContext.refreshUser();
+              console.log('Contexto de autenticação atualizado com sucesso');
+            } catch (refreshError) {
+              console.warn('Erro não crítico ao atualizar contexto:', refreshError);
+              // Continuar mesmo com erro
+            }
+          }
+          
+          // Pequeno delay para garantir que tudo foi atualizado
+          setTimeout(() => {
+            router.push('/');
+          }, 100);
+        } else {
+          setError(result.error || 'Erro ao fazer login');
         }
-        
-        router.push('/');
-      } else {
+      } else if (mode === 'register') {
         // Registro
         console.log('Tentando registrar novo usuário:', email);
+        
         // Verificar se é um registro de administrador baseado no código
         const isAdmin = showAdminField && (adminCode === process.env.NEXT_PUBLIC_ADMIN_CODE || adminCode === 'MTG_ADMIN_2024');
-        await signUp(email, password, name, isAdmin);
+        const result = await signUp(email, password, name, isAdmin);
         
-        // Mostrar mensagem de sucesso e mudar para o modo de login
-        setError('');
-        setIsLogin(true);
-        alert('Registro realizado com sucesso! Verifique seu email para confirmar a conta.');
+        if (result.success) {
+          // Se o registro foi bem-sucedido, mudar para o modo de verificação
+          setVerificationInfo({ email, name });
+          setMode('verify');
+          setError('');
+        } else {
+          setError(result.error || 'Erro ao registrar usuário');
+        }
+      } else if (mode === 'verify') {
+        // Confirmar registro
+        if (!verificationInfo) {
+          setError('Informações de verificação não encontradas');
+          return;
+        }
+        
+        console.log('Tentando confirmar registro para:', verificationInfo.email);
+        try {
+          // Usar a função de confirmação do Amplify diretamente
+          const { isSignUpComplete } = await amplifyConfirmSignUp({
+            username: verificationInfo.email,
+            confirmationCode: verificationCode
+          });
+          
+          if (isSignUpComplete) {
+            // Após confirmação bem-sucedida, redirecionar para o login
+            setError('');
+            setMode('login');
+            setEmail(verificationInfo.email);
+            alert('Conta confirmada com sucesso! Agora você pode fazer login.');
+          } else {
+            setError('A confirmação não foi concluída. Tente novamente.');
+          }
+        } catch (error: any) {
+          console.error('Erro ao confirmar registro:', error);
+          
+          if (error.name === 'TooManyRequestsException') {
+            setError('Muitas tentativas em um curto período. Aguarde alguns minutos antes de tentar novamente.');
+          } else {
+            setError(error.message || 'Erro ao confirmar conta');
+          }
+        }
       }
     } catch (error: any) {
       console.error('Erro de autenticação:', error);
@@ -171,13 +383,21 @@ export default function LoginClientPage() {
       // Formatação amigável de mensagens de erro
       let errorMessage = 'Ocorreu um erro durante a autenticação.';
       
-      if (error.message) {
+      if (error.name === 'TooManyRequestsException' || error.message?.includes('Rate exceeded')) {
+        errorMessage = 'Muitas tentativas em um curto período. Aguarde alguns minutos antes de tentar novamente.';
+      } else if (error.message) {
         if (error.message.includes('password') || error.message.includes('senha')) {
           errorMessage = 'Senha inválida. Verifique sua senha e tente novamente.';
         } else if (error.message.includes('user') || error.message.includes('usuário')) {
           errorMessage = 'Usuário não encontrado. Verifique seu email ou registre-se.';
         } else if (error.message.includes('confirm')) {
           errorMessage = 'Por favor, confirme seu email antes de fazer login.';
+          
+          // Se o erro for sobre confirmação, mudar para o modo de verificação
+          if (email) {
+            setVerificationInfo({ email, name });
+            setMode('verify');
+          }
         } else {
           errorMessage = `Erro: ${error.message}`;
         }
@@ -189,119 +409,242 @@ export default function LoginClientPage() {
     }
   };
 
+  // Voltar do modo de verificação para o registro
+  const handleBackToRegister = () => {
+    setMode('register');
+    setVerificationInfo(null);
+    setVerificationCode('');
+    setError('');
+  };
+
   return (
     <div className="login-container">
+      {/* Background com imagem embaçada */}
+      <div className="login-bg"></div>
+      
       <div className="login-card">
-        <div className="login-header">
-          <h1>{isLogin ? 'Login' : 'Cadastro'}</h1>
-          <p>{isLogin ? 'Acesse sua conta' : 'Crie uma nova conta'}</p>
-        </div>
+        {/* Cabeçalho de acordo com o modo */}
+        {mode === 'verify' ? (
+          <div className="login-header">
+            <h1>Verificar Conta</h1>
+            <p>Digite o código enviado para {verificationInfo?.email}</p>
+          </div>
+        ) : (
+          <div className="login-header">
+            <h1>{mode === 'login' ? 'Login' : 'Cadastro'}</h1>
+            <p>{mode === 'login' ? 'Acesse sua conta' : 'Crie uma nova conta'}</p>
+            
+            {/* Mostrar mensagem se o usuário já estiver autenticado */}
+            {safeAuthContext.isAuthenticated && safeAuthContext.user && (
+              <div className="auth-info">
+                <p>Você já está autenticado como {safeAuthContext.user.name || safeAuthContext.user.email}</p>
+                <div className="auth-actions">
+                  <button 
+                    className="redirect-button" 
+                    onClick={() => router.push('/')}
+                  >
+                    Ir para a página inicial
+                  </button>
+                  <button 
+                    className="redirect-button secondary" 
+                    onClick={async () => {
+                      // Verificar sessão novamente antes de redirecionar
+                      const hasValidSession = await checkSession();
+                      if (hasValidSession) {
+                        redirectToHome();
+                      } else {
+                        setError("Falha na validação da sessão. Tente fazer logout e login novamente.");
+                      }
+                    }}
+                  >
+                    Verificar e redirecionar
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Mostrar indicador de carregamento do contexto de autenticação */}
+            {safeAuthContext.isLoading && (
+              <p className="auth-loading">Verificando estado de autenticação...</p>
+            )}
+          </div>
+        )}
         
+        {/* Mostrar mensagem de erro */}
         {error && <div className="error-message">{error}</div>}
         
+        {/* Formulário de acordo com o modo */}
         <form onSubmit={handleSubmit} className="login-form">
-          {!isLogin && (
+          {/* Modo de verificação de código */}
+          {mode === 'verify' && (
             <div className="form-group">
-              <label htmlFor="name">Nome</label>
+              <label htmlFor="verificationCode">Código de Verificação</label>
               <input
                 type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required={!isLogin}
+                id="verificationCode"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                required
                 disabled={loading}
-                placeholder="Seu nome completo"
+                placeholder="Digite o código recebido por email"
+                maxLength={6}
+                className="verification-code-input"
+                autoComplete="one-time-code"
               />
+              <p className="text-xs text-gray-400 mt-1">
+                Verifique sua caixa de entrada e spam para o código de verificação
+              </p>
             </div>
           )}
           
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-              placeholder="seu@email.com"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="password">Senha</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-              placeholder="Sua senha"
-              minLength={8}
-            />
-          </div>
-          
-          {!isLogin && showAdminField && (
-            <div className="form-group">
-              <label htmlFor="adminCode">Código de Administrador</label>
-              <input
-                type="password"
-                id="adminCode"
-                value={adminCode}
-                onChange={(e) => setAdminCode(e.target.value)}
-                disabled={loading}
-                placeholder="Código de administrador (opcional)"
-              />
-            </div>
+          {/* Modo de login ou registro */}
+          {mode !== 'verify' && (
+            <>
+              {/* Campo de nome apenas para registro */}
+              {mode === 'register' && (
+                <div className="form-group">
+                  <label htmlFor="name">Nome</label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    disabled={loading}
+                    placeholder="Seu nome completo"
+                  />
+                </div>
+              )}
+              
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                  placeholder="seu@email.com"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="password">Senha</label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  placeholder="Sua senha"
+                  minLength={8}
+                />
+                {mode === 'register' && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    A senha deve ter pelo menos 8 caracteres
+                  </p>
+                )}
+              </div>
+              
+              {/* Campo de código de administrador */}
+              {mode === 'register' && showAdminField && (
+                <div className="form-group">
+                  <label htmlFor="adminCode">Código de Administrador</label>
+                  <input
+                    type="password"
+                    id="adminCode"
+                    value={adminCode}
+                    onChange={(e) => setAdminCode(e.target.value)}
+                    disabled={loading}
+                    placeholder="Código de administrador (opcional)"
+                  />
+                </div>
+              )}
+            </>
           )}
           
+          {/* Botão de ação principal */}
           <button
             type="submit"
             className="login-button"
             disabled={loading}
           >
-            {loading ? 'Processando...' : isLogin ? 'Entrar' : 'Cadastrar'}
+            {loading ? 'Processando...' : mode === 'login' ? 'Entrar' : mode === 'register' ? 'Cadastrar' : 'Verificar'}
           </button>
           
-          <button
-            type="button"
-            className="login-button google-button"
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-          >
-            <img src="/google-icon.svg" alt="Google" className="google-icon" />
-            Continuar com Google
-          </button>
-        </form>
-        
-        <div className="login-footer">
-          <p>
-            {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}
+          {/* Botão de login com Google - apenas nos modos login e registro */}
+          {mode !== 'verify' && (
             <button
               type="button"
-              className="toggle-auth-button"
-              onClick={toggleAuthMode}
+              className="google-button"
+              onClick={handleGoogleSignIn}
               disabled={loading}
             >
-              {isLogin ? 'Cadastre-se' : 'Faça login'}
+              <img src="/google-icon.svg" alt="Google" />
+              Continuar com Google
             </button>
-          </p>
-          
-          {!isLogin && (
+          )}
+        </form>
+        
+        {/* Footer com opções de acordo com o modo */}
+        <div className="login-footer">
+          {mode === 'verify' ? (
             <p>
               <button
                 type="button"
-                className="toggle-admin-button"
-                onClick={toggleAdminField}
+                className="toggle-auth-button"
+                onClick={handleBackToRegister}
                 disabled={loading}
               >
-                {showAdminField ? 'Ocultar código de administrador' : 'Sou administrador'}
+                Voltar para o cadastro
               </button>
             </p>
+          ) : (
+            <>
+              <p>
+                {mode === 'login' ? 'Não tem uma conta?' : 'Já tem uma conta?'}
+                <button
+                  type="button"
+                  className="toggle-auth-button"
+                  onClick={toggleAuthMode}
+                  disabled={loading}
+                >
+                  {mode === 'login' ? 'Cadastre-se' : 'Faça login'}
+                </button>
+              </p>
+              
+              {/* Opção de administrador apenas no modo registro */}
+              {mode === 'register' && (
+                <p className="mt-2">
+                  <button
+                    type="button"
+                    className="toggle-admin-button"
+                    onClick={toggleAdminField}
+                    disabled={loading}
+                  >
+                    {showAdminField ? 'Ocultar código de administrador' : 'Sou administrador'}
+                  </button>
+                </p>
+              )}
+              
+              {/* Botão de logout se estiver autenticado */}
+              {safeAuthContext.isAuthenticated && (
+                <button
+                  type="button"
+                  className="logout-button"
+                  onClick={handleSignOut}
+                  disabled={loading}
+                >
+                  Sair da conta atual
+                </button>
+              )}
+            </>
           )}
         </div>
         
+        {/* Ferramentas de diagnóstico - escondidas no CSS mas mantidas para debug */}
         <div className="auth-diagnostics">
           <AuthDiagnostic />
           <AuthDebugger />
