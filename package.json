@@ -12,7 +12,8 @@
     "start": "next start",
     "lint": "next lint",
     "setup-db": "node scripts/setup-dynamodb.js",
-    "fix-oauth": "node scripts/fix-google-oauth.js"
+    "fix-oauth": "node scripts/fix-google-oauth.js",
+    "fix-oauth-urls": "node scripts/fix-oauth-urls.js"
   },
   "dependencies": {
     "@aws-amplify/api": "^6.0.12",

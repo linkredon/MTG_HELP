@@ -17,8 +17,7 @@ export function configureAmplify() {
     
     // Obter o domínio do Cognito e garantir que tenha https://
     let cognitoDomain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'mtghelper.auth.us-east-2.amazoncognito.com';
-    // Garantir que o domínio sempre use https://
-if (!cognitoDomain.startsWith('https://')) {
+    if (!cognitoDomain.startsWith('https://')) {
       cognitoDomain = `https://${cognitoDomain}`;
     }
     
@@ -72,15 +71,7 @@ if (!cognitoDomain.startsWith('https://')) {
     console.log("- URL Base:", baseUrl);
     console.log("- Domínio Cognito:", cognitoDomain);
     
-    
-    // Log de diagnóstico para depuração
-    console.log("URLs de redirecionamento:");
-    console.log("- SignIn:", redirectSignIn);
-    console.log("- SignOut:", redirectSignOut);
-    console.log("- URL Base:", baseUrl);
-    console.log("- Domínio Cognito:", cognitoDomain);
-    
-// Aplicar configuração
+    // Aplicar configuração
     Amplify.configure(config);
     
     console.log('✅ Amplify configurado com sucesso usando formato legacy');

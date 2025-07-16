@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Amplify } from 'aws-amplify';
 import { configureAmplify } from '@/lib/amplifySetup';
 
 /**
@@ -8,33 +9,79 @@ import { configureAmplify } from '@/lib/amplifySetup';
  * de forma otimizada para evitar problemas de chunk loading
  */
 export default function AmplifyInit() {
+  // Use useEffect para atualizar o estado apenas no cliente
+  // Inicialmente, todos os estados são configurados com valores padrão
+  // que serão iguais tanto no servidor quanto no cliente
   const [initialized, setInitialized] = useState(false);
+  const [initAttempts, setInitAttempts] = useState(0);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // Usar try-catch para garantir que erros não quebrem a aplicação
-    try {
-      // Verificar se já inicializamos para evitar múltiplas inicializações
-      if (initialized) return;
+    // Verificar se já inicializamos para evitar múltiplas inicializações desnecessárias
+    if (initialized) return;
 
-      // Usar setTimeout para garantir que isso aconteça depois do renderização inicial
-      const timer = setTimeout(() => {
-        try {
-          const success = configureAmplify();
-          setInitialized(success);
-          console.log('Amplify inicialização:', success ? 'bem-sucedida' : 'falhou');
-        } catch (err) {
-          console.error('Erro ao inicializar Amplify:', err);
-          setError(err instanceof Error ? err : new Error(String(err)));
-        }
-      }, 100);
-
-      return () => clearTimeout(timer);
-    } catch (err) {
-      console.error('Erro no useEffect do AmplifyInit:', err);
+    // Limitar o número de tentativas para evitar loops infinitos
+    if (initAttempts > 3) {
+      console.error('Muitas tentativas de inicialização do Amplify. Desistindo.');
+      return;
     }
-  }, [initialized]);
+
+    console.log(`Tentativa ${initAttempts + 1} de inicializar o Amplify...`);
+
+    // Usar setTimeout para garantir que isso aconteça depois da renderização inicial
+    // e para dar tempo para outros componentes carregarem
+    const timer = setTimeout(() => {
+      try {
+        // Verificar se já temos uma configuração antes de tentar inicializar novamente
+        const currentConfig = Amplify.getConfig();
+        
+        // Se já temos uma configuração Auth, podemos não precisar inicializar novamente
+        if (currentConfig && currentConfig.Auth && currentConfig.Auth.Cognito) {
+          console.log('Amplify já parece estar configurado:', currentConfig);
+          setInitialized(true);
+          return;
+        }
+        
+        // Tentar inicializar o Amplify
+        const success = configureAmplify();
+        
+        if (success) {
+          console.log('✅ Amplify inicializado com sucesso!');
+          setInitialized(true);
+          
+          // Verificar se a configuração foi aplicada corretamente
+          const configAfter = Amplify.getConfig();
+          console.log('Configuração após inicialização:', configAfter.Auth?.Cognito?.userPoolId ? 'OK' : 'Incompleta');
+        } else {
+          console.warn('⚠️ A inicialização do Amplify retornou falso');
+          // Incrementar contagem de tentativas e tentar novamente
+          setInitAttempts(prev => prev + 1);
+        }
+      } catch (err) {
+        console.error('❌ Erro ao inicializar Amplify:', err);
+        setError(err instanceof Error ? err : new Error(String(err)));
+        // Incrementar contagem de tentativas e tentar novamente
+        setInitAttempts(prev => prev + 1);
+      }
+    }, 500); // Aumentado para 500ms para dar mais tempo
+
+    return () => clearTimeout(timer);
+  }, [initialized, initAttempts]);
+
+  // Para evitar erros de hidratação, vamos usar um useEffect para adicionar atributos
+  // de dados aos elementos DOM depois que o componente for montado no cliente
+  useEffect(() => {
+    const statusDiv = document.getElementById('amplify-init-status');
+    if (statusDiv) {
+      statusDiv.setAttribute('data-initialized', initialized.toString());
+      statusDiv.setAttribute('data-attempts', initAttempts.toString());
+      statusDiv.setAttribute('data-error', error?.message || '');
+    }
+  }, [initialized, initAttempts, error]);
   
-  // Este componente não renderiza nada visível
-  return null;
+  // Render apenas um div simples que será o mesmo no servidor e no cliente
+  // Os atributos de dados serão adicionados via useEffect apenas no cliente
+  return (
+    <div id="amplify-init-status" style={{ display: 'none' }}></div>
+  );
 }

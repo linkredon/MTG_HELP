@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { ApiResponse } from '@/types/api';
+import ClientAuthChecker from '@/components/ClientAuthChecker';
 
 // Helper function for type assertion
 function asUserCollection(data: any): UserCollection {
@@ -911,7 +912,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       loading,
       exportCollectionToCSV
     }}>
-      {children}
+      {/* Usar o ClientAuthChecker para garantir que a autenticação está pronta */}
+      <ClientAuthChecker>
+        {children}
+      </ClientAuthChecker>
     </AppContext.Provider>
   );
 };

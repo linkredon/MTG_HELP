@@ -1,35 +1,37 @@
 "use client"
 
 import AmplifyInit from '@/components/AmplifyInit'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import useClearAmplifyErrors from '@/lib/amplifyErrorRecovery'
 import React from 'react'
 import { AppProvider } from '@/contexts/AppContext'
 import { FavoritesProvider } from '@/contexts/FavoritesContext'
 import CardModalWrapper from '@/components/CardModalWrapper'
-import { AmplifyAuthProvider } from '@/contexts/AmplifyAuthContext'
+import AmplifyPreload from '@/components/AmplifyPreload'
+import LoopBreakerWrapper from '@/components/LoopBreakerWrapper'
+import EmergencyRedirectWrapper from '@/components/EmergencyRedirectWrapper'
 
 export default function ClientLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // Estado para controlar se devemos tentar carregar o Amplify
-  const [shouldLoadAmplify, setShouldLoadAmplify] = useState(true);
-  
   // Usar o hook de recuperação de erros
   useClearAmplifyErrors();
   
-  // Detectar erros de chunk loading e desabilitar o Amplify se necessário
+  // Não precisamos mais de inicialização direta aqui ou controle de estado shouldLoadAmplify
+  // A inicialização será feita no AmplifyPreload e AmplifyInit via useEffect
+  
+  // Ainda podemos adicionar monitoramento de erros para logs e diagnóstico
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
       if (
         event.message?.includes('chunk') || 
         event.message?.includes('aws-amplify') ||
-        event.message?.includes('Cannot read properties of undefined')
+        event.message?.includes('Cannot read properties of undefined') ||
+        event.message?.includes('Auth UserPool not configured')
       ) {
-        console.warn('Erro detectado, desabilitando carregamento do Amplify');
-        setShouldLoadAmplify(false);
+        console.warn('Erro relacionado a AWS Amplify detectado:', event.message);
       }
     };
     
@@ -37,21 +39,22 @@ export default function ClientLayout({
     return () => window.removeEventListener('error', handleError);
   }, []);
   
-  // Verificação para evitar execução durante a pré-renderização estática
-  // Isso previne erros de hooks do React durante o build
-  const isServer = typeof window === 'undefined';
+  // IMPORTANTE: Não faça verificações de "typeof window === 'undefined'"
+  // no corpo do componente, pois isso causa erros de hidratação
   
-  if (isServer) {
-    // Retornar apenas o children quando estiver no servidor
-    // durante a fase de pré-renderização
-    return <>{children}</>;
-  }
+  // Em vez disso, renderize a mesma estrutura no servidor e no cliente,
+  // e use useEffect para lógica específica do cliente
   
-  // Componente completo com providers apenas no cliente
-  // Usando apenas o AppProvider com o Amplify para autenticação
   return (
-    <AmplifyAuthProvider>
-      {shouldLoadAmplify && <AmplifyInit />}
+    <AmplifyPreload>
+      {/* Componente que detecta loops de carregamento e força redirecionamento */}
+      <LoopBreakerWrapper />
+      
+      {/* Botão de emergência para redirecionamento */}
+      <EmergencyRedirectWrapper />
+      
+      {/* Sempre renderize o AmplifyInit, mas ele só fará algo no cliente */}
+      <AmplifyInit />
       <AppProvider>
         <FavoritesProvider>
           <CardModalWrapper>
@@ -59,6 +62,6 @@ export default function ClientLayout({
           </CardModalWrapper>
         </FavoritesProvider>
       </AppProvider>
-    </AmplifyAuthProvider>
+    </AmplifyPreload>
   )
 }

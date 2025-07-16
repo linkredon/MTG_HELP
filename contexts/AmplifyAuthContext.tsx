@@ -3,6 +3,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { fetchAuthSession, getCurrentUser, signOut } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
+import { configureAmplify } from '@/lib/amplifySetup';
+import { Amplify } from 'aws-amplify';
 
 // Definir tipos
 export type AmplifyUser = {
@@ -20,6 +22,7 @@ export type AmplifyAuthContextType = {
   user: AmplifyUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isInitialized: boolean; // Indica se o Amplify foi inicializado
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 };
@@ -36,24 +39,83 @@ export const useAmplifyAuth = () => {
   return context;
 };
 
+// Verificar e garantir que Amplify está inicializado
+function ensureAmplifyConfigured() {
+  try {
+    // Verificar se já está configurado
+    const config = Amplify.getConfig();
+    if (!config.Auth?.Cognito?.userPoolId) {
+      console.log('🔄 Configuração do Amplify não encontrada, inicializando...');
+      return configureAmplify();
+    }
+    return true;
+  } catch (error) {
+    console.error('❌ Erro ao verificar configuração do Amplify:', error);
+    try {
+      return configureAmplify();
+    } catch (configError) {
+      console.error('❌ Falha na configuração do Amplify:', configError);
+      return false;
+    }
+  }
+}
+
 // Provedor que fornece autenticação via Amplify
 export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AmplifyUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [amplifyConfigured, setAmplifyConfigured] = useState(false);
+  
+  // Garantir que o Amplify esteja configurado antes de usar os serviços de autenticação
+  useEffect(() => {
+    const configureAuth = async () => {
+      const success = ensureAmplifyConfigured();
+      setAmplifyConfigured(success);
+    };
+    
+    configureAuth();
+  }, []);
 
   // Função para extrair informações do usuário
   const extractUserInfo = async () => {
     try {
-      const currentUser = await getCurrentUser();
-      const session = await fetchAuthSession();
+      // Verificar se o Amplify está configurado
+      if (!amplifyConfigured) {
+        const success = ensureAmplifyConfigured();
+        if (!success) {
+          console.error('❌ Não foi possível configurar o Amplify antes de buscar usuário');
+          setIsLoading(false);
+          return;
+        }
+      }
       
-      // Verificar se temos um token válido
-      if (!session?.tokens?.idToken) {
+      let currentUser;
+      let session;
+      
+      try {
+        // Primeiro verificar se temos uma sessão válida
+        session = await fetchAuthSession();
+        
+        // Verificar se temos um token válido
+        if (!session?.tokens?.idToken) {
+          console.log('Sessão não possui token válido');
+          setUser(null);
+          setIsAuthenticated(false);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Se temos uma sessão válida, agora podemos obter o usuário atual
+        currentUser = await getCurrentUser();
+      } catch (authError) {
+        console.log('Erro ao verificar autenticação:', authError);
         setUser(null);
         setIsAuthenticated(false);
+        setIsLoading(false);
         return;
       }
+      
 
       // Extrair informações do usuário do token JWT
       const idTokenPayload = session.tokens.idToken.payload;
@@ -73,6 +135,15 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Erro ao buscar sessão:', error);
+      // Se ocorrer um erro específico do Auth UserPool, tentar reconfigurar
+      if (error instanceof Error && 
+          (error.name === 'AuthUserPoolException' || 
+           error.message?.includes('Auth UserPool not configured'))) {
+        console.log('🔄 Tentando reconfigurar Amplify após erro...');
+        const success = ensureAmplifyConfigured();
+        setAmplifyConfigured(success);
+      }
+      
       setUser(null);
       setIsAuthenticated(false);
     } finally {
@@ -99,9 +170,15 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
 
   // Efeito para carregar o usuário inicial
   useEffect(() => {
-    extractUserInfo();
+    if (amplifyConfigured) {
+      extractUserInfo();
+    }
+  }, [amplifyConfigured]);
+  
+  // Ouvir eventos de autenticação
+  useEffect(() => {
+    if (!amplifyConfigured) return;
     
-    // Ouvir eventos de autenticação
     const listener = Hub.listen('auth', ({ payload }) => {
       switch (payload.event) {
         case 'signedIn':
@@ -119,7 +196,7 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
     return () => {
       listener();  // No AWS Amplify v6, o listener retorna uma função de limpeza
     };
-  }, []);
+  }, [amplifyConfigured]);
 
   // Fornecer contexto para a árvore de componentes
   return (
@@ -128,6 +205,7 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isAuthenticated,
+        isInitialized: amplifyConfigured, // Adicionar o status de inicialização
         signOut: handleSignOut,
         refreshUser
       }}

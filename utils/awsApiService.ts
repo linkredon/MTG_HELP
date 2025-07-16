@@ -2,8 +2,8 @@ import { generateId, getCurrentTimestamp } from '@/lib/awsDbConnect';
 import { TABLES } from '@/lib/awsConfig';
 import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
 import { getUserSession } from '@/lib/authHelper';
-// Usar a versão estendida do awsDbService que inclui a função query
-import { awsDbService } from '@/lib/awsDbExtended';
+// Usar o serviço de banco de dados universal que funciona tanto no cliente quanto no servidor
+import { universalDbService as awsDbService } from '@/lib/universalDbService';
 
 // Função auxiliar para obter o ID do usuário autenticado
 async function getAuthenticatedUserId() {

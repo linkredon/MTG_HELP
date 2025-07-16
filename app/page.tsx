@@ -1,7 +1,7 @@
 "use client"
 
 // Configuração para evitar pré-renderização estática
-export const dynamic = 'force-dynamic';
+export const dynamicConfig = 'force-dynamic';
 export const runtime = 'edge'; // Usar o runtime edge para evitar problemas com SSR
 
 import '../styles/professional-mtg-interface.css'
@@ -30,6 +30,7 @@ import '../styles/modal-fix-enhanced.css'
 import '../styles/deck-importer-enhanced.css'
 
 import { useState, Suspense, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Script from 'next/script'
 import Colecao from './colecao-compact'
 import Painel from '@/components/Painel-compact'
@@ -66,9 +67,10 @@ import type { MTGCard } from '@/types/mtg';
 
 // Fallback para quando o Suspense estiver carregando
 function HomeFallback() {
+  // Este componente será renderizado como SSR
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 flex items-center justify-center">
-      <div className="text-center animate-pulse">
+      <div className="text-center">
         <div className="inline-block rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 p-2 mb-4">
           <div className="w-12 h-12 text-white flex items-center justify-center">
             <svg className="animate-spin" width="24" height="24" viewBox="0 0 24 24">
@@ -89,6 +91,18 @@ function HomeFallback() {
         </div>
         <h2 className="text-xl font-semibold text-white mb-2">Carregando MTG Helper</h2>
         <p className="text-blue-300 text-sm">Preparando sua experiência de Magic...</p>
+        
+        {/* Script inline para redirecionar após um tempo limite */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          // Adicionar um tempo limite para evitar loop de carregamento
+          setTimeout(function() {
+            // Se ainda estivermos na página de carregamento após 10 segundos
+            if (document.body.textContent.includes('Carregando MTG Helper')) {
+              console.log('Tempo limite de carregamento atingido, redirecionando...');
+              window.location.href = '/login?timeout=1';
+            }
+          }, 10000);
+        `}} />
       </div>
     </div>
   )
@@ -96,15 +110,24 @@ function HomeFallback() {
 
 // Componente interno que usa hooks de React
 function HomeContent() {
-  const { user: authUser, isAuthenticated, isLoading: authLoading } = useAmplifyAuth()
+  const { user: authUser, isAuthenticated, isLoading: authLoading, isInitialized } = useAmplifyAuth()
   const [activeTab, setActiveTab] = useState('painel')
   const [allCards, setAllCards] = useState<MTGCard[]>([])
+  const [isClient, setIsClient] = useState(false)
+  const router = useRouter()
   
   // Adicionar um efeito para garantir que estamos no lado do cliente
   useEffect(() => {
     // Código a ser executado apenas no lado do cliente
     console.log('HomeContent montado no lado do cliente')
-  }, [])
+    setIsClient(true)
+    
+    // Verificar autenticação ao carregar o componente
+    if (!authLoading && isInitialized && !isAuthenticated) {
+      console.log('HomeContent: Usuário não autenticado, redirecionando para login')
+      router.push('/login')
+    }
+  }, [isAuthenticated, authLoading, isInitialized, router])
 
   // Usar o contexto global para coleção
   const { currentCollection, exportCollectionToCSV } = useAppContext()
@@ -209,11 +232,20 @@ function HomeContent() {
 
 // Importar o wrapper para fornecer o SessionProvider localmente
 import HomeContentWrapper from '@/components/HomeContentWrapper'
+import dynamic from 'next/dynamic'
+
+// Carregamento dinâmico dos componentes
+const LoadingScreen = dynamic(() => import('@/components/LoadingScreen'), { ssr: false });
+const AppInitializer = dynamic(() => import('@/components/AppInitializer'), { ssr: false });
 
 // Componente principal para a página
 export default function Home() {
+  // Usando useState aqui não funcionará corretamente com SSR
+  // Em vez disso, vamos usar um componente de cliente que gerencia seu próprio estado
   return (
     <Suspense fallback={<HomeFallback />}>
+      <LoadingScreen />
+      <AppInitializer />
       <HomeContentWrapper>
         <HomeContent />
       </HomeContentWrapper>

@@ -1,6 +1,6 @@
 "use client";
 import '../../lib/amplifyClient';
-import '../../styles/login-updated.css';
+import './login-updated.css';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -34,6 +34,19 @@ export default function LoginClientPage() {
   // Verificar se estamos no lado cliente
   useEffect(() => {
     setIsClient(true);
+    
+    // Verificar se existe um flag de redirecionamento pendente (após recarregar a página)
+    if (typeof window !== 'undefined') {
+      if (sessionStorage.getItem('redirectToHome') === 'true') {
+        console.log('Encontrado flag de redirecionamento após recarregamento');
+        sessionStorage.removeItem('redirectToHome');
+        // Dar um tempo para a página carregar completamente
+        setTimeout(() => {
+          console.log('Executando redirecionamento atrasado após recarregamento');
+          window.location.href = '/';
+        }, 100);
+      }
+    }
   }, []);
   
   // Setup a default fallback context
@@ -67,8 +80,10 @@ export default function LoginClientPage() {
       
       // Se temos tokens, significa que estamos autenticados
       if (session?.tokens?.idToken) {
-        console.log('Sessão válida detectada');
+        console.log('Sessão válida detectada', session.tokens.idToken.toString().substring(0, 15) + '...');
         return true;
+      } else {
+        console.log('Sessão existe mas sem token válido:', session);
       }
     } catch (error) {
       console.log('Erro ao verificar sessão:', error);
@@ -77,10 +92,45 @@ export default function LoginClientPage() {
     return false;
   }, []);
   
-  // Função para redirecionar para a página principal
+  // Função para redirecionar para a página principal com múltiplas abordagens
   const redirectToHome = useCallback(() => {
     console.log('Redirecionando para página principal...');
-    router.push('/');
+    
+    // Função para forçar redirecionamento usando location
+    const forceRedirect = () => {
+      console.log('Forçando redirecionamento com location.href');
+      window.location.href = '/';
+    };
+    
+    try {
+      // Primeiro tentar usar router do Next.js (mais suave)
+      router.push('/');
+      
+      // Adicionar um fallback com window.location como backup após um breve intervalo
+      setTimeout(() => {
+        // Se ainda estamos na página de login, usar redirecionamento forçado
+        if (window.location.pathname.includes('login')) {
+          console.log('Ainda na página de login, usando redirecionamento forçado');
+          forceRedirect();
+        }
+      }, 500);
+      
+      // Garantia final para redirecionamento após um tempo maior
+      setTimeout(() => {
+        // Se ainda estamos na página de login após um tempo maior, recarregar e redirecionar
+        if (window.location.pathname.includes('login')) {
+          console.log('Redirecionamento falhou, tentando abordagem alternativa');
+          // Armazenar um flag em sessionStorage para redirecionamento após recarregar
+          sessionStorage.setItem('redirectToHome', 'true');
+          window.location.reload();
+        }
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Erro ao redirecionar:', error);
+      // Em caso de erro, usar o método direto
+      forceRedirect();
+    }
   }, [router]);
 
   // Update auth state when changes
@@ -92,26 +142,31 @@ export default function LoginClientPage() {
       if (safeAuthContext.isAuthenticated && safeAuthContext.user) {
         console.log('Usuário já autenticado via contexto, redirecionando...');
         
-        // Adicionar pequeno delay para dar tempo ao contexto de ser totalmente inicializado
+        // Usar TODAS as estratégias de redirecionamento de uma vez
+        // 1. Redirecionamento direto imediato
+        console.log('Usando redirecionamento direto imediato');
+        window.location.href = '/';
+        
+        // 2. Tentar usar router como backup (é improvável que chegue aqui)
+        try {
+          router.push('/');
+        } catch (err) {
+          console.log('Erro ao usar router (ignorável):', err);
+        }
+        
+        // 3. Como último recurso, recarregar a página com um flag
         const timeoutId = setTimeout(() => {
-          // Verificar sessão diretamente para confirmar
-          checkSession().then(hasValidSession => {
-            if (hasValidSession) {
-              console.log('Sessão confirmada para usuário:', safeAuthContext.user?.email);
-              redirectToHome();
-            } else {
-              console.log('Sessão não confirmada, apesar do contexto indicar autenticação');
-              // Não redirecionar automaticamente, deixar o usuário usar o botão manual
-            }
-          });
-        }, 500);
+          console.log('Tentando última estratégia de redirecionamento');
+          sessionStorage.setItem('redirectToHome', 'true');
+          window.location.reload();
+        }, 800);
         
         return () => clearTimeout(timeoutId);
       }
     } catch (error) {
       console.error('Erro ao acessar contexto de autenticação:', error);
     }
-  }, [isClient, safeAuthContext, checkSession, redirectToHome]);
+  }, [isClient, safeAuthContext, router]);
 
   // Estado para controlar as verificações de OAuth
   const [oauthChecked, setOauthChecked] = useState(false);
@@ -123,8 +178,8 @@ export default function LoginClientPage() {
     
     // Evitar verificações excessivas
     const now = Date.now();
-    if (oauthChecked && (now - lastOauthCheck) < 5000) {
-      // Só verificar uma vez a cada 5 segundos
+    if (oauthChecked && (now - lastOauthCheck) < 3000) {
+      // Só verificar uma vez a cada 3 segundos
       return;
     }
     
@@ -133,11 +188,12 @@ export default function LoginClientPage() {
     
     async function checkOAuthResult() {
       try {
+        console.log('Verificando resultado de autenticação OAuth...');
         // Verificar sessão diretamente primeiro
         const hasValidSession = await checkSession();
         
         if (hasValidSession && isMounted) {
-          console.log('Sessão válida encontrada, redirecionando...');
+          console.log('Sessão válida encontrada após OAuth, iniciando redirecionamento...');
           
           // Atualizar contexto em segundo plano
           if (safeAuthContext.refreshUser) {
@@ -146,16 +202,35 @@ export default function LoginClientPage() {
             );
           }
           
-          // Adicionar pequeno delay antes de redirecionar
+          // Aplicar múltiplas estratégias de redirecionamento
+          
+          // Estratégia 1: Redirecionamento direto e imediato
+          if (isMounted) {
+            console.log('Estratégia 1: Redirecionamento imediato com window.location...');
+            window.location.href = '/';
+          }
+          
+          // Estratégia 2: Como backup, usar o router após um pequeno delay
           setTimeout(() => {
-            if (isMounted) {
-              redirectToHome();
+            if (isMounted && window.location.pathname.includes('login')) {
+              console.log('Estratégia 2: Redirecionamento com router após delay...');
+              router.push('/');
             }
-          }, 200);
+          }, 300);
+          
+          // Estratégia 3: Como garantia final, armazenar flag e recarregar
+          setTimeout(() => {
+            if (isMounted && window.location.pathname.includes('login')) {
+              console.log('Estratégia 3: Ainda na página de login, configurando flag e recarregando...');
+              sessionStorage.setItem('redirectToHome', 'true');
+              window.location.reload();
+            }
+          }, 1000);
+          
           return;
         }
         
-        console.log('Nenhuma sessão válida encontrada');
+        console.log('Nenhuma sessão válida encontrada via OAuth');
       } catch (error) {
         console.error('Erro ao verificar sessão OAuth:', error);
       } finally {
@@ -171,7 +246,7 @@ export default function LoginClientPage() {
     return () => {
       isMounted = false;
     };
-  }, [isClient, checkSession, redirectToHome, safeAuthContext.refreshUser, oauthChecked, lastOauthCheck]);
+  }, [isClient, checkSession, redirectToHome, safeAuthContext.refreshUser, router, oauthChecked, lastOauthCheck]);
 
   // Alternar entre login e registro
   const toggleAuthMode = () => {
@@ -448,12 +523,19 @@ export default function LoginClientPage() {
                   <button 
                     className="redirect-button secondary" 
                     onClick={async () => {
-                      // Verificar sessão novamente antes de redirecionar
-                      const hasValidSession = await checkSession();
-                      if (hasValidSession) {
-                        redirectToHome();
-                      } else {
-                        setError("Falha na validação da sessão. Tente fazer logout e login novamente.");
+                      try {
+                        // Verificar sessão novamente antes de redirecionar
+                        const hasValidSession = await checkSession();
+                        if (hasValidSession) {
+                          console.log('Sessão verificada manualmente, redirecionando...');
+                          // Usar método direto para maior garantia
+                          window.location.href = '/';
+                        } else {
+                          setError("Falha na validação da sessão. Tente fazer logout e login novamente.");
+                        }
+                      } catch (error) {
+                        console.error('Erro ao verificar sessão manualmente:', error);
+                        setError("Erro ao verificar sessão. Tente novamente.");
                       }
                     }}
                   >
