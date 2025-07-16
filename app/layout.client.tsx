@@ -7,6 +7,7 @@ import React from 'react'
 import { AppProvider } from '@/contexts/AppContext'
 import { FavoritesProvider } from '@/contexts/FavoritesContext'
 import CardModalWrapper from '@/components/CardModalWrapper'
+import { AmplifyAuthProvider } from '@/contexts/AmplifyAuthContext'
 
 export default function ClientLayout({
   children,
@@ -49,7 +50,7 @@ export default function ClientLayout({
   // Componente completo com providers apenas no cliente
   // Usando apenas o AppProvider com o Amplify para autenticação
   return (
-    <>
+    <AmplifyAuthProvider>
       {shouldLoadAmplify && <AmplifyInit />}
       <AppProvider>
         <FavoritesProvider>
@@ -58,6 +59,6 @@ export default function ClientLayout({
           </CardModalWrapper>
         </FavoritesProvider>
       </AppProvider>
-    </>
+    </AmplifyAuthProvider>
   )
 }
