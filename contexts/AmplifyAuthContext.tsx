@@ -1,10 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { fetchAuthSession, getCurrentUser, signOut } from 'aws-amplify/auth';
-import { Hub } from 'aws-amplify/utils';
+import { Auth, Amplify, Hub, fetchAuthSession, getCurrentUser, signOut } from './amplify-types';
 import { configureAmplify } from '@/lib/amplifySetup';
-import { Amplify } from 'aws-amplify';
 
 // Definir tipos
 export type AmplifyUser = {
@@ -42,22 +40,23 @@ export const useAmplifyAuth = () => {
 // Verificar e garantir que Amplify está inicializado
 function ensureAmplifyConfigured() {
   try {
-    // Verificar se já está configurado
-    const config = Amplify.getConfig();
-    if (!config.Auth?.Cognito?.userPoolId) {
-      console.log('🔄 Configuração do Amplify não encontrada, inicializando...');
-      return configureAmplify();
+    if (typeof window !== 'undefined' && window.__amplifyConfigured) {
+      return true;
     }
-    return true;
+    const success = configureAmplify();
+    if (typeof window !== 'undefined' && success) {
+      window.__amplifyConfigured = true;
+    }
+    return success;
   } catch (error) {
-    console.error('❌ Erro ao verificar configuração do Amplify:', error);
-    try {
-      return configureAmplify();
-    } catch (configError) {
-      console.error('❌ Falha na configuração do Amplify:', configError);
-      return false;
-    }
+    console.error('❌ Erro ao configurar Amplify:', error);
+    return false;
   }
+}
+
+// Adicionar declaração global para evitar erro de linter
+declare global {
+  interface Window { __amplifyConfigured?: boolean; }
 }
 
 // Provedor que fornece autenticação via Amplify
@@ -95,10 +94,10 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
       
       try {
         // Primeiro verificar se temos uma sessão válida
-        session = await fetchAuthSession();
+        session = await Auth.currentSession();
         
         // Verificar se temos um token válido
-        if (!session?.tokens?.idToken) {
+        if (!session?.getIdToken()?.getJwtToken()) {
           console.log('Sessão não possui token válido');
           setUser(null);
           setIsAuthenticated(false);
@@ -107,7 +106,7 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
         }
         
         // Se temos uma sessão válida, agora podemos obter o usuário atual
-        currentUser = await getCurrentUser();
+        currentUser = await Auth.currentAuthenticatedUser();
       } catch (authError) {
         console.log('Erro ao verificar autenticação:', authError);
         setUser(null);
@@ -118,10 +117,10 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
       
 
       // Extrair informações do usuário do token JWT
-      const idTokenPayload = session.tokens.idToken.payload;
+      const idTokenPayload = session.getIdToken().decodePayload();
       
       const userInfo: AmplifyUser = {
-        id: currentUser.userId,
+        id: currentUser.attributes.sub,
         email: (idTokenPayload.email as string) || '',
         name: (idTokenPayload.name as string) || ((idTokenPayload.email as string)?.split('@')[0]) || '',
         avatar: (idTokenPayload.picture as string) || undefined,
@@ -160,7 +159,7 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
   // Função para fazer logout
   const handleSignOut = async () => {
     try {
-      await signOut({ global: true });
+      await Auth.signOut({ global: true });
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {

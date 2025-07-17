@@ -1,6 +1,25 @@
-import { dynamoDb, TABLES } from './awsConfig';
-import { PutCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-// Os comandos UpdateCommand, DeleteCommand e ScanCommand são personalizados
+// Verificar se estamos no lado do servidor
+const isServer = typeof window === 'undefined';
+
+// Importar apenas no servidor
+let dynamoDb: any = null;
+let TABLES: any = null;
+let PutCommand: any = null;
+let GetCommand: any = null;
+let QueryCommand: any = null;
+
+if (isServer) {
+  const awsConfig = require('./awsConfig');
+  const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+  const { DynamoDBDocumentClient, PutCommand: PutCmd, GetCommand: GetCmd, QueryCommand: QueryCmd } = require('@aws-sdk/lib-dynamodb');
+  
+  dynamoDb = awsConfig.dynamoDb;
+  TABLES = awsConfig.TABLES;
+  PutCommand = PutCmd;
+  GetCommand = GetCmd;
+  QueryCommand = QueryCmd;
+}
+
 import { v4 as uuidv4 } from 'uuid';
 
 // Função para gerar IDs únicos
@@ -9,10 +28,15 @@ export const generateId = () => uuidv4();
 // Função para obter timestamp atual
 export const getCurrentTimestamp = () => new Date().toISOString();
 
-// Funções genéricas para operações CRUD
-export const awsDbService = {
+// Funções genéricas para operações CRUD (apenas no servidor)
+export const awsDbService = isServer ? {
   // Criar um item
   async create(tableName: string, item: any) {
+    if (!isServer || !dynamoDb) {
+      console.warn('Tentativa de usar DynamoDB no lado do cliente');
+      return { success: false, error: 'DynamoDB não disponível no cliente' };
+    }
+    
     const id = item.id || generateId();
     const timestamp = getCurrentTimestamp();
     
@@ -37,6 +61,11 @@ export const awsDbService = {
   
   // Obter um item por ID
   async getById(tableName: string, id: string) {
+    if (!isServer || !dynamoDb) {
+      console.warn('Tentativa de usar DynamoDB no lado do cliente');
+      return { success: false, error: 'DynamoDB não disponível no cliente' };
+    }
+    
     const params = {
       TableName: tableName,
       Key: { id }
@@ -56,6 +85,11 @@ export const awsDbService = {
   
   // Atualizar um item
   async update(tableName: string, id: string, updates: any) {
+    if (!isServer || !dynamoDb) {
+      console.warn('Tentativa de usar DynamoDB no lado do cliente');
+      return { success: false, error: 'DynamoDB não disponível no cliente' };
+    }
+    
     const timestamp = getCurrentTimestamp();
     
     // Construir expressão de atualização
@@ -90,6 +124,11 @@ export const awsDbService = {
   
   // Excluir um item
   async delete(tableName: string, id: string) {
+    if (!isServer || !dynamoDb) {
+      console.warn('Tentativa de usar DynamoDB no lado do cliente');
+      return { success: false, error: 'DynamoDB não disponível no cliente' };
+    }
+    
     const params = {
       TableName: tableName,
       Key: { id }
@@ -106,26 +145,53 @@ export const awsDbService = {
   
   // Obter todos os itens de um usuário
   async getByUserId(tableName: string, userId: string) {
-    const params = {
-      TableName: tableName,
-      IndexName: 'UserIdIndex',
-      KeyConditionExpression: 'userId = :userId',
-      ExpressionAttributeValues: {
-        ':userId': userId
-      }
-    };
+    if (!isServer || !dynamoDb) {
+      console.warn('Tentativa de usar DynamoDB no lado do cliente');
+      return { success: false, error: 'DynamoDB não disponível no cliente' };
+    }
     
     try {
+      // Primeiro tentar com o índice
+      const params = {
+        TableName: tableName,
+        IndexName: 'userId-index',
+        KeyConditionExpression: 'userId = :userId',
+        ExpressionAttributeValues: {
+          ':userId': userId
+        }
+      };
+      
       const result = await dynamoDb.send(new QueryCommand(params));
       return { success: true, data: result.Items || [] };
-    } catch (error) {
-      console.error(`Error querying items from ${tableName}:`, error);
-      return { success: false, error };
+    } catch (indexError: any) {
+      // Se o índice não existir, usar scan com filtro
+      console.warn(`Índice userId-index não encontrado para ${tableName}, usando scan com filtro`);
+      
+      try {
+        const scanParams = {
+          TableName: tableName,
+          FilterExpression: 'userId = :userId',
+          ExpressionAttributeValues: {
+            ':userId': userId
+          }
+        };
+        
+        const scanResult = await dynamoDb.send(new ScanCommand(scanParams));
+        return { success: true, data: scanResult.Items || [] };
+      } catch (scanError) {
+        console.error(`Error scanning items from ${tableName}:`, scanError);
+        return { success: false, error: scanError };
+      }
     }
   },
   
   // Obter todos os itens (com paginação)
   async getAll(tableName: string, limit = 100, lastEvaluatedKey?: any) {
+    if (!isServer || !dynamoDb) {
+      console.warn('Tentativa de usar DynamoDB no lado do cliente');
+      return { success: false, error: 'DynamoDB não disponível no cliente' };
+    }
+    
     const params: any = {
       TableName: tableName,
       Limit: limit
@@ -147,7 +213,7 @@ export const awsDbService = {
       return { success: false, error };
     }
   }
-};
+} : null;
 
 // Classes personalizadas para substituir os comandos ausentes
 class UpdateCommand {

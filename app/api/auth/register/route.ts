@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { registerUser } from '@/lib/auth';
+import { registerUser } from '@/lib/auth-amplify';
 
 export async function POST(req: NextRequest) {
   try {

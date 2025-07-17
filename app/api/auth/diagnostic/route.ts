@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authOptions, fallbackAuthOptions } from './auth-barrel';
+import { fallbackAuthOptions } from './auth-barrel';
 
 // Este endpoint fornece informações de diagnóstico sobre a configuração do NextAuth
 // ATENÇÃO: Use apenas em ambiente de desenvolvimento!
@@ -22,14 +22,14 @@ export async function GET(request: NextRequest) {
         hasAwsCredentials: !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
       },
       authConfig: {
-        providers: authOptions.providers.map(p => p.id),
-        pages: authOptions.pages,
-        hasSecret: !!authOptions.secret,
-        sessionStrategy: authOptions.session?.strategy,
+        providers: fallbackAuthOptions.providers.map(p => p.id),
+        pages: fallbackAuthOptions.pages,
+        hasSecret: !!fallbackAuthOptions.secret,
+        sessionStrategy: fallbackAuthOptions.session?.strategy,
         callbacksConfigured: {
-          jwt: !!authOptions.callbacks?.jwt,
-          session: !!authOptions.callbacks?.session,
-          signIn: !!authOptions.callbacks?.signIn
+          jwt: !!fallbackAuthOptions.callbacks?.jwt,
+          session: !!fallbackAuthOptions.callbacks?.session,
+          signIn: !!fallbackAuthOptions.callbacks?.signIn
         }
       },
       fallbackConfig: {

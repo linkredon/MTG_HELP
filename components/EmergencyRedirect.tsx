@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function EmergencyRedirect() {
+  // Desabilitado temporariamente para evitar popups de reset automático
+  return null;
+  
+  /*
   const [showButton, setShowButton] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const router = useRouter();
@@ -67,4 +71,5 @@ export default function EmergencyRedirect() {
       </div>
     </div>
   );
+  */
 }

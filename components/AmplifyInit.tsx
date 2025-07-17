@@ -32,26 +32,15 @@ export default function AmplifyInit() {
     // e para dar tempo para outros componentes carregarem
     const timer = setTimeout(() => {
       try {
-        // Verificar se já temos uma configuração antes de tentar inicializar novamente
-        const currentConfig = Amplify.getConfig();
-        
-        // Se já temos uma configuração Auth, podemos não precisar inicializar novamente
-        if (currentConfig && currentConfig.Auth && currentConfig.Auth.Cognito) {
-          console.log('Amplify já parece estar configurado:', currentConfig);
+        if (typeof window !== 'undefined' && window.__amplifyConfigured) {
           setInitialized(true);
           return;
         }
-        
-        // Tentar inicializar o Amplify
         const success = configureAmplify();
         
         if (success) {
-          console.log('✅ Amplify inicializado com sucesso!');
+          if (typeof window !== 'undefined') window.__amplifyConfigured = true;
           setInitialized(true);
-          
-          // Verificar se a configuração foi aplicada corretamente
-          const configAfter = Amplify.getConfig();
-          console.log('Configuração após inicialização:', configAfter.Auth?.Cognito?.userPoolId ? 'OK' : 'Incompleta');
         } else {
           console.warn('⚠️ A inicialização do Amplify retornou falso');
           // Incrementar contagem de tentativas e tentar novamente
@@ -84,4 +73,8 @@ export default function AmplifyInit() {
   return (
     <div id="amplify-init-status" style={{ display: 'none' }}></div>
   );
+}
+
+declare global {
+  interface Window { __amplifyConfigured?: boolean; }
 }

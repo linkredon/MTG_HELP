@@ -146,7 +146,7 @@ AdicionarCartaButton.displayName = 'AdicionarCartaButton';
 const AdicionarAoDeckButton = React.memo(({ card }: { card: MTGCard }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [buttonText, setButtonText] = useState<string>("Adicionar ao Deck");
-  const { adicionarAoDeck } = useCardModal();
+  const { adicionarAoDeck, adicionarCartaAoDeckAuto } = useCardModal();
   const timeoutRefs = React.useRef<NodeJS.Timeout[]>([]);
   
   // Limpar todos os timeouts quando o componente for desmontado
@@ -161,7 +161,11 @@ const AdicionarAoDeckButton = React.memo(({ card }: { card: MTGCard }) => {
     
     try {
       setLoading(true);
-      if (adicionarAoDeck) {
+      
+      // Usar a função automática que cria deck se necessário
+      if (adicionarCartaAoDeckAuto) {
+        await adicionarCartaAoDeckAuto(card);
+      } else if (adicionarAoDeck) {
         await adicionarAoDeck(card);
       }
       

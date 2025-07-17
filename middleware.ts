@@ -80,12 +80,14 @@ export async function middleware(request: NextRequest) {
 
   // Permitir acesso a rotas públicas sem verificação
   if (isPublicRoute) {
+    console.log(`[Middleware] Permitindo acesso a rota pública: ${request.nextUrl.pathname}`);
     return response;
   }
 
   // Verificar se estamos em modo de demonstração
   const isDemoMode = request.cookies.get('NEXT_PUBLIC_DEMO_MODE')?.value === 'true';
   if (isDemoMode) {
+    console.log(`[Middleware] Modo demo ativo, permitindo acesso a: ${request.nextUrl.pathname}`);
     return response;
   }
 
@@ -96,21 +98,30 @@ export async function middleware(request: NextRequest) {
   // Verificar também cookie temporário que podemos usar para evitar loops
   const justLoggedIn = request.cookies.get('mtg_auth_in_progress')?.value === 'true';
   
+  // Verificar o novo cookie de autenticação
+  const userAuthenticated = request.cookies.get('mtg_user_authenticated')?.value === 'true';
+  
   // Verificar se há um fluxo de autenticação em andamento
-  const isPotentiallyAuthenticated = amplifyTokensCookie || !!amplifyAuthCookie || justLoggedIn;
+  const isPotentiallyAuthenticated = amplifyTokensCookie || !!amplifyAuthCookie || justLoggedIn || userAuthenticated;
   
   // Para rotas de usuário, ser mais permissivo para evitar loops
   const isUserRoute = request.nextUrl.pathname.startsWith('/user');
   
   // Se for uma rota de usuário e há qualquer indicativo de autenticação, permitir
   if (isUserRoute && isPotentiallyAuthenticated) {
-    console.log('Permitindo acesso a rota de usuário com potencial autenticação');
+    console.log(`[Middleware] Permitindo acesso a rota de usuário: ${request.nextUrl.pathname}`);
+    return response;
+  }
+  
+  // Para a página inicial (/), ser mais permissivo se há qualquer indicativo de autenticação
+  if (request.nextUrl.pathname === '/' && isPotentiallyAuthenticated) {
+    console.log(`[Middleware] Permitindo acesso à página inicial com potencial autenticação`);
     return response;
   }
   
   // Se não tiver nenhum indício de autenticação, redirecionar para login
   if (!isPotentiallyAuthenticated) {
-    console.log(`Redirecionando usuário não autenticado de ${request.nextUrl.pathname} para /login`);
+    console.log(`[Middleware] Redirecionando usuário não autenticado de ${request.nextUrl.pathname} para /login`);
     
     // Construir URL de redirecionamento, preservando a URL original como callbackUrl
     const redirectUrl = new URL('/login', request.url);
@@ -123,6 +134,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  console.log(`[Middleware] Permitindo acesso autenticado a: ${request.nextUrl.pathname}`);
   return response;
 }
 

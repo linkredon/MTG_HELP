@@ -1,4 +1,4 @@
-import * as AmplifyAuth from '@aws-amplify/auth';
+import * as AmplifyAuth from '@/lib/aws-auth-adapter';
 import dbConnect from '@/lib/dbConnect';
 import Collection from '@/models/Collection';
 

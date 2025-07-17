@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Amplify } from 'aws-amplify';
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { fetchAuthSession } from '@/lib/aws-auth-adapter';
 
 export default function CognitoHostedUIDebugger() {
   const [testResult, setTestResult] = useState<string | null>(null);

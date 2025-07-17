@@ -1,5 +1,5 @@
 // importação default removida, usar apenas métodos nomeados
-import { signIn as amplifySignIn, signUp as amplifySignUp, confirmSignUp as amplifyConfirmSignUp, signOut as amplifySignOut, getCurrentUser as amplifyGetCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { signIn as amplifySignIn, signUp as amplifySignUp, confirmSignUp as amplifyConfirmSignUp, signOut as amplifySignOut, getCurrentUser as amplifyGetCurrentUser, fetchAuthSession } from '@/lib/aws-auth-adapter';
 import { isDemoMode, authenticateDemoUser, registerDemoUser } from './demoMode';
 
 // Definindo tipos para os retornos das funções de autenticação

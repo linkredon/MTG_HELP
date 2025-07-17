@@ -20,6 +20,7 @@ interface CardModalContextType {
   quantidadeNaColecao: (cardId: string) => Promise<number>;
   adicionarCarta: (card: MTGCard) => Promise<void>;
   adicionarAoDeck?: (card: MTGCard) => Promise<void>;
+  adicionarCartaAoDeckAuto?: (card: MTGCard) => Promise<void>;
   
   // Estado e funções para visualização de cartas
   visualizationType: CardVisualizationType;
@@ -61,6 +62,7 @@ interface CardModalProviderProps {
   getQuantidadeNaColecao: (cardId: string) => Promise<number>;
   adicionarCartaAColecao: (card: MTGCard) => Promise<void>;
   adicionarCartaAoDeck?: (card: MTGCard) => Promise<void>;
+  adicionarCartaAoDeckAuto?: (card: MTGCard) => Promise<void>;
   onAtualizarPesquisa?: () => Promise<void>;
 }
 
@@ -70,6 +72,7 @@ export const CardModalProvider: React.FC<CardModalProviderProps> = ({
   getQuantidadeNaColecao,
   adicionarCartaAColecao,
   adicionarCartaAoDeck,
+  adicionarCartaAoDeckAuto,
   onAtualizarPesquisa = async () => {},
 }) => {
   // Estado do modal
@@ -111,6 +114,7 @@ export const CardModalProvider: React.FC<CardModalProviderProps> = ({
         quantidadeNaColecao: getQuantidadeNaColecao,
         adicionarCarta: adicionarCartaAColecao,
         adicionarAoDeck: adicionarCartaAoDeck,
+        adicionarCartaAoDeckAuto,
         visualizationType,
         setVisualizationType,
         mostrarCartasNaColecao,

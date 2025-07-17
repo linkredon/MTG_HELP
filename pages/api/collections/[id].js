@@ -1,6 +1,6 @@
 // Código atualizado para usar AWS Amplify Auth em vez de next-auth
 import { collectionService } from '@/utils/awsApiService';
-import * as AmplifyAuth from '@aws-amplify/auth';
+import * as AmplifyAuth from '@/lib/aws-auth-adapter';
 
 export default async function handler(req, res) {
   try {

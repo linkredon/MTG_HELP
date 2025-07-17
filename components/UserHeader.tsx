@@ -12,9 +12,8 @@ import {
   Star
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Amplify } from 'aws-amplify'
-// Importação correta do Auth para versão 6+
-import * as AmplifyAuth from '@aws-amplify/auth'
+import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext'
+import { logoutUser } from '@/lib/auth-amplify'
 
 // Definindo a interface de props para compatibilidade com código existente
 interface UserHeaderProps {
@@ -25,25 +24,12 @@ interface UserHeaderProps {
 
 const UserHeader = (props: UserHeaderProps) => {
   const router = useRouter()
+  const { user: authUser, isAuthenticated, isLoading, signOut } = useAmplifyAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [notificationCount] = useState(2)
-  const [authUser, setAuthUser] = useState<any>(null)
-  const [authStatus, setAuthStatus] = useState('loading')
   
-  useEffect(() => {
-    async function checkUser() {
-      try {
-        const user = await AmplifyAuth.getCurrentUser()
-        setAuthUser(user)
-        setAuthStatus('authenticated')
-      } catch (error) {
-        setAuthUser(null)
-        setAuthStatus('unauthenticated')
-      }
-    }
-    
-    checkUser()
-  }, []);
+  // Definir status com base no estado do contexto de autenticação
+  const authStatus = isLoading ? 'loading' : (isAuthenticated ? 'authenticated' : 'unauthenticated')
 
   const handleLogin = () => {
     if (props.onLogin) {
@@ -55,8 +41,8 @@ const UserHeader = (props: UserHeaderProps) => {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      await AmplifyAuth.signOut();
+      // Usar função de logout do contexto Amplify
+      await signOut();
       router.push('/login');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
@@ -68,10 +54,10 @@ const UserHeader = (props: UserHeaderProps) => {
 
   // Usar o usuário do Amplify Auth ou o usuário passado como prop
   const user = authUser ? {
-    name: authUser.attributes?.name || authUser.username,
-    email: authUser.attributes?.email,
-    avatar: authUser.attributes?.picture,
-    role: authUser.attributes?.['custom:role']
+    name: authUser.name,
+    email: authUser.email,
+    avatar: authUser.avatar || authUser.image,
+    role: 'user' // Valor padrão, já que não existe no tipo AmplifyUser
   } : props.user || { name: 'Usuário' };
   
   // Move console logs to useEffect to avoid rendering issues

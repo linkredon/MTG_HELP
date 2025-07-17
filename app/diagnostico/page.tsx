@@ -2,10 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext';
-import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
-import { Amplify } from 'aws-amplify';
+import { getCurrentUser, fetchAuthSession, Amplify } from '@/lib/aws-auth-adapter';
 import { universalDbService } from '@/lib/universalDbService';
 import { TABLES } from '@/lib/awsConfig';
+import { configureAmplify } from '@/lib/amplifySetup';
+
+declare global {
+  interface Window { __amplifyConfigured?: boolean; }
+}
 
 export default function DiagnosticPage() {
   const { isAuthenticated, isInitialized, user } = useAmplifyAuth();
@@ -20,9 +24,12 @@ export default function DiagnosticPage() {
     try {
       const session = await fetchAuthSession();
       setSessionInfo({
-        hasCredentials: !!session.credentials,
-        isSignedIn: session.tokens?.idToken ? true : false,
-        expiresAt: session.tokens?.idToken?.payload?.exp ? new Date(session.tokens.idToken.payload.exp * 1000).toISOString() : 'N/A'
+        // Corrigido: 'credentials' não existe no tipo retornado por fetchAuthSession
+        hasCredentials: !!session.tokens?.idToken,
+        isSignedIn: !!session.tokens?.idToken,
+        expiresAt: session.tokens?.idToken?.payload?.exp
+          ? new Date(session.tokens.idToken.payload.exp * 1000).toISOString()
+          : 'N/A'
       });
       setSessionError(null);
     } catch (error) {
@@ -79,17 +86,16 @@ export default function DiagnosticPage() {
   // Obter configuração atual do Amplify
   useEffect(() => {
     try {
-      const config = Amplify.getConfig();
-      // Remover informações sensíveis
-      const safeConfig = {
-        hasAuthConfig: !!config.Auth?.Cognito,
-        region: config.Auth?.Cognito?.region || 'não definido',
-        userPoolConfigured: !!config.Auth?.Cognito?.userPoolId,
-        oauthConfigured: !!config.Auth?.Cognito?.oauth
-      };
-      setAmplifyConfig(safeConfig);
+      if (typeof window !== 'undefined' && window.__amplifyConfigured) {
+        setAmplifyConfig({ status: 'Amplify já configurado' });
+        return;
+      }
+      configureAmplify();
+      if (typeof window !== 'undefined') window.__amplifyConfigured = true;
+      setAmplifyConfig({ status: 'Amplify configurado agora' });
     } catch (error) {
       console.error('Erro ao obter configuração:', error);
+      setAmplifyConfig(null);
     }
   }, [isInitialized]);
 

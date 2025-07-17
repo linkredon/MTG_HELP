@@ -4,6 +4,9 @@ import { useState } from 'react';
 import AuthDiagnosticComponent from '@/components/AuthDiagnostic';
 import OAuthTest from '@/components/OAuthTest';
 
+// Configuração para evitar pré-renderização estática
+export const dynamic = 'force-dynamic';
+
 export default function DiagnosticPage() {
   const [showOAuthTest, setShowOAuthTest] = useState(false);
   

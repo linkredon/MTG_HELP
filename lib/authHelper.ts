@@ -1,4 +1,4 @@
-import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
+import { fetchAuthSession, getCurrentUser } from '@/lib/aws-auth-adapter';
 
 // Helper function to get user information from Amplify Auth
 export async function getUserSession() {

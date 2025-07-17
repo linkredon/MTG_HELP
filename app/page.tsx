@@ -94,14 +94,8 @@ function HomeFallback() {
         
         {/* Script inline para redirecionar após um tempo limite */}
         <script dangerouslySetInnerHTML={{ __html: `
-          // Adicionar um tempo limite para evitar loop de carregamento
-          setTimeout(function() {
-            // Se ainda estivermos na página de carregamento após 10 segundos
-            if (document.body.textContent.includes('Carregando MTG Helper')) {
-              console.log('Tempo limite de carregamento atingido, redirecionando...');
-              window.location.href = '/login?timeout=1';
-            }
-          }, 10000);
+          // Remover timeout automático que causa problemas
+          // O redirecionamento deve ser feito apenas via router.push()
         `}} />
       </div>
     </div>
@@ -244,8 +238,9 @@ export default function Home() {
   // Em vez disso, vamos usar um componente de cliente que gerencia seu próprio estado
   return (
     <Suspense fallback={<HomeFallback />}>
-      <LoadingScreen />
-      <AppInitializer />
+      {/* Temporariamente desabilitado para evitar loops */}
+      {/* <LoadingScreen /> */}
+      {/* <AppInitializer /> */}
       <HomeContentWrapper>
         <HomeContent />
       </HomeContentWrapper>

@@ -29,7 +29,8 @@ export default function ClientAuthChecker({ children }: { children: React.ReactN
   
   // Função para recarregar a página
   const handleRefresh = () => {
-    window.location.reload();
+    // Usar router em vez de recarregar a página
+    window.location.href = '/';
   };
 
   // Se não estiver inicializado, mostrar uma mensagem de carregamento

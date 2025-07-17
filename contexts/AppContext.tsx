@@ -43,6 +43,7 @@ interface AppContextType {
   deletarDeck: (deckId: string) => Promise<void>;
   duplicarDeck: (deckId: string, newName?: string) => Promise<string | undefined>;
   adicionarCartaAoDeck: (deckId: string, card: MTGCard, category?: 'mainboard' | 'sideboard' | 'commander', quantity?: number) => Promise<void>;
+  adicionarCartaAoDeckAuto: (card: MTGCard, category?: 'mainboard' | 'sideboard' | 'commander', quantity?: number) => Promise<void>;
   removerCartaDoDeck: (deckId: string, cardId: string, category?: 'mainboard' | 'sideboard' | 'commander') => Promise<void>;
   atualizarQuantidadeNoDeck: (deckId: string, cardId: string, novaQuantidade: number, category?: 'mainboard' | 'sideboard' | 'commander') => Promise<void>;
   getCartasUsadasEmDecks: (cardId: string) => Array<{deck: Deck, quantity: number, category: string}>;
@@ -115,6 +116,19 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           }
         } catch (error) {
           console.error('Erro ao carregar dados:', error);
+          // Se falhar ao carregar dados, usar dados locais como fallback
+          const savedCollections = localStorage.getItem('mtg-collections');
+          if (savedCollections) {
+            try {
+              const parsedCollections = JSON.parse(savedCollections);
+              setCollections(parsedCollections);
+              if (parsedCollections.length > 0 && !currentCollectionId) {
+                setCurrentCollectionId(parsedCollections[0].id);
+              }
+            } catch (localError) {
+              console.error('Erro ao carregar coleÃ§Ãµes salvas:', localError);
+            }
+          }
         } finally {
           setLoading(false);
         }
@@ -196,7 +210,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const createCollection = async (name: string, description: string = ''): Promise<string> => {
     if (isAuthenticated) {
       try {
-        const response = await collectionService.create({ name, description });
+        const response = await collectionService.create({ 
+          name, 
+          description,
+          userId: authUser?.id || 'unknown'
+        });
         if (response.success && response.data) {
           setCollections(prev => [...prev, asUserCollection(response.data)]);
           setCurrentCollectionId(response.data.id);
@@ -318,11 +336,21 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // FunÃ§Ã£o para adicionar carta Ã  coleÃ§Ã£o
   const adicionarCarta = async (card: MTGCard, quantidade: number = 1): Promise<void> => {
-    if (!currentCollectionId) return;
+    // Se não há coleção selecionada, criar uma automaticamente
+    if (!currentCollectionId) {
+      try {
+        const collectionName = `Coleção ${new Date().toLocaleDateString('pt-BR')}`;
+        const newCollectionId = await createCollection(collectionName, 'Coleção criada automaticamente');
+        setCurrentCollectionId(newCollectionId);
+      } catch (error) {
+        console.error('Erro ao criar coleção automática:', error);
+        throw new Error('Não foi possível criar uma coleção para adicionar a carta');
+      }
+    }
     
     if (isAuthenticated) {
       try {
-        await collectionService.addCard(currentCollectionId, {
+        await collectionService.addCard(currentCollectionId!, {
           card,
           quantity: quantidade,
           condition: 'Near Mint',
@@ -331,7 +359,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         });
         
         // Atualizar estado local
-        const response = await collectionService.getById(currentCollectionId);
+        const response = await collectionService.getById(currentCollectionId!);
         if (response.success) {
           setCollections(prev => prev.map(c => c.id === currentCollectionId ? asUserCollection(response.data) : c));
         }
@@ -552,6 +580,39 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       };
       setDecks(prev => [...prev, duplicatedDeck]);
       return duplicatedDeck.id;
+    }
+  };
+
+  // Adicionar carta ao deck (cria deck automaticamente se não houver)
+  const adicionarCartaAoDeckAuto = async (
+    card: MTGCard, 
+    category: 'mainboard' | 'sideboard' | 'commander' = 'mainboard',
+    quantity: number = 1
+  ): Promise<void> => {
+    // Se não há decks, criar um automaticamente
+    if (decks.length === 0) {
+      try {
+        const deckName = `Deck ${new Date().toLocaleDateString('pt-BR')}`;
+        const newDeckId = await criarDeck({
+          name: deckName,
+          description: 'Deck criado automaticamente',
+          format: 'Commander',
+          colors: [],
+          cards: [],
+          isPublic: false,
+          tags: []
+        });
+        
+        // Adicionar a carta ao novo deck
+        await adicionarCartaAoDeck(newDeckId, card, category, quantity);
+      } catch (error) {
+        console.error('Erro ao criar deck automático:', error);
+        throw new Error('Não foi possível criar um deck para adicionar a carta');
+      }
+    } else {
+      // Usar o primeiro deck disponível
+      const firstDeck = decks[0];
+      await adicionarCartaAoDeck(firstDeck.id, card, category, quantity);
     }
   };
 
@@ -901,6 +962,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       deletarDeck,
       duplicarDeck,
       adicionarCartaAoDeck,
+      adicionarCartaAoDeckAuto,
       removerCartaDoDeck,
       atualizarQuantidadeNoDeck,
       getCartasUsadasEmDecks,

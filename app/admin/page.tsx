@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
-import { generateClient } from 'aws-amplify/api';
+import { fetchAuthSession, getCurrentUser } from '@/lib/aws-auth-adapter';
+import { API } from 'aws-amplify';
 import { listUsers } from '../../src/graphql/queries';
 import { createUser, updateUser, deleteUser } from '../../src/graphql/mutations';
 import { User as AmplifyUser, CreateUserInput, UpdateUserInput, DeleteUserInput } from '../../lib/API';
@@ -19,7 +19,7 @@ export default function AdminPage() {
   const [error, setError] = useState('');
 
   // Cliente API para GraphQL
-  const client = generateClient();
+  const client = API;
 
   // Verificar se o usuário atual é um administrador
   useEffect(() => {
@@ -28,8 +28,8 @@ export default function AdminPage() {
         const userInfo = await getCurrentUser();
         const session = await fetchAuthSession();
         
-        // Extrair grupos do token de acesso
-        const cognitoGroups = session.tokens?.accessToken?.payload['cognito:groups'];
+        // Extrair grupos do token de ID (adaptado para a estrutura do adaptador)
+        const cognitoGroups = session.tokens?.idToken?.payload['cognito:groups'];
         const groups = Array.isArray(cognitoGroups) ? cognitoGroups : [];
         
         // Verificar se o usuário é admin

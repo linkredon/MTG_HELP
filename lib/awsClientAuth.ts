@@ -2,7 +2,7 @@
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { fetchAuthSession } from './auth-adapter';
 
 // Interface para credenciais temporárias
 interface AwsTemporaryCredentials {

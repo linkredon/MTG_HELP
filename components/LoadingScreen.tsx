@@ -59,8 +59,8 @@ export default function LoadingScreen() {
       console.error('❌ Erro ao limpar cache local:', e);
     }
     
-    // Recarregar a página
-    window.location.href = '/login?reset=true';
+    // Redirecionar usando router em vez de recarregar a página
+    router.push('/login?reset=true');
   };
   
   // Botão para forçar redirecionamento
@@ -144,7 +144,7 @@ export default function LoadingScreen() {
             
             <div className="flex flex-col space-y-2">
               <button 
-                onClick={() => window.location.reload()}
+                onClick={() => router.push('/')}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
               >
                 Tentar novamente

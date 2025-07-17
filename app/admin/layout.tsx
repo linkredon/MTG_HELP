@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
+import { fetchAuthSession, getCurrentUser } from '@/lib/aws-auth-adapter';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -20,8 +20,8 @@ export default function AdminLayout({
         const userInfo = await getCurrentUser();
         const session = await fetchAuthSession();
         
-        // Extrair grupos do token de acesso
-        const groups = session.tokens?.accessToken?.payload['cognito:groups'] || [];
+        // Extrair grupos do token de id
+        const groups = session.tokens?.idToken?.payload['cognito:groups'] || [];
         
         // Verificar se o usuário está no grupo de administradores
         if (Array.isArray(groups) && groups.includes('Admins')) {

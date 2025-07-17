@@ -1,15 +1,18 @@
-import { getServerSession } from "next-auth/next";
-import { authConfig as authOptions } from "../../../lib/auth-config";
+import { getCurrentAuthUser } from "../../../lib/auth-amplify";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
     console.log("API de sessão chamada");
     
-    const session = await getServerSession(authOptions);
+    // Usar nossa função atualizada com AWS Amplify
+    const result = await getCurrentAuthUser();
     
     // Garantir que o tipo de conteúdo é definido corretamente
-    const response = NextResponse.json(session ?? { user: null });
+    const response = result.success 
+      ? NextResponse.json({ user: result.user })
+      : NextResponse.json({ user: null });
+    
     response.headers.set("Content-Type", "application/json");
     
     return response;

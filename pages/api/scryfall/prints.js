@@ -1,4 +1,4 @@
-import * as AmplifyAuth from '@aws-amplify/auth';
+import * as AmplifyAuth from '@/lib/aws-auth-adapter';
 import dbConnect from '@/lib/dbConnect';
 
 // Função para adicionar delay entre requisições para evitar rate limiting

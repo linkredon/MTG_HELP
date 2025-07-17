@@ -1,12 +1,28 @@
 // Define declarações para todos os módulos personalizados usando o prefixo @/
-declare module '@/lib/auth' {
-  export const authOptions: any;
+// Definição removida para usar o módulo auth-amplify em vez de auth
+
+// Nova definição para o módulo auth-amplify
+declare module '@/lib/auth-amplify' {
   export function registerUser(userData: { name: string, email: string, password: string }): Promise<{ 
     success: boolean; 
     message?: string; 
     user?: any;
   }>;
   export function getUserById(id: string): Promise<{
+    success: boolean;
+    message?: string;
+    user?: any;
+  }>;
+  export function loginWithAmplify(credentials: { email: string, password: string }): Promise<{
+    success: boolean;
+    message?: string;
+    user?: any;
+  }>;
+  export function logoutUser(): Promise<{
+    success: boolean;
+    message?: string;
+  }>;
+  export function getCurrentAuthUser(): Promise<{
     success: boolean;
     message?: string;
     user?: any;

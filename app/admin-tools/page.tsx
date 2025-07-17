@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
-import { generateClient } from 'aws-amplify/api';
+import { fetchAuthSession, getCurrentUser } from '@/lib/aws-auth-adapter';
+import { API } from 'aws-amplify';
 import { listUsers } from '../../src/graphql/queries';
 import { updateUser } from '../../src/graphql/mutations';
 
@@ -12,9 +12,6 @@ export default function AdminToolsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Cliente API para GraphQL
-  const client = generateClient();
-
   // Verificar se o usuário atual é um administrador
   useEffect(() => {
     const checkAdmin = async () => {
@@ -22,8 +19,8 @@ export default function AdminToolsPage() {
         const userInfo = await getCurrentUser();
         const session = await fetchAuthSession();
         
-        // Extrair grupos do token de acesso
-        const cognitoGroups = session.tokens?.accessToken?.payload['cognito:groups'];
+        // Extrair grupos do token de ID (adaptado para a estrutura do adaptador)
+        const cognitoGroups = session.tokens?.idToken?.payload['cognito:groups'];
         const groups = Array.isArray(cognitoGroups) ? cognitoGroups : [];
         
         // Verificar se o usuário é admin
@@ -49,7 +46,7 @@ export default function AdminToolsPage() {
   // Buscar todos os usuários
   const fetchUsers = async () => {
     try {
-      const result = await client.graphql({
+      const result = await API.graphql({
         query: listUsers
       });
       
@@ -71,7 +68,7 @@ export default function AdminToolsPage() {
   // Promover usuário a administrador
   const makeAdmin = async (id: string) => {
     try {
-      await client.graphql({
+      await API.graphql({
         query: updateUser,
         variables: { 
           input: { 

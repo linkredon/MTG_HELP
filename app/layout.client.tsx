@@ -1,13 +1,12 @@
 "use client"
 
-import AmplifyInit from '@/components/AmplifyInit'
+// Importações atualizadas usando implementações reais
 import { useEffect } from 'react'
-import useClearAmplifyErrors from '@/lib/amplifyErrorRecovery'
 import React from 'react'
 import { AppProvider } from '@/contexts/AppContext'
 import { FavoritesProvider } from '@/contexts/FavoritesContext'
 import CardModalWrapper from '@/components/CardModalWrapper'
-import AmplifyPreload from '@/components/AmplifyPreload'
+import { AmplifyAuthProvider } from '@/contexts/AmplifyAuthContext'
 import LoopBreakerWrapper from '@/components/LoopBreakerWrapper'
 import EmergencyRedirectWrapper from '@/components/EmergencyRedirectWrapper'
 
@@ -16,13 +15,9 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Usar o hook de recuperação de erros
-  useClearAmplifyErrors();
+  // Modo Mock: sem necessidade de recuperação de erros do Amplify
   
-  // Não precisamos mais de inicialização direta aqui ou controle de estado shouldLoadAmplify
-  // A inicialização será feita no AmplifyPreload e AmplifyInit via useEffect
-  
-  // Ainda podemos adicionar monitoramento de erros para logs e diagnóstico
+  // Monitoramento básico de erros para logs e diagnóstico
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
       if (
@@ -46,22 +41,22 @@ export default function ClientLayout({
   // e use useEffect para lógica específica do cliente
   
   return (
-    <AmplifyPreload>
-      {/* Componente que detecta loops de carregamento e força redirecionamento */}
-      <LoopBreakerWrapper />
+    <>
+      {/* Temporariamente desabilitado para evitar loops */}
+      {/* <LoopBreakerWrapper /> */}
       
-      {/* Botão de emergência para redirecionamento */}
-      <EmergencyRedirectWrapper />
+      {/* Temporariamente desabilitado para evitar loops */}
+      {/* <EmergencyRedirectWrapper /> */}
       
-      {/* Sempre renderize o AmplifyInit, mas ele só fará algo no cliente */}
-      <AmplifyInit />
-      <AppProvider>
-        <FavoritesProvider>
-          <CardModalWrapper>
-            {children}
-          </CardModalWrapper>
-        </FavoritesProvider>
-      </AppProvider>
-    </AmplifyPreload>
+      <AmplifyAuthProvider>
+          <AppProvider>
+            <FavoritesProvider>
+              <CardModalWrapper>
+                {children}
+              </CardModalWrapper>
+            </FavoritesProvider>
+          </AppProvider>
+      </AmplifyAuthProvider>
+    </>
   )
 }

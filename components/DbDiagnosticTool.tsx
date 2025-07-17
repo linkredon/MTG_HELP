@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { collectionService } from '@/utils/awsApiService';
-import { getCurrentUser } from 'aws-amplify/auth';
+import { getCurrentUser } from '@/lib/aws-auth-adapter';
 
 export default function DbDiagnosticTool() {
   const [diagnosticResult, setDiagnosticResult] = useState<{

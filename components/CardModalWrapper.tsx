@@ -11,7 +11,7 @@ interface CardModalWrapperProps {
 }
 
 export default function CardModalWrapper({ children }: CardModalWrapperProps) {
-  const { currentCollection, adicionarCarta } = useAppContext();
+  const { currentCollection, adicionarCarta, adicionarCartaAoDeckAuto } = useAppContext();
   
   // Função para obter quantidade baseada na coleção atual do AppContext
   const getQuantidadeNaColecao = async (cardId: string): Promise<number> => {
@@ -30,6 +30,18 @@ export default function CardModalWrapper({ children }: CardModalWrapperProps) {
     }
   };
 
+  // Função para adicionar carta ao deck que integra com o AppContext
+  const adicionarCartaAoDeckWrapper = async (card: MTGCard): Promise<void> => {
+    try {
+      if (adicionarCartaAoDeckAuto) {
+        await adicionarCartaAoDeckAuto(card);
+      }
+    } catch (error) {
+      console.error('Erro ao adicionar carta ao deck:', error);
+      throw error;
+    }
+  };
+
   // Função de atualização (placeholder por enquanto)
   const atualizarPesquisa = async (): Promise<void> => {
     // Por enquanto não faz nada, mas pode ser expandido no futuro
@@ -40,6 +52,7 @@ export default function CardModalWrapper({ children }: CardModalWrapperProps) {
     <CardModalProvider
       getQuantidadeNaColecao={getQuantidadeNaColecao}
       adicionarCartaAColecao={adicionarCartaAColecao}
+      adicionarCartaAoDeckAuto={adicionarCartaAoDeckWrapper}
       onAtualizarPesquisa={atualizarPesquisa}
     >
       {children}

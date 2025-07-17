@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useAppContext } from '@/contexts/AppContext'
+import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext'
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -36,126 +37,159 @@ import {
 } from "lucide-react"
 
 export default function Painel({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const { currentCollection, decks } = useAppContext();
+  const { currentCollection, decks, collections, favorites } = useAppContext();
+  const { user: authUser } = useAmplifyAuth();
 
   const handleQuickAction = (action: string) => {
     if (action === 'add-card') {
       onNavigate('colecao');
     } else if (action === 'favorites') {
       onNavigate('favoritos');
+    } else if (action === 'decks') {
+      onNavigate('decks');
+    } else if (action === 'achievements') {
+      onNavigate('achievements');
     } else {
       alert(`A funcionalidade "${action}" está em desenvolvimento.`);
     }
   };
 
   const stats = useMemo(() => {
-    if (!currentCollection || !currentCollection.cards) {
-      return {
-        totalCards: 0,
-        uniqueCards: 0,
-        totalDecks: decks?.length || 0,
-        collectionValue: 0,
-        weeklyGoal: 65,
-        weeklyProgress: 0,
-        monthlyGrowth: 0,
-        avgCardValue: 0,
-      };
-    }
-
-    const totalCards = currentCollection.cards.reduce((acc, c) => acc + c.quantity, 0);
-    const uniqueCards = currentCollection.cards.length;
-    const collectionValue = currentCollection.cards.reduce((acc, c) => {
-      const price = parseFloat(c.card.prices?.usd || '0');
-      return acc + (price * c.quantity);
-    }, 0);
+    // Calcular estatísticas reais
+    const totalCards = collections.reduce((acc, col) => 
+      acc + col.cards.reduce((sum, card) => sum + card.quantity, 0), 0
+    );
+    
+    const uniqueCards = collections.reduce((acc, col) => 
+      acc + col.cards.length, 0
+    );
+    
+    const totalDecks = decks?.length || 0;
+    const totalFavorites = favorites?.length || 0;
+    
+    // Calcular valor da coleção (se disponível)
+    const collectionValue = collections.reduce((acc, col) => 
+      acc + col.cards.reduce((sum, card) => {
+        const price = parseFloat(card.card.prices?.usd || '0');
+        return sum + (price * card.quantity);
+      }, 0), 0
+    );
+    
     const avgCardValue = totalCards > 0 ? collectionValue / totalCards : 0;
 
-    // Mock data for values not in context
-    const weeklyProgress = 42;
-    const weeklyGoal = 65;
-    const monthlyGrowth = 12.5;
+    // Calcular crescimento baseado na data de criação das coleções
+    const recentCollections = collections.filter(col => {
+      const createdAt = new Date(col.createdAt);
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      return createdAt > oneMonthAgo;
+    });
+    
+    const monthlyGrowth = collections.length > 0 
+      ? (recentCollections.length / collections.length) * 100 
+      : 0;
 
     return {
       totalCards,
       uniqueCards,
-      totalDecks: decks?.length || 0,
+      totalDecks,
+      totalFavorites,
       collectionValue,
-      weeklyGoal,
-      weeklyProgress,
       monthlyGrowth,
       avgCardValue,
+      collectionsCount: collections.length,
     };
-  }, [currentCollection, decks]);
+  }, [collections, decks, favorites]);
 
-  // Mock do usuário para demonstração
-  const [mockUser] = useState<User>({
-    id: '1',
-    name: 'Usuário Teste',
-    email: 'usuario@teste.com',
-    avatar: '/avatar.jpg',
-    joinedAt: '2023-01-15T12:00:00Z',
-    collectionsCount: 3,
-    totalCards: 120,
-    achievements: [
-      'first_login',
-      'first_card',
-      'collector_novice',
-      'collector_apprentice',
-      'first_deck'
-    ]
-  });
+  // Usar dados reais do usuário autenticado
+  const user = useMemo(() => {
+    if (!authUser) return null;
+    
+    return {
+      id: authUser.id || 'unknown',
+      name: authUser.name || authUser.email || 'Usuário',
+      email: authUser.email || '',
+      avatar: authUser.avatar || undefined, // Usar undefined em vez de null
+      joinedAt: new Date().toISOString(), // Usar data atual como fallback
+      collectionsCount: collections.length,
+      totalCards: stats.totalCards,
+      achievements: [] // Será preenchido pelo sistema de conquistas
+    };
+  }, [authUser, collections.length, stats.totalCards]);
 
-  const [recentCards] = useState<any[]>([
-    { 
-      name: "Lightning Bolt", 
-      set: "2XM", 
-      rarity: "common", 
-      addedAt: "2h",
-      value: 0.25,
-      quantity: 4
-    },
-    { 
-      name: "Counterspell", 
-      set: "TSR", 
-      rarity: "common", 
-      addedAt: "5h",
-      value: 0.50,
-      quantity: 2
-    },
-    { 
-      name: "Serra Angel", 
-      set: "M21", 
-      rarity: "uncommon", 
-      addedAt: "1d",
-      value: 1.20,
-      quantity: 1
-    },
-    { 
-      name: "Black Lotus", 
-      set: "LEA", 
-      rarity: "rare", 
-      addedAt: "2d",
-      value: 8500.00,
-      quantity: 1
-    }
-  ])
+  // Cartas recentes baseadas na coleção atual
+  const recentCards = useMemo(() => {
+    if (!currentCollection?.cards) return [];
+    
+    return currentCollection.cards
+      .slice(0, 4)
+      .map(card => ({
+        name: card.card.name,
+        set: card.card.set_code,
+        rarity: card.card.rarity,
+        addedAt: "recent",
+        value: parseFloat(card.card.prices?.usd || '0'),
+        quantity: card.quantity
+      }));
+  }, [currentCollection]);
 
-  const [colorDistribution] = useState<any[]>([
-    { color: 'Azul', percentage: 28, count: 249, bgColor: 'from-blue-500 to-blue-600' },
-    { color: 'Preto', percentage: 24, count: 214, bgColor: 'from-gray-700 to-gray-900' },
-    { color: 'Vermelho', percentage: 20, count: 178, bgColor: 'from-red-500 to-red-600' },
-    { color: 'Verde', percentage: 16, count: 143, bgColor: 'from-green-500 to-green-600' },
-    { color: 'Branco', percentage: 12, count: 107, bgColor: 'from-gray-200 to-gray-400' }
-  ])
+  // Distribuição de cores baseada nas cartas reais
+  const colorDistribution = useMemo(() => {
+    if (!currentCollection?.cards) return [];
+    
+    const colorCounts: { [key: string]: number } = {};
+    let totalCards = 0;
+    
+    currentCollection.cards.forEach(card => {
+      const colors = (card.card as any).colors || [];
+      colors.forEach(color => {
+        colorCounts[color] = (colorCounts[color] || 0) + card.quantity;
+        totalCards += card.quantity;
+      });
+    });
+    
+    const colorMap: { [key: string]: { name: string, bgColor: string } } = {
+      'W': { name: 'Branco', bgColor: 'from-gray-200 to-gray-400' },
+      'U': { name: 'Azul', bgColor: 'from-blue-500 to-blue-600' },
+      'B': { name: 'Preto', bgColor: 'from-gray-700 to-gray-900' },
+      'R': { name: 'Vermelho', bgColor: 'from-red-500 to-red-600' },
+      'G': { name: 'Verde', bgColor: 'from-green-500 to-green-600' }
+    };
+    
+    return Object.entries(colorCounts)
+      .map(([color, count]) => ({
+        color: colorMap[color]?.name || color,
+        percentage: totalCards > 0 ? (count / totalCards) * 100 : 0,
+        count,
+        bgColor: colorMap[color]?.bgColor || 'from-gray-500 to-gray-600'
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [currentCollection]);
 
-  const [quickActions] = useState<any[]>([
+  // Adicionar valores padrão para weeklyProgress e weeklyGoal
+  const weeklyProgress = 0;
+  const weeklyGoal = 100;
+
+  const quickActions = [
     { label: "Add Carta", icon: Plus, action: "add-card", color: "blue" },
-    { label: "Relatórios", icon: BarChart3, action: "reports", color: "purple" },
-    { label: "Comunidade", icon: Users, action: "community", color: "green" },
-    { label: "Análises", icon: TrendingUp, action: "analytics", color: "yellow" },
-    { label: "Eventos", icon: Calendar, action: "events", color: "red" },
-    { label: "Favoritos", icon: Heart, action: "favorites", color: "pink" }
-  ])
+    { label: "Meus Decks", icon: Bookmark, action: "decks", color: "purple" },
+    { label: "Favoritos", icon: Heart, action: "favorites", color: "pink" },
+    { label: "Conquistas", icon: Trophy, action: "achievements", color: "yellow" },
+    { label: "Relatórios", icon: BarChart3, action: "reports", color: "green" },
+    { label: "Análises", icon: TrendingUp, action: "analytics", color: "red" }
+  ];
+
+  if (!user) {
+    return (
+      <div className="p-4">
+        <div className="quantum-card-dense p-4 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Carregando dados do usuário...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">
@@ -269,21 +303,21 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
             <div className="flex justify-between items-center text-xs">
               <span className="text-gray-400">Progresso</span>
               <span className="text-white font-medium">
-                {stats.weeklyProgress}/{stats.weeklyGoal} cartas
+                {weeklyProgress}/{weeklyGoal} cartas
               </span>
             </div>
             
             <div className="space-y-1.5">
               <Progress 
-                value={(stats.weeklyProgress / stats.weeklyGoal) * 100} 
+                value={(weeklyProgress / weeklyGoal) * 100} 
                 className="h-1.5 bg-gray-800"
               />
               <div className="flex justify-between text-[10px] text-gray-500">
                 <span>0</span>
                 <span className="font-medium text-blue-400">
-                  {Math.round((stats.weeklyProgress / stats.weeklyGoal) * 100)}%
+                  {Math.round((weeklyProgress / weeklyGoal) * 100)}%
                 </span>
-                <span>{stats.weeklyGoal}</span>
+                <span>{weeklyGoal}</span>
               </div>
             </div>
             
@@ -291,7 +325,7 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
               <div>
                 <p className="text-[10px] text-blue-400">Faltam apenas</p>
                 <p className="text-sm font-bold text-white">
-                  {stats.weeklyGoal - stats.weeklyProgress} cartas
+                  {weeklyGoal - weeklyProgress} cartas
                 </p>
               </div>
               <Trophy className="w-6 h-6 text-yellow-400" />
@@ -301,7 +335,7 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
 
         {/* Conquistas */}
         <RecentAchievements 
-          user={mockUser} 
+          user={user} 
           onViewAll={() => onNavigate('achievements')} 
         />
       </div>

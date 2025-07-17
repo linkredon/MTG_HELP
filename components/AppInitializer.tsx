@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { fetchAuthSession } from '@/lib/aws-auth-adapter';
 import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext';
 import { Amplify } from 'aws-amplify';
 

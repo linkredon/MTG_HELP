@@ -1,0 +1,203 @@
+/**
+ * Funções de autenticação usando AWS Amplify/Cognito
+ * Este arquivo substitui a implementação anterior baseada em next-auth
+ */
+import { Amplify, Auth } from 'aws-amplify';
+import { v4 as uuidv4 } from 'uuid';
+import { dynamoDb, TABLES } from './awsConfig';
+import { PutCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import bcrypt from 'bcryptjs';
+
+// Função para registrar um novo usuário
+export async function registerUser(userData: { name: string, email: string, password: string }) {
+  try {
+    // 1. Verificar se o email já está em uso no DynamoDB
+    const checkParams = {
+      TableName: TABLES.USERS,
+      IndexName: 'EmailIndex',
+      KeyConditionExpression: 'email = :email',
+      ExpressionAttributeValues: {
+        ':email': userData.email
+      }
+    };
+    
+    const existingUser = await dynamoDb.send(new QueryCommand(checkParams));
+    
+    if (existingUser.Items && existingUser.Items.length > 0) {
+      return { success: false, message: 'Email já está em uso' };
+    }
+    
+    // 2. Registrar no Cognito
+    try {
+      const signUpResult = await Auth.signUp({
+        username: userData.email,
+        password: userData.password,
+        attributes: {
+          email: userData.email,
+          name: userData.name
+        }
+      });
+      
+      // 3. Se o registro no Cognito foi bem-sucedido, salvar também no DynamoDB
+      const timestamp = new Date().toISOString();
+      const userId = signUpResult.userSub || uuidv4(); // Usar ID do Cognito ou gerar um novo
+      
+      // Hash da senha para armazenamento seguro no DynamoDB
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(userData.password, salt);
+      
+      const user = {
+        id: userId,
+        name: userData.name,
+        email: userData.email,
+        password: hashedPassword, // armazenamos a senha para compatibilidade com sistemas existentes
+        role: 'user',
+        avatar: null,
+        joinedAt: timestamp,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        collectionsCount: 0,
+        totalCards: 0,
+        achievements: ['first_login']
+      };
+      
+      const params = {
+        TableName: TABLES.USERS,
+        Item: user
+      };
+      
+      await dynamoDb.send(new PutCommand(params));
+      
+      // Retornar usuário sem a senha
+      const { password, ...userWithoutPassword } = user;
+      return { success: true, user: userWithoutPassword };
+    } catch (error: any) {
+      console.error('Erro ao registrar usuário no Cognito:', error);
+      return { success: false, message: error.message || 'Erro ao registrar usuário' };
+    }
+  } catch (error) {
+    console.error('Erro ao registrar usuário:', error);
+    return { success: false, message: 'Erro ao registrar usuário' };
+  }
+}
+
+// Função para obter usuário pelo ID
+export async function getUserById(id: string) {
+  try {
+    // Primeiro tenta obter o usuário do DynamoDB
+    const params = {
+      TableName: TABLES.USERS,
+      Key: { id }
+    };
+    
+    const result = await dynamoDb.send(new GetCommand(params));
+    
+    if (result.Item) {
+      // Retornar usuário sem a senha
+      const { password, ...userWithoutPassword } = result.Item;
+      return { success: true, user: userWithoutPassword };
+    } else {
+      // Se não encontrar no DynamoDB, tenta obter do Cognito
+      try {
+        const currentUser = await Auth.currentAuthenticatedUser();
+        const session = await Auth.currentSession();
+        const userAttributes = currentUser.attributes || {};
+        
+        if (currentUser.username) {
+          const user = {
+            id: currentUser.sub,
+            name: userAttributes.name || userAttributes.email || currentUser.username,
+            email: userAttributes.email || currentUser.username,
+            role: 'user',
+            avatar: null,
+            joinedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            collectionsCount: 0,
+            totalCards: 0,
+            achievements: []
+          };
+          
+          return { success: true, user };
+        }
+      } catch (cognitoError) {
+        console.error('Erro ao obter usuário do Cognito:', cognitoError);
+      }
+      
+      return { success: false, message: 'Usuário não encontrado' };
+    }
+  } catch (error) {
+    console.error('Erro ao obter usuário:', error);
+    return { success: false, message: 'Erro ao obter usuário' };
+  }
+}
+
+// Função para login usando Amplify
+export async function loginWithAmplify(credentials: { email: string, password: string }) {
+  try {
+    const signInResult = await Auth.signIn(credentials.email, credentials.password);
+    
+    if (signInResult) {
+      // Obter informações do usuário
+      try {
+        const userAttributes = signInResult.attributes || {};
+        
+        const user = {
+          id: signInResult.attributes.sub || signInResult.username,
+          name: userAttributes.name || userAttributes.email || signInResult.username,
+          email: userAttributes.email || signInResult.username,
+          role: 'user', // Papel padrão, pode ser atualizado com informações do DynamoDB
+          avatar: null
+        };
+        
+        return { success: true, user };
+      } catch (attrError) {
+        console.error('Erro ao obter atributos do usuário:', attrError);
+        // Mesmo com erro, podemos retornar um usuário básico
+        return { 
+          success: true, 
+          user: { 
+            id: signInResult.username, 
+            name: signInResult.username,
+            email: signInResult.username 
+          } 
+        };
+      }
+    } else {
+      return { success: false, message: 'Falha na autenticação' };
+    }
+  } catch (error: any) {
+    console.error('Erro no login:', error);
+    return { success: false, message: error.message || 'Falha na autenticação' };
+  }
+}
+
+// Função para logout
+export async function logoutUser() {
+  try {
+    await Auth.signOut();
+    return { success: true };
+  } catch (error) {
+    console.error('Erro ao fazer logout:', error);
+    return { success: false, message: 'Erro ao fazer logout' };
+  }
+}
+
+// Função para obter usuário atual
+export async function getCurrentAuthUser() {
+  try {
+    const currentUser = await Auth.currentAuthenticatedUser();
+    const userAttributes = currentUser.attributes || {};
+    
+    const user = {
+      id: userAttributes.sub || currentUser.username,
+      name: userAttributes.name || userAttributes.email || currentUser.username,
+      email: userAttributes.email || currentUser.username
+    };
+    
+    return { success: true, user };
+  } catch (error) {
+    console.error('Erro ao obter usuário atual:', error);
+    return { success: false, message: 'Usuário não autenticado' };
+  }
+}

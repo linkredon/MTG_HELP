@@ -630,7 +630,7 @@ export default function ConstrutorDecks() {
           aria-describedby="delete-deck-description"
         >
           <DialogHeader>
-            <h2 className="text-lg font-medium text-red-400">Excluir Deck</h2>
+            <DialogTitle className="text-lg font-medium text-red-400">Excluir Deck</DialogTitle>
           </DialogHeader>
           
           {showDeleteConfirm && (

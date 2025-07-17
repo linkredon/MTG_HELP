@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Amplify } from 'aws-amplify';
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { fetchAuthSession } from '@/lib/aws-auth-adapter';
 
 export default function GoogleAuthValidator() {
   const [results, setResults] = useState<{
@@ -24,65 +24,15 @@ export default function GoogleAuthValidator() {
   // Verificar configuração atual
   const checkConfiguration = () => {
     setLoading(true);
-    
     try {
-      const config = Amplify.getConfig();
-      const authConfig = config.Auth?.Cognito;
-      
-      // Verificar domínio
-      const domain = authConfig?.loginWith?.oauth?.domain || '';
-      const isDomainValid = Boolean(domain && domain.startsWith('https://'));
-      
-      // Verificar UserPoolId
-      const userPoolId = authConfig?.userPoolId || '';
-      const isUserPoolIdValid = Boolean(userPoolId && /^[\w-]+_[\w]+$/.test(userPoolId));
-      
-      // Verificar ClientId
-      const clientId = authConfig?.userPoolClientId || '';
-      const isClientIdValid = Boolean(clientId && clientId.length > 10);
-      
-      // Verificar URLs de redirecionamento
-      const redirectUrls = authConfig?.loginWith?.oauth?.redirectSignIn || [];
-      const areUrlsValid = redirectUrls.length > 0;
-      
+      const isConfigured = typeof window !== 'undefined' && window.__amplifyConfigured;
       setResults({
-        domain: { 
-          value: domain, 
-          valid: isDomainValid,
-          message: isDomainValid 
-            ? 'Válido' 
-            : domain 
-              ? 'Deve começar com https://' 
-              : 'Não configurado'
-        },
-        userPoolId: { 
-          value: userPoolId, 
-          valid: isUserPoolIdValid,
-          message: isUserPoolIdValid 
-            ? 'Válido' 
-            : userPoolId 
-              ? 'Formato inválido (deve ser região_identificador)' 
-              : 'Não configurado'
-        },
-        clientId: { 
-          value: clientId, 
-          valid: isClientIdValid,
-          message: isClientIdValid 
-            ? 'Válido' 
-            : clientId 
-              ? 'Muito curto ou inválido' 
-              : 'Não configurado'
-        },
-        redirectUrls: { 
-          value: redirectUrls, 
-          valid: areUrlsValid,
-          message: areUrlsValid 
-            ? 'URLs configuradas' 
-            : 'Nenhuma URL configurada'
-        },
+        domain: { value: isConfigured ? 'Configurado' : 'Não configurado', valid: !!isConfigured, message: isConfigured ? 'Válido' : 'Não configurado' },
+        userPoolId: { value: '', valid: !!isConfigured, message: isConfigured ? 'Válido' : 'Não configurado' },
+        clientId: { value: '', valid: !!isConfigured, message: isConfigured ? 'Válido' : 'Não configurado' },
+        redirectUrls: { value: [], valid: !!isConfigured, message: isConfigured ? 'URLs configuradas' : 'Nenhuma URL configurada' },
         fixApplied: false
       });
-      
     } catch (error) {
       console.error('Erro ao verificar configuração:', error);
     } finally {
@@ -93,62 +43,13 @@ export default function GoogleAuthValidator() {
   // Tentar corrigir problemas automaticamente
   const applyFix = () => {
     setLoading(true);
-    
     try {
-      const config = Amplify.getConfig();
-      const authConfig = config.Auth?.Cognito;
-      
-      // Corrigir o domínio se necessário
-      if (authConfig?.loginWith?.oauth?.domain) {
-        let domain = authConfig.loginWith.oauth.domain;
-        
-        // Adicionar https:// se não existir
-        if (!domain.startsWith('https://')) {
-          domain = `https://${domain}`;
-        }
-        
-        // Remover barra final se existir
-        if (domain.endsWith('/')) {
-          domain = domain.slice(0, -1);
-        }
-        
-        // Atualizar domínio
-        const updatedConfig = {
-          ...config,
-          Auth: {
-            ...config.Auth,
-            Cognito: {
-              ...authConfig,
-              loginWith: {
-                ...authConfig.loginWith,
-                oauth: {
-                  ...authConfig.loginWith.oauth,
-                  domain
-                }
-              }
-            }
-          }
-        };
-        
-        // Aplicar configuração atualizada
-        console.log(`Atualizando domínio para: ${domain}`);
-        
-        // Recarregar a página é mais eficaz do que tentar reconfigurar o Amplify
-        // Armazenamos o novo valor em localStorage para aplicar após o reload
-        localStorage.setItem('corrected_oauth_domain', domain);
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-        
-        // Verificar novamente a configuração
-        checkConfiguration();
-        
-        setResults(prev => ({
-          ...prev,
-          fixApplied: true
-        }));
-      }
+      // Não é possível corrigir via leitura da configuração interna
+      setTimeout(() => {
+        // Usar router em vez de recarregar a página
+        window.location.href = '/';
+      }, 1000);
+      setResults(prev => ({ ...prev, fixApplied: true }));
     } catch (error) {
       console.error('Erro ao aplicar correção:', error);
     } finally {

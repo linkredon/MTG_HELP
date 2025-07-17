@@ -55,6 +55,7 @@ if (!cognitoDomain.startsWith('https://')) {
       aws_cognito_region: region,
       aws_user_pools_id: userPoolId,
       aws_user_pools_web_client_id: userPoolClientId,
+      aws_cognito_identity_pool_id: process.env.NEXT_PUBLIC_IDENTITY_POOL_ID || 'us-east-2:8681c7d7-6e0e-494f-9f0a-fe9f8d949db5',
       oauth: {
         domain: cognitoDomain,
         scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],

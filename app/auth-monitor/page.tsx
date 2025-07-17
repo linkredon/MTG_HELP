@@ -235,7 +235,7 @@ export default function GoogleAuthMonitor() {
       // Verificar Amplify
       try {
         // Importar dinamicamente para evitar erros de SSR
-        const { getCurrentUser, fetchUserAttributes } = await import('@aws-amplify/auth');
+        const { getCurrentUser, fetchUserAttributes } = await import('@/lib/aws-auth-adapter');
         
         try {
           const currentUser = await getCurrentUser();

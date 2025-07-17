@@ -1,11 +1,21 @@
 'use client';
 
-import { awsDbService as serverDbService } from './awsDbConnect';
 import { getDynamoDbClientAsync, TABLES } from './awsClientAuth';
 import { PutCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 // Importar comandos personalizados
 import { UpdateCommand, DeleteCommand, ScanCommand } from './awsDbCommands';
-import { generateId, getCurrentTimestamp } from './awsDbConnect';
+
+// Função auxiliar para gerar IDs únicos
+const generateId = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
+// Função para obter timestamp atual
+const getCurrentTimestamp = () => new Date().toISOString();
 
 // Cliente singleton para manter apenas uma instância do cliente DynamoDB
 let dynamoDbClientInstance: any = null;
@@ -139,17 +149,34 @@ export const clientDbService = {
     try {
       const dynamoDb = await getOrCreateClientSideDbClient();
       
+      // Primeiro tentar com o índice
       const params = {
         TableName: tableName,
-        IndexName: 'UserIdIndex',
+        IndexName: 'userId-index',
         KeyConditionExpression: 'userId = :userId',
         ExpressionAttributeValues: {
           ':userId': userId
         }
       };
       
-      const result = await dynamoDb.send(new QueryCommand(params));
-      return { success: true, data: result.Items || [] };
+      try {
+        const result = await dynamoDb.send(new QueryCommand(params));
+        return { success: true, data: result.Items || [] };
+      } catch (indexError: any) {
+        // Se o índice não existir, usar scan com filtro
+        console.warn(`Índice userId-index não encontrado para ${tableName}, usando scan com filtro`);
+        
+        const scanParams = {
+          TableName: tableName,
+          FilterExpression: 'userId = :userId',
+          ExpressionAttributeValues: {
+            ':userId': userId
+          }
+        };
+        
+        const scanResult = await dynamoDb.send(new ScanCommand(scanParams));
+        return { success: true, data: scanResult.Items || [] };
+      }
     } catch (error) {
       console.error(`[Cliente] Error querying items from ${tableName}:`, error);
       return { success: false, error };

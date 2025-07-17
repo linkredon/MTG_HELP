@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import * as AmplifyAuth from '@aws-amplify/auth';
+import * as AmplifyAuth from '@/lib/aws-auth-adapter';
 
 /**
  * Hook personalizado para proteger rotas que precisam de autenticação.

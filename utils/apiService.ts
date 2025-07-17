@@ -1,4 +1,4 @@
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { fetchAuthSession } from '../lib/auth-adapter';
 
 // Tipos básicos para respostas da API
 interface ApiResponse<T> {
@@ -22,9 +22,9 @@ async function fetchApi<T>(
     try {
       // Tentar obter a sessão do Amplify
       const authSession = await fetchAuthSession();
-      if (authSession?.tokens?.accessToken) {
-        // Usar o token de acesso JWT para autenticação
-        headers['Authorization'] = `Bearer ${authSession.tokens.accessToken.toString()}`;
+      if (authSession?.tokens?.idToken) {
+        // Usar o token JWT para autenticação (corrigido para usar idToken em vez de accessToken)
+        headers['Authorization'] = `Bearer ${authSession.tokens.idToken.jwtToken}`;
       }
     } catch (authError) {
       // Se não conseguir obter a sessão, continuar sem autenticação
@@ -44,17 +44,74 @@ async function fetchApi<T>(
     const response = await fetch(`/api${endpoint}`, options);
     const data = await response.json();
 
+    // Se a resposta não for ok, mas não for erro de autenticação, retornar erro
     if (!response.ok) {
+      // Se for erro 401 (não autorizado), retornar sucesso false mas não lançar erro
+      if (response.status === 401) {
+        return {
+          success: false,
+          message: 'Não autorizado',
+          error: 'AUTH_ERROR'
+        };
+      }
       throw new Error(data.message || 'Erro ao processar requisição');
     }
 
     return data;
   } catch (error: any) {
     console.error(`Erro na API (${endpoint}):`, error);
+    
+    // Se for erro de rede ou timeout, retornar erro específico
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        success: false,
+        message: 'Erro de conexão',
+        error: 'NETWORK_ERROR'
+      };
+    }
+    
     return {
       success: false,
       message: error.message || 'Erro desconhecido',
+      error: 'UNKNOWN_ERROR'
     };
+  }
+}
+
+// Função para fazer requisições autenticadas à API
+export async function fetchWithAuth(url: string, options: RequestInit = {}) {
+  try {
+    // Tentar obter sessão de autenticação
+    const authSession = await fetchAuthSession();
+    
+    // Preparar headers
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+    
+    // Adicionar token de autenticação se disponível
+    if (authSession?.tokens?.idToken) {
+      // Usar o token JWT do idToken 
+      headers['Authorization'] = `Bearer ${authSession.tokens.idToken.jwtToken}`;
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao processar requisição');
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error(`Erro na requisição (${url}):`, error);
+    throw error;
   }
 }
 

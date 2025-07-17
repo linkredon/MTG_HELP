@@ -35,7 +35,7 @@ export default function DiagnosticTool() {
       // Tentar uma operação simples - consultar a tabela de coleções por ID de usuário
       const params = {
         TableName: TABLES.COLLECTIONS,
-        IndexName: 'UserIdIndex',
+        IndexName: 'userId-index',
         KeyConditionExpression: 'userId = :userId',
         ExpressionAttributeValues: {
           ':userId': user.id

@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server';
+import { logoutUser } from '@/lib/auth-amplify';
 
 export async function POST() {
-  // Limpar cookies de sessão
-  return NextResponse.json({ success: true }, {
-    headers: {
-      'Set-Cookie': 'next-auth.session-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax',
-    },
-  });
+  try {
+    // Usar a função de logout do AWS Amplify
+    await logoutUser();
+    
+    // Limpar cookies (mantidos por compatibilidade com código existente)
+    return NextResponse.json({ success: true }, {
+      headers: {
+        // Não precisa mais limpar cookies do next-auth
+        'Clear-Amplify-Auth': 'true' // Custom header apenas para indicar a ação
+      },
+    });
+  } catch (error) {
+    console.error('Erro ao fazer logout:', error);
+    return NextResponse.json({ success: false, error: 'Erro ao fazer logout' }, { status: 500 });
+  }
 }

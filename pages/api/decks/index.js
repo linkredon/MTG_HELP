@@ -1,4 +1,4 @@
-import * as AmplifyAuth from '@aws-amplify/auth';
+import * as AmplifyAuth from '@/lib/aws-auth-adapter';
 import { deckService } from '@/utils/awsApiService';
 
 export default async function handler(req, res) {

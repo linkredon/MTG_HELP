@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
-import { Amplify } from 'aws-amplify';
-import { Hub } from 'aws-amplify/utils';
+import { fetchAuthSession, getCurrentUser, Amplify, Hub } from '@/lib/aws-auth-adapter';
 import '../styles/oauth-diagnostic.css';
 
 export default function GoogleOAuthDiagnostic() {
@@ -49,93 +47,17 @@ export default function GoogleOAuthDiagnostic() {
   const checkOAuthConfiguration = async () => {
     addLog('Iniciando diagnóstico de configuração OAuth');
     setLoading(true);
-    
     try {
-      // Tentar obter a configuração do Amplify
-      const currentConfig = Amplify.getConfig();
-      
-      // Verificar se o Auth está configurado
-      const authConfig = currentConfig.Auth?.Cognito;
-      
-      if (!authConfig) {
-        addLog('⚠️ Configuração Auth não encontrada');
-        setDiagnostics(prev => ({
-          ...prev,
-          configFound: false
-        }));
+      if (typeof window !== 'undefined' && window.__amplifyConfigured) {
+        addLog('✓ Amplify configurado. Para detalhes, verifique o arquivo de configuração usado em configureAmplify().');
+        setDiagnostics(prev => ({ ...prev, configFound: true, amplifyConfigured: true }));
       } else {
-        addLog('✓ Configuração Auth encontrada');
-        
-        // Verificar User Pool ID
-        const userPoolId = authConfig.userPoolId;
-        if (!userPoolId) {
-          addLog('⚠️ User Pool ID não encontrado');
-        } else {
-          addLog(`✓ User Pool ID encontrado: ${maskSensitiveInfo(userPoolId)}`);
-        }
-        
-        // Verificar Client ID
-        const clientId = authConfig.userPoolClientId;
-        if (!clientId) {
-          addLog('⚠️ User Pool Client ID não encontrado');
-        } else {
-          addLog(`✓ User Pool Client ID encontrado: ${maskSensitiveInfo(clientId)}`);
-        }
-        
-        // Verificar configuração OAuth
-        const oauthConfig = authConfig.loginWith?.oauth;
-        if (!oauthConfig) {
-          addLog('⚠️ Configuração OAuth não encontrada');
-        } else {
-          addLog('✓ Configuração OAuth encontrada');
-          
-          // Verificar domínio
-          if (!oauthConfig.domain) {
-            addLog('⚠️ Domínio OAuth não encontrado');
-          } else {
-            addLog(`✓ Domínio OAuth encontrado: ${maskSensitiveInfo(oauthConfig.domain)}`);
-          }
-          
-          // Verificar URLs de redirecionamento
-          if (!oauthConfig.redirectSignIn || oauthConfig.redirectSignIn.length === 0) {
-            addLog('⚠️ URLs de redirecionamento para login não encontradas');
-          } else {
-            addLog(`✓ URLs de redirecionamento para login encontradas: ${oauthConfig.redirectSignIn.join(', ')}`);
-          }
-          
-          if (!oauthConfig.redirectSignOut || oauthConfig.redirectSignOut.length === 0) {
-            addLog('⚠️ URLs de redirecionamento para logout não encontradas');
-          } else {
-            addLog(`✓ URLs de redirecionamento para logout encontradas: ${oauthConfig.redirectSignOut.join(', ')}`);
-          }
-          
-          // Verificar escopos
-          if (!oauthConfig.scopes || oauthConfig.scopes.length === 0) {
-            addLog('⚠️ Escopos OAuth não encontrados');
-          } else {
-            addLog(`✓ Escopos OAuth encontrados: ${oauthConfig.scopes.join(', ')}`);
-          }
-        }
-        
-        setDiagnostics({
-          configFound: true,
-          userPoolId: userPoolId || '',
-          userPoolClientId: clientId || '',
-          oauthDomain: oauthConfig?.domain || '',
-          redirectSignIn: (oauthConfig?.redirectSignIn as string[]) || [],
-          redirectSignOut: (oauthConfig?.redirectSignOut as string[]) || [],
-          googleProviderEnabled: !!oauthConfig,
-          amplifyConfigured: true,
-          oauthConfigured: !!oauthConfig
-        });
+        addLog('⚠️ Amplify não está configurado.');
+        setDiagnostics(prev => ({ ...prev, configFound: false, amplifyConfigured: false }));
       }
-      
     } catch (error) {
       addLog(`⚠️ Erro ao verificar configuração: ${error instanceof Error ? error.message : String(error)}`);
-      setDiagnostics(prev => ({
-        ...prev,
-        configFound: false
-      }));
+      setDiagnostics(prev => ({ ...prev, configFound: false, amplifyConfigured: false }));
     } finally {
       setLoading(false);
       addLog('Diagnóstico concluído');
@@ -157,8 +79,8 @@ export default function GoogleOAuthDiagnostic() {
       if (data.success) {
         addLog('✓ Correção automática bem-sucedida');
         setFixAttemptStatus('success');
-        // Recarregar a página para aplicar as novas configurações
-        window.location.reload();
+        // Redirecionar para aplicar as novas configurações
+        window.location.href = '/';
       } else {
         addLog(`⚠️ Falha na correção automática: ${data.error}`);
         setFixAttemptStatus('error');

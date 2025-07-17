@@ -14,14 +14,13 @@ export default function AmplifyPreload({ children }: { children: React.ReactNode
   // Mover a inicialização para dentro de um useEffect para garantir que só execute no cliente
   useEffect(() => {
     try {
-      // Verificar se já está configurado
-      const config = Amplify.getConfig();
-      if (!config.Auth?.Cognito) {
-        console.log('🔄 Inicializando Amplify no AmplifyPreload...');
-        configureAmplify();
-      } else {
+      if (typeof window !== 'undefined' && window.__amplifyConfigured) {
         console.log('✓ Amplify já configurado no AmplifyPreload');
+        return;
       }
+      configureAmplify();
+      if (typeof window !== 'undefined') window.__amplifyConfigured = true;
+      console.log('🔄 Inicializando Amplify no AmplifyPreload...');
     } catch (error) {
       console.error('❌ Erro ao inicializar Amplify no AmplifyPreload:', error);
     }
@@ -32,4 +31,8 @@ export default function AmplifyPreload({ children }: { children: React.ReactNode
       {children}
     </AmplifyAuthProvider>
   );
+}
+
+declare global {
+  interface Window { __amplifyConfigured?: boolean; }
 }
