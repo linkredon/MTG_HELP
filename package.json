@@ -16,10 +16,10 @@
     "fix-oauth-urls": "node scripts/fix-oauth-urls.js"
   },
   "dependencies": {
-    "@aws-amplify/api": "5.3.15",
+    "@aws-amplify/api": "^6.0.0",
     "@aws-amplify/api-graphql": "^4.0.12",
-    "@aws-amplify/auth": "5.3.15",
-    "@aws-amplify/core": "5.3.15",
+    "@aws-amplify/auth": "^6.0.0",
+    "@aws-amplify/core": "^6.0.0",
     "@aws-amplify/ui-react": "^6.1.1",
     "@aws-sdk/client-cognito-identity-provider": "^3.844.0",
     "@aws-sdk/client-dynamodb": "^3.844.0",
@@ -32,7 +32,7 @@
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tabs": "^1.0.4",
-    "aws-amplify": "^5.3.15",
+    "aws-amplify": "^6.0.0",
     "aws-sdk": "^2.1692.0",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
