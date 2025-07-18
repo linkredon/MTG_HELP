@@ -56,41 +56,15 @@ export default function LoginClientPage() {
   // Verificar se o usuário já está autenticado
   useEffect(() => {
     console.log('useEffect - isAuthenticated:', isAuthenticated, 'user:', user);
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && mode === 'login') {
       console.log('Usuário já autenticado, redirecionando para a página inicial');
-      // Redirecionamento mais agressivo
+      // Redirecionamento único e direto
       setTimeout(() => {
         console.log('Executando redirecionamento para /');
         window.location.href = '/';
       }, 100);
-      
-      // Backup: tentar novamente após 2 segundos
-      setTimeout(() => {
-        if (window.location.pathname === '/login') {
-          console.log('Redirecionamento de backup para /');
-          window.location.href = '/';
-        }
-      }, 2000);
     }
-  }, [isAuthenticated, user, router]);
-
-  // useEffect para redirecionar apenas se estiver no modo 'login'
-  useEffect(() => {
-    if (isAuthenticated && user && mode === 'login') {
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
-      
-      // Backup: tentar novamente após 2 segundos
-      setTimeout(() => {
-        if (window.location.pathname === '/login') {
-          console.log('Redirecionamento de backup para /');
-          window.location.href = '/';
-        }
-      }, 2000);
-    }
-    // Se estiver em modo 'verify', não redirecionar
-  }, [isAuthenticated, user, router, mode]);
+  }, [isAuthenticated, user, mode]);
 
   // Salvar info de verificação no localStorage ao entrar no modo 'verify'
   useEffect(() => {

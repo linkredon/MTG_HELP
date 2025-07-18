@@ -127,23 +127,27 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   }, [favorites, isAuthenticated]);
 
-  // FunÃ§Ãµes de gerenciamento de coleÃ§Ã£o
+  // Funções de gerenciamento de coleção
   const createCollection = async (name: string, description: string = ''): Promise<string> => {
     if (isAuthenticated) {
       try {
-        const response = await collectionService.create({ 
-          name, 
+        const collectionData = {
+          name,
           description,
-          userId: user?.id || 'unknown'
-        });
+          cards: [],
+          isPublic: false
+        };
+        
+        const response = await collectionService.create(collectionData);
         if (response.success && response.data) {
-          setCollections(prev => [...prev, asUserCollection(response.data)]);
-          setCurrentCollectionId(response.data.id);
-          return response.data.id;
+          const newCollection = asUserCollection(response.data);
+          setCollections(prev => [...prev, newCollection]);
+          setCurrentCollectionId(newCollection.id);
+          return newCollection.id;
         }
-        throw new Error('Erro ao criar coleÃ§Ã£o');
+        throw new Error('Erro ao criar coleção');
       } catch (error) {
-        console.error('Erro ao criar coleÃ§Ã£o:', error);
+        console.error('Erro ao criar coleção:', error);
         throw error;
       }
     } else {
@@ -383,10 +387,21 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const criarDeck = async (deckData: Omit<Deck, 'id' | 'createdAt' | 'lastModified'>): Promise<string> => {
     if (isAuthenticated) {
       try {
-        const response = await deckService.create(deckData);
+        const deckToCreate = {
+          name: deckData.name,
+          description: deckData.description || '',
+          format: deckData.format,
+          colors: deckData.colors || [],
+          cards: [],
+          isPublic: deckData.isPublic || false,
+          tags: deckData.tags || []
+        };
+        
+        const response = await deckService.create(deckToCreate);
         if (response.success && response.data) {
-          setDecks(prev => [...prev, response.data]);
-          return response.data.id;
+          const newDeck = response.data as Deck;
+          setDecks(prev => [...prev, newDeck]);
+          return newDeck.id;
         }
         throw new Error('Erro ao criar deck');
       } catch (error) {
