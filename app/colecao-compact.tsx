@@ -19,7 +19,7 @@ import { translatePtToEn, cardMatchesSearchTerm } from '@/utils/translationServi
 import { getImageUrl, getDoubleFacedImageUrls } from '@/utils/imageService'
 import { searchCardsWithTranslation, getAllPrintsByNameWithTranslation } from '@/utils/scryfallService'
 import ExpandableCardGrid from '@/components/ExpandableCardGrid'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Search, Library, Plus, Minus, Download, AlertCircle, Save, Upload, Copy, Grid3X3, Settings, User, Clock, Bookmark, Heart, Trash2, Star, Filter, Eye, EyeOff, RefreshCw, ExternalLink, Package, Edit3, FileText, History, Check, Info, ListChecks, CheckCircle } from "lucide-react"
 import ImportCollectionModal from "@/components/ImportCollectionModal"
@@ -1218,9 +1218,12 @@ export default function ColecaoCompact({
       </Dialog>
       
       <Dialog open={!!editingCollection} onOpenChange={(isOpen) => !isOpen && setEditingCollection(null)}>
-            <DialogContent className="quantum-card-dense fixed-modal">
+            <DialogContent className="quantum-card-dense fixed-modal" aria-describedby="edit-collection-description">
               <DialogHeader>
                 <DialogTitle>Editar Coleção</DialogTitle>
+                <DialogDescription id="edit-collection-description">
+                  Edite o nome e descrição da sua coleção.
+                </DialogDescription>
               </DialogHeader>
               {editingCollection && (
                 <div className="space-y-4">

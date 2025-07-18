@@ -22,7 +22,7 @@ export function configureAmplify() {
       cognitoDomain = `https://${cognitoDomain}`;
     }
     
-    // URLs de redirecionamento com base no ambiente
+    // URLs de redirecionamento completas para todos os ambientes
     const productionUrls = [
       'https://main.da2h2t88kn6qm.amplifyapp.com',
       'https://mtghelper.com',
@@ -32,16 +32,15 @@ export function configureAmplify() {
     const localUrls = [
       'http://localhost:3000',
       'http://localhost:3001',
-      'http://localhost:3002'
+      'http://localhost:3002',
+      'http://localhost:3003',
+      'http://localhost:3004',
+      'http://localhost:3005'
     ];
       
-    const redirectSignIn = isLocal
-      ? [...localUrls, ...productionUrls]
-      : [...productionUrls, ...localUrls];
-    
-    const redirectSignOut = isLocal
-      ? [...localUrls, ...productionUrls]
-      : [...productionUrls, ...localUrls];
+    // Sempre incluir todas as URLs para garantir compatibilidade
+    const redirectSignIn = [...productionUrls, ...localUrls];
+    const redirectSignOut = [...productionUrls, ...localUrls];
 
     const identityPoolId = process.env.NEXT_PUBLIC_IDENTITY_POOL_ID || 'us-east-2:8681c7d7-6e0e-494f-9f0a-fe9f8d949db5';
 
@@ -62,7 +61,7 @@ export function configureAmplify() {
         Cognito: {
           userPoolId,
           userPoolClientId,
-          identityPoolId, // <-- agora usando a variável de ambiente
+          identityPoolId,
           loginWith: {
             email: true,
             oauth: {

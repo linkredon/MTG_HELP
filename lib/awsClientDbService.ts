@@ -1,9 +1,7 @@
 'use client';
 
 import { getDynamoDbClientAsync, TABLES } from './awsClientAuth';
-import { PutCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-// Importar comandos personalizados
-import { UpdateCommand, DeleteCommand, ScanCommand } from './awsDbCommands';
+import { PutCommand, GetCommand, QueryCommand, UpdateCommand, DeleteCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 
 // Função auxiliar para gerar IDs únicos
 const generateId = () => {
@@ -108,25 +106,37 @@ export const clientDbService = {
       const timestamp = getCurrentTimestamp();
       
       // Construir expressão de atualização
-      let updateExpression = 'set updatedAt = :updatedAt';
-      const expressionAttributeValues: any = {
-        ':updatedAt': timestamp
-      };
+      let updateExpression = '';
+      const expressionAttributeValues: any = {};
+      const expressionAttributeNames: any = {};
       
+      // Adicionar updatedAt primeiro
+      updateExpression = 'set updatedAt = :updatedAt';
+      expressionAttributeValues[':updatedAt'] = timestamp;
+      
+      // Adicionar outros campos
       Object.keys(updates).forEach(key => {
-        if (key !== 'id' && key !== 'createdAt') {
-          updateExpression += `, ${key} = :${key}`;
+        if (key !== 'id' && key !== 'createdAt' && key !== 'updatedAt') {
+          // Usar alias para palavras reservadas
+          const alias = `#${key}`;
+          expressionAttributeNames[alias] = key;
+          updateExpression += `, ${alias} = :${key}`;
           expressionAttributeValues[`:${key}`] = updates[key];
         }
       });
       
-      const params = {
+      const params: any = {
         TableName: tableName,
         Key: { id },
         UpdateExpression: updateExpression,
         ExpressionAttributeValues: expressionAttributeValues,
         ReturnValues: "ALL_NEW" as const
       };
+      
+      // Adicionar ExpressionAttributeNames apenas se houver palavras reservadas
+      if (Object.keys(expressionAttributeNames).length > 0) {
+        params.ExpressionAttributeNames = expressionAttributeNames;
+      }
       
       // Garantir que o comando é uma instância do SDK antes de enviar
       const updateCmd = new UpdateCommand(params);

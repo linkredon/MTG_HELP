@@ -1,6 +1,17 @@
 'use client';
 
-import { awsDbService as serverDbService } from './awsDbExtended';
+import { awsDbService as baseServerDbService } from './awsDbExtended';
+
+// Verificar se o serviço do servidor está disponível
+const serverDbService = baseServerDbService || {
+  create: async () => ({ success: false, error: 'Servidor não disponível' }),
+  getById: async () => ({ success: false, error: 'Servidor não disponível' }),
+  update: async () => ({ success: false, error: 'Servidor não disponível' }),
+  delete: async () => ({ success: false, error: 'Servidor não disponível' }),
+  getByUserId: async () => ({ success: false, error: 'Servidor não disponível' }),
+  getAll: async () => ({ success: false, error: 'Servidor não disponível' }),
+  query: async () => ({ success: false, error: 'Servidor não disponível' })
+};
 import { clientDbService } from './awsClientDbService';
 
 // Determinar se estamos no lado do cliente ou servidor

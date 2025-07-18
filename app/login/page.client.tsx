@@ -220,17 +220,14 @@ export default function LoginClientPage() {
     }
   };
 
-  // Função para login com Google
+  // Handler para login com Google
   const handleGoogleLogin = () => {
-    // Monta a URL do Hosted UI do Cognito para login com Google
-    const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || process.env.NEXT_PUBLIC_HOSTED_UI_DOMAIN;
-    const clientId = process.env.NEXT_PUBLIC_USER_POOL_WEB_CLIENT_ID;
-    const redirectUri = typeof window !== 'undefined' ? window.location.origin : '';
-    if (!domain || !clientId || !redirectUri) {
-      setError('Configuração de OAuth ausente. Verifique as variáveis de ambiente.');
-      return;
-    }
-    const url = `https://${domain}/oauth2/authorize?identity_provider=Google&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=CODE&client_id=${clientId}&scope=openid+profile+email`;
+    const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'mtghelper.auth.us-east-2.amazoncognito.com';
+    const clientId = process.env.NEXT_PUBLIC_USER_POOL_WEB_CLIENT_ID || '55j5l3rcp164av86djhf9qpjch';
+    const redirectUri = window.location.origin;
+    const responseType = 'code';
+    const scope = 'openid+profile+email';
+    const url = `https://${domain}/oauth2/authorize?identity_provider=Google&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&client_id=${clientId}&scope=${scope}`;
     window.location.href = url;
   };
   

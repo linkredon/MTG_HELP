@@ -138,12 +138,12 @@ export const collectionService = {
   // Obter todas as coleções do usuário
   async getAll() {
     try {
-      const currentUser = await getCurrentUser();
-      if (!currentUser?.attributes?.sub) {
+      const userId = await getAuthenticatedUserId();
+      if (!userId) {
         return { success: false, error: 'Usuário não autenticado' };
       }
       
-      return awsDbService.getByUserId(TABLES.COLLECTIONS, currentUser.attributes.sub);
+      return awsDbService.getByUserId(TABLES.COLLECTIONS, userId);
     } catch (error) {
       return { success: false, error: 'Erro ao verificar autenticação' };
     }
@@ -327,8 +327,6 @@ export const collectionService = {
       updatedAt: getCurrentTimestamp()
     });
     const updateResult = await awsDbService.update(TABLES.COLLECTIONS, collectionId, {
-      userId, // garantir que userId está presente
-      collectionId, // garantir que collectionId está presente
       cards,
       updatedAt: getCurrentTimestamp()
     });
