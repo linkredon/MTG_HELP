@@ -26,6 +26,7 @@ import {
   Zap,
   Sparkles
 } from 'lucide-react';
+import { signUp } from 'aws-amplify/auth';
 
 export default function LoginClientPage() {
   const router = useRouter();
@@ -132,27 +133,30 @@ export default function LoginClientPage() {
     setLoading(true);
     setError('');
     setSuccess('');
-    
+
     try {
-      console.log('Tentando registrar:', { name, email, password });
-      
-      // Remover todas as referências antigas a Auth e signInWithRedirect
-      // const signUpResult = await Auth.signUp({
-      //   username: email,
-      //   password,
-      //   attributes: {
-      //     email,
-      //     name
-      //   }
-      // });
-      
-      // console.log('Registro bem-sucedido:', signUpResult);
-      
-      // setSuccess('Conta criada com sucesso! Verifique seu email para confirmar.');
-      // setVerificationInfo({ email, name });
-      // setMode('verify');
+      const result = await signUp({
+        username: email,
+        password,
+        options: {
+          userAttributes: {
+            email,
+            name,
+            given_name: name
+          }
+        }
+      });
+
+      if (result.isSignUpComplete) {
+        setSuccess('Conta criada com sucesso! Verifique seu email para confirmar.');
+        setVerificationInfo({ email, name });
+        setMode('verify');
+      } else {
+        setSuccess('Conta criada! Verifique seu email para confirmar.');
+        setVerificationInfo({ email, name });
+        setMode('verify');
+      }
     } catch (err: any) {
-      console.error('Erro no registro:', err);
       setError(err.message || 'Falha no registro');
     } finally {
       setLoading(false);
