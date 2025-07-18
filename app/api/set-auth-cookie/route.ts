@@ -5,8 +5,8 @@ export async function POST() {
   response.cookies.set('mtg_user_authenticated', 'true', {
     path: '/',
     maxAge: 60 * 60,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax', // Pode ajustar para 'strict' ou 'none' se necessário
+    secure: false,   // Garantir que funcione em localhost
     httpOnly: false
   });
   return response;

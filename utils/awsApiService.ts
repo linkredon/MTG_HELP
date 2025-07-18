@@ -166,17 +166,28 @@ export const collectionService = {
       if (!authDiagnostic.authenticated) {
         throw new Error(`Usuário não autenticado: ${authDiagnostic.error}`);
       }
-      
+
+      // Obter o userId do usuário autenticado
+      const userId = await getAuthenticatedUserId();
+      if (!userId) {
+        throw new Error('Não foi possível obter o userId do usuário autenticado.');
+      }
+
+      // Garantir que todas as estruturas testadas tenham userId e collectionId
+      const collectionId = collectionData.id || generateId();
+      const baseData = { ...collectionData, userId, collectionId };
+
       // Testar diferentes estruturas de dados
       const testResults = await Promise.all([
-        testTableStructure('collections', collectionData),
-        testTableStructure('collections', { ...collectionData, collectionId: collectionData.id }),
-        testTableStructure('collections', { ...collectionData, id: collectionData.id, collectionId: collectionData.id }),
-        testTableStructure('collections', { 
-          id: collectionData.id, 
-          name: collectionData.name, 
+        testTableStructure('mtg_collections', baseData),
+        testTableStructure('mtg_collections', { ...baseData, collectionId }),
+        testTableStructure('mtg_collections', { ...baseData, id: collectionId, collectionId }),
+        testTableStructure('mtg_collections', {
+          id: collectionId,
+          collectionId,
+          name: collectionData.name,
           description: collectionData.description || '',
-          userId: collectionData.userId,
+          userId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           cards: collectionData.cards || []
@@ -189,18 +200,24 @@ export const collectionService = {
       const successResult = testResults.find(result => result.success);
       if (successResult) {
         console.log('✅ Estrutura válida encontrada:', successResult.data);
-        return successResult.data;
+        // Garante que o campo id e collectionId estejam presentes
+        const retorno = {
+          ...successResult.data,
+          id: successResult.data.id || successResult.data.collectionId || collectionId,
+          collectionId: successResult.data.collectionId || collectionId,
+        };
+        console.log('Retornando objeto da coleção:', retorno);
+        return { success: true, data: retorno };
       }
       
-      // Se nenhum teste passou, mostrar todos os erros
-      console.error('❌ Todas as estruturas falharam. Erros:');
+      // Se nenhum teste passou, mostrar todos os erros detalhadamente
+      console.error('❌ Todas as estruturas falharam. Erros detalhados:');
       testResults.forEach((result, index) => {
         if (!result.success) {
           console.error(`  Teste ${index + 1}:`, result.error);
         }
       });
-      
-      throw new Error('Nenhuma estrutura de dados válida encontrada para a tabela collections');
+      throw new Error('Nenhuma estrutura de dados válida encontrada para a tabela mtg_collections');
       
     } catch (error) {
       console.error('💥 Erro ao criar coleção:', error);
@@ -286,84 +303,73 @@ export const collectionService = {
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
     // Obter a coleção atual
     const collection = await awsDbService.getById(TABLES.COLLECTIONS, collectionId);
     if (!collection.success || !collection.data) {
       return { success: false, error: 'Coleção não encontrada' };
     }
-    
-    // Verificar se a coleção pertence ao usuário
     if (collection.data.userId !== userId) {
       return { success: false, error: 'Acesso negado' };
     }
-    
-    // Preparar o novo card com ID gerado
     const newCard = {
       id: generateId(),
       ...cardData,
       addedAt: getCurrentTimestamp()
     };
-    
-    // Adicionar o card na coleção
     const cards = collection.data.cards || [];
     cards.push(newCard);
-    
     // Atualizar a coleção
-    return awsDbService.update(TABLES.COLLECTIONS, collectionId, {
+    console.log('Coleção atual antes do update:', collection);
+    console.log('Atualizando coleção com:', {
+      collectionId,
+      userId,
       cards,
       updatedAt: getCurrentTimestamp()
     });
+    const updateResult = await awsDbService.update(TABLES.COLLECTIONS, collectionId, {
+      userId, // garantir que userId está presente
+      collectionId, // garantir que collectionId está presente
+      cards,
+      updatedAt: getCurrentTimestamp()
+    });
+    return { success: updateResult.success, data: updateResult.data, error: updateResult.error };
   },
-  
+
   // Remover carta da coleção
   async removeCard(collectionId: string, cardId: string) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
-    // Obter a coleção atual
     const collection = await awsDbService.getById(TABLES.COLLECTIONS, collectionId);
     if (!collection.success || !collection.data) {
       return { success: false, error: 'Coleção não encontrada' };
     }
-    
-    // Verificar se a coleção pertence ao usuário
     if (collection.data.userId !== userId) {
       return { success: false, error: 'Acesso negado' };
     }
-    
-    // Remover o card da coleção
     const cards = collection.data.cards || [];
     const updatedCards = cards.filter((card: any) => card.id !== cardId);
-    
-    // Atualizar a coleção
-    return awsDbService.update(TABLES.COLLECTIONS, collectionId, {
+    const updateResult = await awsDbService.update(TABLES.COLLECTIONS, collectionId, {
       cards: updatedCards,
       updatedAt: getCurrentTimestamp()
     });
+    return { success: updateResult.success, data: updateResult.data, error: updateResult.error };
   },
-  
+
   // Atualizar carta na coleção
   async updateCard(collectionId: string, cardId: string, updates: any) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
-    // Obter a coleção atual
     const collection = await awsDbService.getById(TABLES.COLLECTIONS, collectionId);
     if (!collection.success || !collection.data) {
       return { success: false, error: 'Coleção não encontrada' };
     }
-    
-    // Verificar se a coleção pertence ao usuário
     if (collection.data.userId !== userId) {
       return { success: false, error: 'Acesso negado' };
     }
-    
-    // Atualizar o card na coleção
     const cards = collection.data.cards || [];
     const updatedCards = cards.map((card: any) => {
       if (card.id === cardId) {
@@ -371,12 +377,11 @@ export const collectionService = {
       }
       return card;
     });
-    
-    // Atualizar a coleção
-    return awsDbService.update(TABLES.COLLECTIONS, collectionId, {
+    const updateResult = await awsDbService.update(TABLES.COLLECTIONS, collectionId, {
       cards: updatedCards,
       updatedAt: getCurrentTimestamp()
     });
+    return { success: updateResult.success, data: updateResult.data, error: updateResult.error };
   }
 };
 
@@ -388,202 +393,100 @@ export const deckService = {
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
     return awsDbService.getByUserId(TABLES.DECKS, userId);
   },
-  
-  // Obter um deck por ID
   async getById(id: string) {
     return awsDbService.getById(TABLES.DECKS, id);
   },
-  
-  // Criar um novo deck
   async create(deckData: any) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
-    console.log('Tentando criar deck com diferentes estruturas...');
-    
-    // Estrutura 1: Básica
-    const structure1 = {
-      id: generateId(),
-      name: deckData.name,
-      userId: userId,
-      createdAt: getCurrentTimestamp()
-    };
-    
-    let result = await testTableStructure(TABLES.DECKS, structure1);
-    if (result.success) {
-      return { success: true, data: result.data };
-    }
-    
-    // Estrutura 2: Com mais campos
-    const structure2 = {
-      id: generateId(),
-      name: deckData.name,
-      description: deckData.description || '',
-      format: deckData.format || 'Commander',
-      userId: userId,
-      createdAt: getCurrentTimestamp(),
-      updatedAt: getCurrentTimestamp()
-    };
-    
-    result = await testTableStructure(TABLES.DECKS, structure2);
-    if (result.success) {
-      return { success: true, data: result.data };
-    }
-    
-    // Estrutura 3: Com deckId
-    const structure3 = {
-      id: generateId(),
-      deckId: generateId(),
-      name: deckData.name,
-      userId: userId,
-      createdAt: getCurrentTimestamp()
-    };
-    
-    result = await testTableStructure(TABLES.DECKS, structure3);
-    if (result.success) {
-      return { success: true, data: result.data };
-    }
-    
-    // Estrutura 4: Apenas campos essenciais
-    const structure4 = {
-      name: deckData.name,
-      userId: userId
-    };
-    
-    result = await testTableStructure(TABLES.DECKS, structure4);
-    if (result.success) {
-      return { success: true, data: result.data };
-    }
-    
-    return { success: false, error: 'Não foi possível encontrar uma estrutura válida para a tabela' };
+    const createResult = await awsDbService.create(TABLES.DECKS, { ...deckData, userId });
+    return { success: createResult.success, data: createResult.data, error: createResult.error };
   },
-  
-  // Atualizar um deck
   async update(id: string, updates: any) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
-    // Verificar se o deck pertence ao usuário
     const deck = await awsDbService.getById(TABLES.DECKS, id);
     if (!deck.success || !deck.data || deck.data.userId !== userId) {
       return { success: false, error: 'Deck não encontrado ou acesso negado' };
     }
-    
-    const updatedData = {
-      ...updates,
-      updatedAt: getCurrentTimestamp()
-    };
-    
-    return awsDbService.update(TABLES.DECKS, id, updatedData);
+    const updateResult = await awsDbService.update(TABLES.DECKS, id, updates);
+    return { success: updateResult.success, data: updateResult.data, error: updateResult.error };
   },
-  
-  // Excluir um deck
   async delete(id: string) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
-    // Verificar se o deck pertence ao usuário
     const deck = await awsDbService.getById(TABLES.DECKS, id);
     if (!deck.success || !deck.data || deck.data.userId !== userId) {
       return { success: false, error: 'Deck não encontrado ou acesso negado' };
     }
-    
-    return awsDbService.delete(TABLES.DECKS, id);
+    const deleteResult = await awsDbService.delete(TABLES.DECKS, id);
+    return { success: deleteResult.success, data: deleteResult.data, error: deleteResult.error };
   },
-  
-  // Adicionar carta ao deck
   async addCard(deckId: string, cardData: any) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
-    // Obter o deck atual
     const deck = await awsDbService.getById(TABLES.DECKS, deckId);
     if (!deck.success || !deck.data) {
       return { success: false, error: 'Deck não encontrado' };
     }
-    
-    // Verificar se o deck pertence ao usuário
     if (deck.data.userId !== userId) {
       return { success: false, error: 'Acesso negado' };
     }
-    
-    // Preparar o novo card com ID gerado
     const newCard = {
       id: generateId(),
       ...cardData,
       addedAt: getCurrentTimestamp()
     };
-    
-    // Adicionar o card ao deck
     const cards = deck.data.cards || [];
     cards.push(newCard);
-    
-    // Atualizar o deck
-    return awsDbService.update(TABLES.DECKS, deckId, {
+    const updateResult = await awsDbService.update(TABLES.DECKS, deckId, {
       cards,
       updatedAt: getCurrentTimestamp()
     });
+    return { success: updateResult.success, data: updateResult.data, error: updateResult.error };
   },
-  
-  // Remover carta do deck
   async removeCard(deckId: string, cardId: string) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
-    // Obter o deck atual
     const deck = await awsDbService.getById(TABLES.DECKS, deckId);
     if (!deck.success || !deck.data) {
       return { success: false, error: 'Deck não encontrado' };
     }
-    
-    // Verificar se o deck pertence ao usuário
     if (deck.data.userId !== userId) {
       return { success: false, error: 'Acesso negado' };
     }
-    
-    // Remover o card do deck
     const cards = deck.data.cards || [];
     const updatedCards = cards.filter((card: any) => card.id !== cardId);
-    
-    // Atualizar o deck
-    return awsDbService.update(TABLES.DECKS, deckId, {
+    const updateResult = await awsDbService.update(TABLES.DECKS, deckId, {
       cards: updatedCards,
       updatedAt: getCurrentTimestamp()
     });
+    return { success: updateResult.success, data: updateResult.data, error: updateResult.error };
   },
-  
-  // Atualizar carta no deck
   async updateCard(deckId: string, cardId: string, updates: any) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
-    // Obter o deck atual
     const deck = await awsDbService.getById(TABLES.DECKS, deckId);
     if (!deck.success || !deck.data) {
       return { success: false, error: 'Deck não encontrado' };
     }
-    
-    // Verificar se o deck pertence ao usuário
     if (deck.data.userId !== userId) {
       return { success: false, error: 'Acesso negado' };
     }
-    
-    // Atualizar o card no deck
     const cards = deck.data.cards || [];
     const updatedCards = cards.map((card: any) => {
       if (card.id === cardId) {
@@ -591,69 +494,56 @@ export const deckService = {
       }
       return card;
     });
-    
-    // Atualizar o deck
-    return awsDbService.update(TABLES.DECKS, deckId, {
+    const updateResult = await awsDbService.update(TABLES.DECKS, deckId, {
       cards: updatedCards,
       updatedAt: getCurrentTimestamp()
     });
+    return { success: updateResult.success, data: updateResult.data, error: updateResult.error };
   }
 };
 
 // Serviço para gerenciar favoritos
 export const favoriteService = {
-  // Obter todos os favoritos do usuário
   async getAll() {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
     return awsDbService.getByUserId(TABLES.FAVORITES, userId);
   },
-  
-  // Adicionar um favorito
   async add(cardData: any) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
     const favorite = {
       id: generateId(),
-      favoriteId: generateId(), // Campo obrigatório para a tabela
       userId: userId,
       ...cardData,
       createdAt: getCurrentTimestamp()
     };
-    
-    return awsDbService.create(TABLES.FAVORITES, favorite);
+    const createResult = await awsDbService.create(TABLES.FAVORITES, favorite);
+    return { success: createResult.success, data: createResult.data, error: createResult.error };
   },
-  
-  // Remover um favorito
   async remove(favoriteId: string) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
-    return awsDbService.delete(TABLES.FAVORITES, favoriteId);
+    const deleteResult = await awsDbService.delete(TABLES.FAVORITES, favoriteId);
+    return { success: deleteResult.success, data: deleteResult.data, error: deleteResult.error };
   },
-  
-  // Verificar se uma carta está nos favoritos
   async checkCard(cardId: string) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    
     const result = await awsDbService.query(TABLES.FAVORITES, 'userId', userId, {
       filterExpression: 'cardId = :cardId',
       expressionValues: {
         ':cardId': cardId
       }
     });
-    
     return {
       success: result.success,
       data: {

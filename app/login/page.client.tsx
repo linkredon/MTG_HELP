@@ -101,9 +101,13 @@ export default function LoginClientPage() {
       
       if (result.success) {
         console.log('Login bem-sucedido:', result.user);
-        
+
         // Setar cookie de autenticação via API para o middleware enxergar
         await fetch('/api/set-auth-cookie', { method: 'POST' });
+
+        // Setar cookie diretamente via JS para garantir que o middleware reconheça
+        document.cookie = "mtg_user_authenticated=true; path=/";
+
         setSuccess('Login realizado com sucesso! Redirecionando...');
         await refreshUser();
         // Forçar redirecionamento após login

@@ -6,7 +6,11 @@ import ClientAuthChecker from '@/components/ClientAuthChecker';
 
 // Helper function for type assertion
 function asUserCollection(data: any): UserCollection {
-  return data as UserCollection;
+  // Garante que o campo id sempre exista, usando collectionId se necessário
+  return {
+    ...data,
+    id: data.id || data.collectionId,
+  } as UserCollection;
 }
 
 function asUserCollectionArray(data: any[]): UserCollection[] {
@@ -149,11 +153,20 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         };
         
         const response = await collectionService.create(collectionData);
+        console.log('Resposta da criação de coleção:', response);
         if (response.success && response.data) {
           const newCollection = asUserCollection(response.data);
+          console.log('Objeto newCollection:', newCollection);
           setCollections(prev => [...prev, newCollection]);
-          setCurrentCollectionId(newCollection.id);
-          return newCollection.id;
+          const collectionIdFinal = newCollection.id || newCollection.collectionId || response.data.collectionId || response.data.id || 'FORCE-ID-HERE';
+          console.log('ID final usado para setCurrentCollectionId:', collectionIdFinal);
+          setCurrentCollectionId(collectionIdFinal);
+          if (collectionIdFinal && collectionIdFinal !== 'FORCE-ID-HERE') {
+            return collectionIdFinal;
+          }
+        }
+        if (!response.success) {
+          throw new Error('Erro ao criar coleção: ' + (response.error || 'Erro desconhecido'));
         }
         throw new Error('Erro ao criar coleção');
       } catch (error) {
