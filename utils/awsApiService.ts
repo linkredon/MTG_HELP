@@ -1,6 +1,6 @@
 import { TABLES } from '@/lib/awsConfig';
 import { fetchAuthSession } from '@/lib/auth-adapter';
-import { Auth } from 'aws-amplify';
+import { getCurrentUser } from 'aws-amplify/auth';
 import { getUserSession } from '@/lib/authHelper';
 // Usar o serviço de banco de dados universal que funciona tanto no cliente quanto no servidor
 import { universalDbService as awsDbService } from '@/lib/universalDbService';
@@ -19,7 +19,7 @@ const getCurrentTimestamp = () => new Date().toISOString();
 // Função auxiliar para obter o ID do usuário autenticado
 async function getAuthenticatedUserId() {
   try {
-    const currentUser = await Auth.currentAuthenticatedUser();
+    const currentUser = await getCurrentUser();
     return currentUser?.attributes?.sub || currentUser?.username;
   } catch (error) {
     console.error('Erro ao obter usuário autenticado:', error);
@@ -32,7 +32,7 @@ export const collectionService = {
   // Obter todas as coleções do usuário
   async getAll() {
     try {
-      const currentUser = await Auth.currentAuthenticatedUser();
+      const currentUser = await getCurrentUser();
       if (!currentUser?.attributes?.sub) {
         return { success: false, error: 'Usuário não autenticado' };
       }

@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import React from 'react';
 import Link from 'next/link';
@@ -142,14 +143,14 @@ export default function AuthDashboard() {
           <h2 className="text-xl font-semibold mb-4">Ferramentas de Teste</h2>
           <div className="space-y-3">
             {testTools.map(tool => (
-              <Link 
+              <a 
                 key={tool.id}
                 href={tool.path}
                 className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-3 px-4 rounded flex flex-col items-start transition-colors"
               >
                 <span className="font-medium">{tool.name}</span>
                 <span className="text-sm text-blue-600">{tool.description}</span>
-              </Link>
+              </a>
             ))}
           </div>
         </div>
@@ -160,7 +161,7 @@ export default function AuthDashboard() {
           <h2 className="text-xl font-semibold mb-4">Ferramentas de Diagnóstico</h2>
           <div className="space-y-3">
             {diagnosticTools.map(tool => (
-              <Link 
+              <a 
                 href={tool.path} 
                 key={tool.id}
                 className={`block p-4 rounded transition-colors ${
@@ -176,7 +177,7 @@ export default function AuthDashboard() {
                   )}
                 </div>
                 <div className="text-sm text-gray-600">{tool.description}</div>
-              </Link>
+              </a>
             ))}
           </div>
         </div>
@@ -207,7 +208,7 @@ export default function AuthDashboard() {
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <h3 className="font-medium text-yellow-800 mb-2">Problemas de Login Geral</h3>
             <ul className="list-disc pl-5 space-y-1 text-yellow-700">
-              <li>"Login pages unavailable" - <Link href="/auth-monitor/login-debugger" className="underline text-blue-700">Use o Login Debugger</Link></li>
+              <li>"Login pages unavailable" - <a href="/auth-monitor/login-debugger" className="underline text-blue-700">Use o Login Debugger</a></li>
               <li>"O domínio não começa com https://" - Adicione o prefixo https:// às variáveis de ambiente</li>
               <li>"ChunkLoadError: Loading chunk failed" - Pode indicar problemas com a importação do Amplify</li>
             </ul>
@@ -218,21 +219,21 @@ export default function AuthDashboard() {
             <ul className="list-disc pl-5 space-y-1 text-red-700">
               <li>
                 "Google Error - 401 invalid_client Unauthorized" - 
-                <Link href="/auth-monitor/google-oauth-error" className="underline text-blue-700 ml-1">
+                <a href="/auth-monitor/google-oauth-error" className="underline text-blue-700 ml-1">
                   Solução completa disponível
-                </Link>
+                </a>
               </li>
               <li>
                 "URI de redirecionamento inválido" - 
-                <Link href="/auth-monitor/redirect-uri-error" className="underline text-blue-700 ml-1">
+                <a href="/auth-monitor/redirect-uri-error" className="underline text-blue-700 ml-1">
                   Verificador de URIs
-                </Link>
+                </a>
               </li>
               <li>
                 "Escopos de permissão insuficientes" - 
-                <Link href="/auth-monitor/oauth-scopes" className="underline text-blue-700 ml-1">
+                <a href="/auth-monitor/oauth-scopes" className="underline text-blue-700 ml-1">
                   Verificador de Escopos
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -245,18 +246,18 @@ export default function AuthDashboard() {
             ou discrepâncias entre as configurações em diferentes plataformas.
           </p>
           <div className="flex flex-wrap gap-2 mt-2">
-            <Link href="/auth-monitor/google-oauth-error" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
+            <a href="/auth-monitor/google-oauth-error" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
               Verificador de Erro Google OAuth
-            </Link>
-            <Link href="/auth-monitor/redirect-uri-error" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
+            </a>
+            <a href="/auth-monitor/redirect-uri-error" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
               Verificar URIs de Redirecionamento
-            </Link>
-            <Link href="/auth-monitor/oauth-scopes" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
+            </a>
+            <a href="/auth-monitor/oauth-scopes" className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
               Verificar Escopos OAuth
-            </Link>
-            <Link href="/auth-monitor/env-variables" className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors">
+            </a>
+            <a href="/auth-monitor/env-variables" className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors">
               Verificar Variáveis de Ambiente ✓
-            </Link>
+            </a>
           </div>
         </div>
       </div>

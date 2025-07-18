@@ -1,5 +1,5 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+'use client';
+
 import { Home, ArrowLeft } from 'lucide-react'
 
 export default function NotFound() {
@@ -15,21 +15,19 @@ export default function NotFound() {
         </div>
         
         <div className="space-y-4">
-          <Link href="/">
-            <Button className="quantum-btn primary w-full">
-              <Home className="w-4 h-4 mr-2" />
-              Voltar ao Início
-            </Button>
-          </Link>
+          <a href="/" className="quantum-btn primary w-full flex items-center justify-center rounded-md bg-blue-600 text-white py-2 px-4 hover:bg-blue-700 transition">
+            <Home className="w-4 h-4 mr-2" />
+            Voltar ao Início
+          </a>
           
-          <Button 
+          <button 
             onClick={() => window.history.back()} 
-            variant="outline" 
-            className="quantum-btn w-full"
+            className="quantum-btn w-full border border-gray-400 bg-transparent text-white py-2 px-4 rounded-md hover:bg-gray-800 transition flex items-center justify-center"
+            type="button"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
-          </Button>
+          </button>
         </div>
       </div>
     </div>

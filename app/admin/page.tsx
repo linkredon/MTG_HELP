@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { fetchAuthSession, getCurrentUser } from '@/lib/aws-auth-adapter';
-import { API } from 'aws-amplify';
+import { generateClient } from '@aws-amplify/api';
 import { listUsers } from '../../src/graphql/queries';
 import { createUser, updateUser, deleteUser } from '../../src/graphql/mutations';
 import { User as AmplifyUser, CreateUserInput, UpdateUserInput, DeleteUserInput } from '../../lib/API';
 import './admin.css';
+
+const client = generateClient();
 
 export default function AdminPage() {
   // Usando o tipo do Amplify com algumas simplificações
@@ -17,9 +19,6 @@ export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Cliente API para GraphQL
-  const client = API;
 
   // Verificar se o usuário atual é um administrador
   useEffect(() => {

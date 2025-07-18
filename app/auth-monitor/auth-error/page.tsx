@@ -83,23 +83,23 @@ function AuthErrorContent() {
       <div className="bg-white p-4 rounded border border-gray-200 mb-6">
         <h3 className="text-lg font-semibold mb-3">Verificações Adicionais</h3>
         <ul className="list-disc pl-5 space-y-2">
-          <li>Verifique se as <Link href="/auth-monitor/env-variables" className="text-blue-600 hover:underline">variáveis de ambiente</Link> estão configuradas corretamente.</li>
-          <li>Verifique se o <Link href="/auth-monitor/google-oauth-error" className="text-blue-600 hover:underline">OAuth do Google</Link> está configurado corretamente.</li>
+          <li>Verifique se as <a href="/auth-monitor/env-variables" className="text-blue-600 hover:underline">variáveis de ambiente</a> estão configuradas corretamente.</li>
+          <li>Verifique se o <a href="/auth-monitor/google-oauth-error" className="text-blue-600 hover:underline">OAuth do Google</a> está configurado corretamente.</li>
           <li>Verifique se o <code className="bg-gray-100 px-1 py-0.5 rounded">NEXTAUTH_URL</code> está configurado para a URL correta.</li>
           <li>Verifique se o <code className="bg-gray-100 px-1 py-0.5 rounded">NEXTAUTH_SECRET</code> está definido.</li>
         </ul>
       </div>
       
       <div className="flex flex-wrap gap-3 mt-4">
-        <Link href="/login" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        <a href="/login" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
           Voltar para Login
-        </Link>
-        <Link href="/auth-monitor/dashboard" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        </a>
+        <a href="/auth-monitor/dashboard" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
           Painel de Monitoramento
-        </Link>
-        <Link href="/" className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+        </a>
+        <a href="/" className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
           Voltar para a Página Inicial
-        </Link>
+        </a>
       </div>
     </div>
   );

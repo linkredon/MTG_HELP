@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { fetchAuthSession, getCurrentUser } from '@/lib/aws-auth-adapter';
-import { API } from 'aws-amplify';
+import { generateClient } from '@aws-amplify/api';
 import { listUsers } from '../../src/graphql/queries';
 import { updateUser } from '../../src/graphql/mutations';
+
+const client = generateClient();
 
 export default function AdminToolsPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -46,7 +48,7 @@ export default function AdminToolsPage() {
   // Buscar todos os usuários
   const fetchUsers = async () => {
     try {
-      const result = await API.graphql({
+      const result = await client.graphql({
         query: listUsers
       });
       
@@ -68,7 +70,7 @@ export default function AdminToolsPage() {
   // Promover usuário a administrador
   const makeAdmin = async (id: string) => {
     try {
-      await API.graphql({
+      await client.graphql({
         query: updateUser,
         variables: { 
           input: { 

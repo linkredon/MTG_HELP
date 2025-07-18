@@ -1,6 +1,4 @@
-"use client"
-
-// Configuração para evitar pré-renderização estática
+'use client';
 export const dynamic = 'force-dynamic';
 
 import '../styles/professional-mtg-interface.css'

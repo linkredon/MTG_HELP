@@ -16,46 +16,7 @@ export default function AmplifyInit() {
   const [initAttempts, setInitAttempts] = useState(0);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    // Verificar se já inicializamos para evitar múltiplas inicializações desnecessárias
-    if (initialized) return;
-
-    // Limitar o número de tentativas para evitar loops infinitos
-    if (initAttempts > 3) {
-      console.error('Muitas tentativas de inicialização do Amplify. Desistindo.');
-      return;
-    }
-
-    console.log(`Tentativa ${initAttempts + 1} de inicializar o Amplify...`);
-
-    // Usar setTimeout para garantir que isso aconteça depois da renderização inicial
-    // e para dar tempo para outros componentes carregarem
-    const timer = setTimeout(() => {
-      try {
-        if (typeof window !== 'undefined' && window.__amplifyConfigured) {
-          setInitialized(true);
-          return;
-        }
-        const success = configureAmplify();
-        
-        if (success) {
-          if (typeof window !== 'undefined') window.__amplifyConfigured = true;
-          setInitialized(true);
-        } else {
-          console.warn('⚠️ A inicialização do Amplify retornou falso');
-          // Incrementar contagem de tentativas e tentar novamente
-          setInitAttempts(prev => prev + 1);
-        }
-      } catch (err) {
-        console.error('❌ Erro ao inicializar Amplify:', err);
-        setError(err instanceof Error ? err : new Error(String(err)));
-        // Incrementar contagem de tentativas e tentar novamente
-        setInitAttempts(prev => prev + 1);
-      }
-    }, 500); // Aumentado para 500ms para dar mais tempo
-
-    return () => clearTimeout(timer);
-  }, [initialized, initAttempts]);
+  // Remover o useEffect que chama configureAmplify
 
   // Para evitar erros de hidratação, vamos usar um useEffect para adicionar atributos
   // de dados aos elementos DOM depois que o componente for montado no cliente

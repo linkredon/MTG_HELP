@@ -1,4 +1,4 @@
-import { fetchAuthSession } from '../lib/auth-adapter';
+import { fetchAuthSession } from '@/lib/auth-adapter';
 
 // Tipos básicos para respostas da API
 interface ApiResponse<T> {

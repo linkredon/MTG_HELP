@@ -8,9 +8,9 @@ export default function EnvVariablesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <Link href="/auth-monitor/dashboard" className="text-blue-600 hover:text-blue-800">
+        <a href="/auth-monitor/dashboard" className="text-blue-600 hover:text-blue-800">
           ← Voltar para o Dashboard
-        </Link>
+        </a>
       </div>
       
       <h1 className="text-2xl font-bold mb-6">Verificação de Variáveis de Ambiente</h1>
@@ -89,12 +89,12 @@ export default function EnvVariablesPage() {
           Se o problema persistir, verifique outros aspectos como o ID do cliente, o segredo do cliente ou os URIs de redirecionamento.
         </p>
         <div className="flex space-x-4">
-          <Link href="/auth-monitor/google-oauth-error" className="text-blue-600 hover:text-blue-800">
+          <a href="/auth-monitor/google-oauth-error" className="text-blue-600 hover:text-blue-800">
             Verificar Erro Google OAuth
-          </Link>
-          <Link href="/auth-monitor/dashboard" className="text-blue-600 hover:text-blue-800">
+          </a>
+          <a href="/auth-monitor/dashboard" className="text-blue-600 hover:text-blue-800">
             Voltar para o Dashboard
-          </Link>
+          </a>
         </div>
       </div>
     </div>

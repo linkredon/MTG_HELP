@@ -3,10 +3,11 @@
  */
 
 // Importamos a versão 5 do Amplify
-import { Auth, Amplify } from 'aws-amplify';
+import { Amplify } from 'aws-amplify';
+// Remover: import Auth from 'aws-amplify/auth';
 
 // Definimos tipos para funções que usamos, mas podem ter nomes diferentes entre versões
-export { Auth, Amplify };
+export { Amplify };
 
 // Re-exportamos Hub com uma interface simplificada
 export const Hub = {
@@ -29,7 +30,7 @@ export const Hub = {
 export const fetchAuthSession = async () => {
   try {
     // Na versão 5, usamos Auth.currentSession()
-    const session = await Auth.currentSession();
+    const session = await Amplify.Auth.currentSession();
     return {
       tokens: {
         idToken: {
@@ -47,7 +48,7 @@ export const fetchAuthSession = async () => {
 export const getCurrentUser = async () => {
   try {
     // Na versão 5, usamos Auth.currentAuthenticatedUser()
-    const user = await Auth.currentAuthenticatedUser();
+    const user = await Amplify.Auth.currentAuthenticatedUser();
     return {
       username: user.username,
       userId: user.attributes.sub
@@ -62,7 +63,7 @@ export const getCurrentUser = async () => {
 export const signOut = async (options?: { global?: boolean }) => {
   try {
     // Na versão 5, usamos Auth.signOut()
-    return await Auth.signOut();
+    return await Amplify.Auth.signOut();
   } catch (error) {
     console.error('Erro ao fazer logout:', error);
     throw error;

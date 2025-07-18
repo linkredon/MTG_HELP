@@ -1,4 +1,5 @@
-"use client"
+'use client';
+export const dynamic = 'force-dynamic';
 
 import '../styles/professional-mtg-interface.css'
 import '../styles/mobile-navigation.css'

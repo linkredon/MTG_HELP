@@ -94,9 +94,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       if (isAuthenticated) {
         setLoading(true);
         try {
-          // Carregar coleÃ§Ãµes
+          // Carregar coleções
           const collectionsResponse = await collectionService.getAll();
-          if (collectionsResponse.success && collectionsResponse.data) {
+          if (collectionsResponse && collectionsResponse.success && collectionsResponse.data) {
             setCollections(asUserCollectionArray(collectionsResponse.data));
             if (collectionsResponse.data.length > 0 && !currentCollectionId) {
               setCurrentCollectionId(collectionsResponse.data[0].id);
@@ -105,17 +105,16 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
           // Carregar decks
           const decksResponse = await deckService.getAll();
-          if (decksResponse.success && decksResponse.data) {
+          if (decksResponse && decksResponse.success && decksResponse.data) {
             setDecks(asDeckArray(decksResponse.data));
           }
 
           // Carregar favoritos
           const favoritesResponse = await favoriteService.getAll();
-          if (favoritesResponse.success && favoritesResponse.data) {
+          if (favoritesResponse && favoritesResponse.success && favoritesResponse.data) {
             setFavorites(favoritesResponse.data.map((fav: any) => fav.card) as MTGCard[]);
           }
         } catch (error) {
-          console.error('Erro ao carregar dados:', error);
           // Se falhar ao carregar dados, usar dados locais como fallback
           const savedCollections = localStorage.getItem('mtg-collections');
           if (savedCollections) {
@@ -125,15 +124,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
               if (parsedCollections.length > 0 && !currentCollectionId) {
                 setCurrentCollectionId(parsedCollections[0].id);
               }
-            } catch (localError) {
-              console.error('Erro ao carregar coleÃ§Ãµes salvas:', localError);
-            }
+            } catch (localError) {}
           }
         } finally {
           setLoading(false);
         }
       } else {
-        // UsuÃ¡rio nÃ£o autenticado, usar localStorage como fallback
+        // Usuário não autenticado, usar localStorage como fallback
         const savedCollections = localStorage.getItem('mtg-collections');
         if (savedCollections) {
           try {
@@ -142,15 +139,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             if (parsedCollections.length > 0 && !currentCollectionId) {
               setCurrentCollectionId(parsedCollections[0].id);
             }
-          } catch (error) {
-            console.error('Erro ao carregar coleÃ§Ãµes salvas:', error);
-          }
+          } catch (error) {}
         } else {
-          // Criar uma coleÃ§Ã£o padrÃ£o se nÃ£o houver nenhuma
+          // Criar uma coleção padrão se não houver nenhuma
           const defaultCollection: UserCollection = {
             id: '1',
-            name: 'Minha ColeÃ§Ã£o',
-            description: 'ColeÃ§Ã£o principal de cartas Magic',
+            name: 'Minha Coleção',
+            description: 'Coleção principal de cartas Magic',
             cards: [],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -165,9 +160,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           try {
             const parsedDecks = JSON.parse(savedDecks);
             setDecks(parsedDecks);
-          } catch (error) {
-            console.error('Erro ao carregar decks salvos:', error);
-          }
+          } catch (error) {}
         }
 
         const savedFavorites = localStorage.getItem('mtg-favorites');
@@ -175,9 +168,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           try {
             const parsedFavorites = JSON.parse(savedFavorites);
             setFavorites(parsedFavorites);
-          } catch (error) {
-            console.error('Erro ao carregar favoritos salvos:', error);
-          }
+          } catch (error) {}
         }
         
         setLoading(false);

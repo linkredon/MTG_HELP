@@ -1,5 +1,7 @@
 "use client"
 
+import { configureAmplify } from '@/lib/amplifySetup';
+configureAmplify();
 // Importações atualizadas usando implementações reais
 import { useEffect } from 'react'
 import React from 'react'

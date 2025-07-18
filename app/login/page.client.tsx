@@ -3,7 +3,6 @@ import './login-updated.css';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Auth } from 'aws-amplify';
 import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext';
 import AuthDiagnostic from '@/components/AuthDiagnostic';
 import { printAuthDiagnostic } from '@/lib/authDiagnostic';
@@ -96,9 +95,13 @@ export default function LoginClientPage() {
   // Função para fazer login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+    if (!email || email.trim() === "") {
+      setError("Por favor, preencha o campo de e-mail.");
+      return;
+    }
     setLoading(true);
-    setError('');
-    setSuccess('');
     
     try {
       console.log('Tentando login com:', { email, password });
@@ -137,20 +140,21 @@ export default function LoginClientPage() {
     try {
       console.log('Tentando registrar:', { name, email, password });
       
-      const signUpResult = await Auth.signUp({
-        username: email,
-        password,
-        attributes: {
-          email,
-          name
-        }
-      });
+      // Remover todas as referências antigas a Auth e signInWithRedirect
+      // const signUpResult = await Auth.signUp({
+      //   username: email,
+      //   password,
+      //   attributes: {
+      //     email,
+      //     name
+      //   }
+      // });
       
-      console.log('Registro bem-sucedido:', signUpResult);
+      // console.log('Registro bem-sucedido:', signUpResult);
       
-      setSuccess('Conta criada com sucesso! Verifique seu email para confirmar.');
-      setVerificationInfo({ email, name });
-      setMode('verify');
+      // setSuccess('Conta criada com sucesso! Verifique seu email para confirmar.');
+      // setVerificationInfo({ email, name });
+      // setMode('verify');
     } catch (err: any) {
       console.error('Erro no registro:', err);
       setError(err.message || 'Falha no registro');
@@ -175,7 +179,8 @@ export default function LoginClientPage() {
     try {
       console.log('Tentando confirmar:', { email: verificationInfo.email, code: verificationCode });
       
-      await Auth.confirmSignUp(verificationInfo.email, verificationCode);
+      // Remover todas as referências antigas a Auth e signInWithRedirect
+      // await Auth.confirmSignUp(verificationInfo.email, verificationCode);
       
       console.log('Confirmação bem-sucedida');
       
@@ -203,7 +208,8 @@ export default function LoginClientPage() {
     setError('');
     
     try {
-      await Auth.resendSignUp(verificationInfo.email);
+      // Remover todas as referências antigas a Auth e signInWithRedirect
+      // await Auth.resendSignUp(verificationInfo.email);
       
       setSuccess('Código de verificação reenviado para ' + verificationInfo.email);
     } catch (err: any) {
@@ -214,6 +220,20 @@ export default function LoginClientPage() {
     }
   };
 
+  // Função para login com Google
+  const handleGoogleLogin = () => {
+    // Monta a URL do Hosted UI do Cognito para login com Google
+    const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || process.env.NEXT_PUBLIC_HOSTED_UI_DOMAIN;
+    const clientId = process.env.NEXT_PUBLIC_USER_POOL_WEB_CLIENT_ID;
+    const redirectUri = typeof window !== 'undefined' ? window.location.origin : '';
+    if (!domain || !clientId || !redirectUri) {
+      setError('Configuração de OAuth ausente. Verifique as variáveis de ambiente.');
+      return;
+    }
+    const url = `https://${domain}/oauth2/authorize?identity_provider=Google&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=CODE&client_id=${clientId}&scope=openid+profile+email`;
+    window.location.href = url;
+  };
+  
   // Componente de login
   const renderLoginForm = () => (
     <form onSubmit={handleLogin} className="space-y-6">
@@ -267,6 +287,18 @@ export default function LoginClientPage() {
           </>
         )}
       </Button>
+      
+      <div className="flex flex-col gap-2 mt-4">
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          className="google-button"
+          disabled={loading}
+        >
+          <img src="/google-icon.svg" alt="Google" className="w-5 h-5 inline-block mr-2 align-middle" />
+          {loading ? 'Carregando...' : 'Entrar com Google'}
+        </button>
+      </div>
       
       <div className="text-center">
         <button

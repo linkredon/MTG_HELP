@@ -91,21 +91,21 @@ export default function UserBypassPage() {
               </div>
               
               <div className="flex flex-wrap gap-2 mt-6">
-                <Link href="/user/profile" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+                <a href="/user/profile" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
                   Página de Perfil
-                </Link>
-                <Link href="/user/personalization" className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition">
+                </a>
+                <a href="/user/personalization" className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition">
                   Personalização
-                </Link>
-                <Link href="/user/settings" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition">
+                </a>
+                <a href="/user/settings" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition">
                   Configurações
-                </Link>
-                <Link href="/" className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition">
+                </a>
+                <a href="/" className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition">
                   Página Inicial
-                </Link>
-                <Link href="/login" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition">
+                </a>
+                <a href="/login" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition">
                   Login
-                </Link>
+                </a>
               </div>
             </div>
           )}

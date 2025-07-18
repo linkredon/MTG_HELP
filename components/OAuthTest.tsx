@@ -7,8 +7,7 @@ import { configureAmplify } from '@/lib/amplifySetup';
  * apenas use-o para diagnosticar problemas de configuração.
  */
 export default function OAuthTest() {
-  // Configurar Amplify (só para garantir que está inicializado)
-  configureAmplify();
+  // Remover a chamada de configureAmplify
   
   // Diagnóstico simples: checar se Amplify está configurado
   const isConfigured = typeof window !== 'undefined' && window.__amplifyConfigured;

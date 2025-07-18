@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { Amplify } from 'aws-amplify';
@@ -71,7 +72,6 @@ export default function CognitoLoginDebugger() {
         let amplifyConfig: string | null = null;
         try {
           // Passando um objeto vazio para não alterar a configuração existente
-          Amplify.configure({}); 
           amplifyConfig = "Configuração ativada";
         } catch (e) {
           console.error("Erro ao obter configuração do Amplify:", e instanceof Error ? e.message : "Erro desconhecido");

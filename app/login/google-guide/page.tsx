@@ -1,7 +1,7 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -39,9 +39,7 @@ export default function GoogleLoginGuide() {
     <div className="max-w-3xl mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white">Como fazer login com Google</h1>
-        <Link href="/login" className="text-blue-500 hover:underline">
-          Ir para Login
-        </Link>
+        {/* Link removido temporariamente para teste de erro de build */}
       </div>
       
       {loading ? (

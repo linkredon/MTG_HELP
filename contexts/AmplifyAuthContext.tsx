@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Auth, Amplify, Hub, fetchAuthSession, getCurrentUser, signOut } from './amplify-types';
+import { Amplify, Hub, fetchAuthSession, getCurrentUser, signOut } from '@/lib/aws-auth-adapter';
 import { configureAmplify } from '@/lib/amplifySetup';
 
 // Definir tipos
@@ -65,16 +65,13 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [amplifyConfigured, setAmplifyConfigured] = useState(false);
-  
-  // Garantir que o Amplify esteja configurado antes de usar os serviços de autenticação
+
+  // Marcar como configurado assim que o provider for montado
   useEffect(() => {
-    const configureAuth = async () => {
-      const success = ensureAmplifyConfigured();
-      setAmplifyConfigured(success);
-    };
-    
-    configureAuth();
+    setAmplifyConfigured(true);
   }, []);
+  
+  // Remover o useEffect que chama ensureAmplifyConfigured/configureAmplify
 
   // Função para extrair informações do usuário
   const extractUserInfo = async () => {
@@ -94,44 +91,56 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
       
       try {
         // Primeiro verificar se temos uma sessão válida
-        session = await Auth.currentSession();
-        
-        // Verificar se temos um token válido
-        if (!session?.getIdToken()?.getJwtToken()) {
+        session = await fetchAuthSession();
+        const idToken = session.tokens?.idToken?.toString();
+        if (!idToken) {
           console.log('Sessão não possui token válido');
           setUser(null);
           setIsAuthenticated(false);
           setIsLoading(false);
+          console.log('[AmplifyAuthProvider] setUser(null) - motivo: token inválido');
           return;
         }
-        
+        // Extrair informações do usuário do token JWT
+        const idTokenPayload = JSON.parse(atob(idToken.split('.')[1]));
         // Se temos uma sessão válida, agora podemos obter o usuário atual
-        currentUser = await Auth.currentAuthenticatedUser();
+        currentUser = await getCurrentUser();
+        const userInfo: AmplifyUser = {
+          id: (currentUser?.attributes?.sub || idTokenPayload.sub || ''),
+          email: (idTokenPayload.email as string) || '',
+          name: (idTokenPayload.name as string) || ((idTokenPayload.email as string)?.split('@')[0]) || '',
+          avatar: (idTokenPayload.picture as string) || undefined,
+          image: (idTokenPayload.picture as string) || undefined,
+          collectionsCount: 0,
+          totalCards: 0
+        };
+        setUser(userInfo);
+        setIsAuthenticated(true);
+        console.log('[AmplifyAuthProvider] setUser(userInfo) - usuário autenticado:', userInfo);
       } catch (authError) {
         console.log('Erro ao verificar autenticação:', authError);
         setUser(null);
         setIsAuthenticated(false);
         setIsLoading(false);
+        console.log('[AmplifyAuthProvider] setUser(null) - motivo: erro na autenticação', authError);
         return;
       }
       
 
       // Extrair informações do usuário do token JWT
-      const idTokenPayload = session.getIdToken().decodePayload();
+      // const userInfo: AmplifyUser = {
+      //   id: currentUser.attributes.sub,
+      //   email: (idTokenPayload.email as string) || '',
+      //   name: (idTokenPayload.name as string) || ((idTokenPayload.email as string)?.split('@')[0]) || '',
+      //   avatar: (idTokenPayload.picture as string) || undefined,
+      //   image: (idTokenPayload.picture as string) || undefined,
+      //   // Valores padrão para compatibilidade
+      //   collectionsCount: 0,
+      //   totalCards: 0
+      // };
       
-      const userInfo: AmplifyUser = {
-        id: currentUser.attributes.sub,
-        email: (idTokenPayload.email as string) || '',
-        name: (idTokenPayload.name as string) || ((idTokenPayload.email as string)?.split('@')[0]) || '',
-        avatar: (idTokenPayload.picture as string) || undefined,
-        image: (idTokenPayload.picture as string) || undefined,
-        // Valores padrão para compatibilidade
-        collectionsCount: 0,
-        totalCards: 0
-      };
-      
-      setUser(userInfo);
-      setIsAuthenticated(true);
+      // setUser(userInfo);
+      // setIsAuthenticated(true);
     } catch (error) {
       console.error('Erro ao buscar sessão:', error);
       // Se ocorrer um erro específico do Auth UserPool, tentar reconfigurar
@@ -145,6 +154,7 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
       
       setUser(null);
       setIsAuthenticated(false);
+      console.log('[AmplifyAuthProvider] setUser(null) - motivo: erro ao buscar sessão', error);
     } finally {
       setIsLoading(false);
     }
@@ -159,9 +169,10 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
   // Função para fazer logout
   const handleSignOut = async () => {
     try {
-      await Auth.signOut({ global: true });
+      await signOut({ global: true });
       setUser(null);
       setIsAuthenticated(false);
+      console.log('[AmplifyAuthProvider] setUser(null) - motivo: handleSignOut chamado');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
     }
@@ -186,6 +197,7 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
         case 'signedOut':
           setUser(null);
           setIsAuthenticated(false);
+          console.log('[AmplifyAuthProvider] setUser(null) - motivo: evento signedOut do Hub');
           break;
         default:
           break;

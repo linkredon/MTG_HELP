@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import * as AmplifyAuth from '@aws-amplify/auth';
+import { getCurrentUser } from '@/lib/aws-auth-adapter';
 
 // Tipo para sessão
 type Session = {
@@ -82,11 +82,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Tenta obter usuário autenticado do Amplify
         try {
-          const currentUser = await AmplifyAuth.getCurrentUser();
+          const currentUser = await getCurrentUser();
           
           if (currentUser) {
             // Buscar atributos do usuário
-            const attributes = await AmplifyAuth.fetchUserAttributes();
+            const attributes = await getCurrentUser().attributes;
             
             const authUser: AuthUser = {
               id: currentUser.username || attributes.sub || '',
@@ -128,14 +128,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // AWS Amplify Authentication
-      await AmplifyAuth.signIn({
+      await getCurrentUser().signIn({
         username: email,
         password
       });
       
       try {
-        const user = await AmplifyAuth.getCurrentUser();
-        const attributes = await AmplifyAuth.fetchUserAttributes();
+        const user = await getCurrentUser();
+        const attributes = await getCurrentUser().attributes;
         
         // Criar objeto de usuário a partir dos atributos do Cognito
         const authUser: AuthUser = {
@@ -164,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     try {
       // Usar o Amplify para login com Google (redireciona para o provedor OAuth)
-      await AmplifyAuth.signInWithRedirect({
+      await getCurrentUser().signInWithRedirect({
         provider: 'Google'
       });
       return { success: true };
@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (name: string, email: string, password: string) => {
     try {
       // Registrar com AWS Amplify
-      const result = await AmplifyAuth.signUp({
+      const result = await getCurrentUser().signUp({
         username: email,
         password,
         options: {
@@ -215,7 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Fazer logout do Amplify
-      await AmplifyAuth.signOut();
+      await getCurrentUser().signOut();
       setUser(null);
       router.push('/login');
     } catch (error) {
@@ -230,11 +230,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         // Buscar usuário atual do Amplify
-        const currentUser = await AmplifyAuth.getCurrentUser();
+        const currentUser = await getCurrentUser();
         
         if (currentUser) {
           // Buscar atributos atualizados
-          const attributes = await AmplifyAuth.fetchUserAttributes();
+          const attributes = await getCurrentUser().attributes;
           
           const authUser: AuthUser = {
             id: currentUser.username || attributes.sub || '',

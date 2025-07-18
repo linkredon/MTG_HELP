@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import React, { useEffect, useState } from 'react';
 import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext';
@@ -83,21 +84,7 @@ export default function DiagnosticPage() {
     }
   };
 
-  // Obter configuração atual do Amplify
-  useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && window.__amplifyConfigured) {
-        setAmplifyConfig({ status: 'Amplify já configurado' });
-        return;
-      }
-      configureAmplify();
-      if (typeof window !== 'undefined') window.__amplifyConfigured = true;
-      setAmplifyConfig({ status: 'Amplify configurado agora' });
-    } catch (error) {
-      console.error('Erro ao obter configuração:', error);
-      setAmplifyConfig(null);
-    }
-  }, [isInitialized]);
+  // Remover o useEffect que chama configureAmplify
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">

@@ -65,18 +65,18 @@ export default function AdminLayout({
               </div>
               <div className="hidden md:block ml-10">
                 <div className="flex items-baseline space-x-4">
-                  <Link href="/admin" className="px-3 py-2 rounded-md text-sm font-medium text-white bg-slate-900 hover:bg-slate-700">
+                  <a href="/admin" className="px-3 py-2 rounded-md text-sm font-medium text-white bg-slate-900 hover:bg-slate-700">
                     Dashboard
-                  </Link>
-                  <Link href="/admin/google-oauth-setup" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
+                  </a>
+                  <a href="/admin/google-oauth-setup" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
                     Google OAuth
-                  </Link>
-                  <Link href="/admin/docs/google-oauth" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
+                  </a>
+                  <a href="/admin/docs/google-oauth" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
                     Documentação OAuth
-                  </Link>
-                  <Link href="/" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
+                  </a>
+                  <a href="/" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
                     Voltar ao Site
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
@@ -86,18 +86,18 @@ export default function AdminLayout({
         {/* Menu para mobile */}
         <div className="md:hidden border-t border-slate-700">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link href="/admin" className="block px-3 py-2 rounded-md text-base font-medium text-white bg-slate-900 hover:bg-slate-700">
+            <a href="/admin" className="block px-3 py-2 rounded-md text-base font-medium text-white bg-slate-900 hover:bg-slate-700">
               Dashboard
-            </Link>
-            <Link href="/admin/google-oauth-setup" className="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
+            </a>
+            <a href="/admin/google-oauth-setup" className="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
               Google OAuth
-            </Link>
-            <Link href="/admin/docs/google-oauth" className="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
+            </a>
+            <a href="/admin/docs/google-oauth" className="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
               Documentação OAuth
-            </Link>
-            <Link href="/" className="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
+            </a>
+            <a href="/" className="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
               Voltar ao Site
-            </Link>
+            </a>
           </div>
         </div>
       </nav>

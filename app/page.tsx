@@ -1,8 +1,5 @@
-"use client"
-
-// Configuração para evitar pré-renderização estática
-export const dynamicConfig = 'force-dynamic';
-export const runtime = 'edge'; // Usar o runtime edge para evitar problemas com SSR
+'use client';
+export const dynamic = 'force-dynamic';
 
 import '../styles/professional-mtg-interface.css'
 import '../styles/mobile-navigation.css'
@@ -64,6 +61,7 @@ import {
   Trophy
 } from "lucide-react"
 import type { MTGCard } from '@/types/mtg';
+import nextDynamic from 'next/dynamic';
 
 // Fallback para quando o Suspense estiver carregando
 function HomeFallback() {
@@ -115,11 +113,11 @@ function HomeContent() {
     // Código a ser executado apenas no lado do cliente
     console.log('HomeContent montado no lado do cliente')
     setIsClient(true)
-    
-    // Verificar autenticação ao carregar o componente
-    if (!authLoading && isInitialized && !isAuthenticated) {
+    // Redirecionar para login apenas se não autenticado, não carregando, inicializado e não estiver já na página de login
+    if (!isAuthenticated && !authLoading && isInitialized && typeof window !== 'undefined' && window.location.pathname !== '/login') {
       console.log('HomeContent: Usuário não autenticado, redirecionando para login')
-      router.push('/login')
+      router.replace('/login')
+      return;
     }
   }, [isAuthenticated, authLoading, isInitialized, router])
 
@@ -226,11 +224,10 @@ function HomeContent() {
 
 // Importar o wrapper para fornecer o SessionProvider localmente
 import HomeContentWrapper from '@/components/HomeContentWrapper'
-import dynamic from 'next/dynamic'
 
 // Carregamento dinâmico dos componentes
-const LoadingScreen = dynamic(() => import('@/components/LoadingScreen'), { ssr: false });
-const AppInitializer = dynamic(() => import('@/components/AppInitializer'), { ssr: false });
+const LoadingScreen = nextDynamic(() => import('@/components/LoadingScreen'), { ssr: false });
+const AppInitializer = nextDynamic(() => import('@/components/AppInitializer'), { ssr: false });
 
 // Componente principal para a página
 export default function Home() {

@@ -11,20 +11,7 @@ import { useEffect } from 'react';
  * Amplify antes de mostrar componentes que precisam de autenticação.
  */
 export default function AmplifyPreload({ children }: { children: React.ReactNode }) {
-  // Mover a inicialização para dentro de um useEffect para garantir que só execute no cliente
-  useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && window.__amplifyConfigured) {
-        console.log('✓ Amplify já configurado no AmplifyPreload');
-        return;
-      }
-      configureAmplify();
-      if (typeof window !== 'undefined') window.__amplifyConfigured = true;
-      console.log('🔄 Inicializando Amplify no AmplifyPreload...');
-    } catch (error) {
-      console.error('❌ Erro ao inicializar Amplify no AmplifyPreload:', error);
-    }
-  }, []);
+  // Remover o useEffect que chama configureAmplify
   
   return (
     <AmplifyAuthProvider>

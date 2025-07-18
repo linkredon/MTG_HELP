@@ -12,7 +12,6 @@ try {
   config = getAmplifyConfig();
 }
 
-// Configurar o Amplify
-Amplify.configure(config);
+// Remover toda chamada de Amplify.configure
 
 export default Amplify;

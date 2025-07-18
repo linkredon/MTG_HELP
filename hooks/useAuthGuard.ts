@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import * as AmplifyAuth from '@/lib/aws-auth-adapter';
+import { getCurrentUser } from '@/lib/aws-auth-adapter';
 
 /**
  * Hook personalizado para proteger rotas que precisam de autenticação.
@@ -42,7 +42,7 @@ export function useAuthGuard(redirectPath: string = '/login') {
     async function checkAuthWithAmplify() {
       try {
         console.log("Verificando autenticação com AWS Amplify");
-        const currentUser = await AmplifyAuth.getCurrentUser();
+        const currentUser = await getCurrentUser();
         
         if (currentUser) {
           console.log("Usuário autenticado via Amplify:", currentUser);
@@ -55,13 +55,14 @@ export function useAuthGuard(redirectPath: string = '/login') {
           
           try {
             // Tentar obter atributos do usuário
-            const attributes = await AmplifyAuth.fetchUserAttributes();
-            if (attributes) {
-              userData.name = attributes.name || userData.name;
-              userData.email = attributes.email || userData.email;
-              userData.role = attributes['custom:role'] || userData.role;
-              userData.avatar = attributes.picture || userData.avatar;
-            }
+            // Remover todos os usos de fetchUserAttributes e acessar os atributos diretamente de currentUser se necessário.
+            // const attributes = await AmplifyAuth.fetchUserAttributes();
+            // if (attributes) {
+            //   userData.name = attributes.name || userData.name;
+            //   userData.email = attributes.email || userData.email;
+            //   userData.role = attributes['custom:role'] || userData.role;
+            //   userData.avatar = attributes.picture || userData.avatar;
+            // }
           } catch (attrError) {
             console.error("Erro ao buscar atributos do usuário:", attrError);
           }

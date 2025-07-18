@@ -2,7 +2,8 @@
  * Funções de autenticação usando AWS Amplify/Cognito
  * Este arquivo substitui a implementação anterior baseada em next-auth
  */
-import { Amplify, Auth } from 'aws-amplify';
+import { Amplify } from 'aws-amplify';
+import { signIn, signUp, signOut, getCurrentUser, fetchAuthSession, confirmSignUp } from 'aws-amplify/auth';
 import { v4 as uuidv4 } from 'uuid';
 import { dynamoDb, TABLES } from './awsConfig';
 import { PutCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
@@ -29,7 +30,7 @@ export async function registerUser(userData: { name: string, email: string, pass
     
     // 2. Registrar no Cognito
     try {
-      const signUpResult = await Auth.signUp({
+      const signUpResult = await signUp({
         username: userData.email,
         password: userData.password,
         attributes: {
@@ -99,8 +100,8 @@ export async function getUserById(id: string) {
     } else {
       // Se não encontrar no DynamoDB, tenta obter do Cognito
       try {
-        const currentUser = await Auth.currentAuthenticatedUser();
-        const session = await Auth.currentSession();
+        const currentUser = await getCurrentUser();
+        const session = await fetchAuthSession();
         const userAttributes = currentUser.attributes || {};
         
         if (currentUser.username) {
@@ -135,20 +136,36 @@ export async function getUserById(id: string) {
 // Função para login usando Amplify
 export async function loginWithAmplify(credentials: { email: string, password: string }) {
   try {
-    const signInResult = await Auth.signIn(credentials.email, credentials.password);
+    console.log('loginWithAmplify: credentials recebidos:', credentials);
+    const username = credentials.email?.trim();
+    console.log('loginWithAmplify: username final:', username, 'password:', credentials.password);
+    if (!username) {
+      throw new Error('O campo de e-mail está vazio no momento do login!');
+    }
+    // Alteração: passar objeto { username, password }
+    const signInResult = await signIn({ username, password: credentials.password });
+    console.log('loginWithAmplify: signInResult:', signInResult);
+    // Proteger acesso aos campos
+    const userAttributes = signInResult?.attributes || {};
+    const user = {
+      id: userAttributes.sub || signInResult?.username || signInResult?.userId || null,
+      name: userAttributes.name || userAttributes.email || signInResult?.username || null,
+      email: userAttributes.email || signInResult?.username || null,
+      role: 'user', // Papel padrão
+    };
     
     if (signInResult) {
       // Obter informações do usuário
       try {
-        const userAttributes = signInResult.attributes || {};
+        // const userAttributes = signInResult.attributes || {}; // This line is now redundant
         
-        const user = {
-          id: signInResult.attributes.sub || signInResult.username,
-          name: userAttributes.name || userAttributes.email || signInResult.username,
-          email: userAttributes.email || signInResult.username,
-          role: 'user', // Papel padrão, pode ser atualizado com informações do DynamoDB
-          avatar: null
-        };
+        // const user = {
+        //   id: signInResult.attributes.sub || signInResult.username,
+        //   name: userAttributes.name || userAttributes.email || signInResult.username,
+        //   email: userAttributes.email || signInResult.username,
+        //   role: 'user', // Papel padrão, pode ser atualizado com informações do DynamoDB
+        //   avatar: null
+        // };
         
         return { success: true, user };
       } catch (attrError) {
@@ -175,7 +192,7 @@ export async function loginWithAmplify(credentials: { email: string, password: s
 // Função para logout
 export async function logoutUser() {
   try {
-    await Auth.signOut();
+    await signOut();
     return { success: true };
   } catch (error) {
     console.error('Erro ao fazer logout:', error);
@@ -186,7 +203,7 @@ export async function logoutUser() {
 // Função para obter usuário atual
 export async function getCurrentAuthUser() {
   try {
-    const currentUser = await Auth.currentAuthenticatedUser();
+    const currentUser = await getCurrentUser();
     const userAttributes = currentUser.attributes || {};
     
     const user = {

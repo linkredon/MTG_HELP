@@ -39,9 +39,9 @@ export default function AwsDiagnosticPage() {
               <h3 className="font-medium">3. Fazer Login Novamente</h3>
               <p className="text-gray-300 text-sm mt-1">
                 Faça logout e login novamente para atualizar as credenciais.
-                <Link href="/login" className="ml-2 text-blue-400 hover:underline">
+                <a href="/login" className="ml-2 text-blue-400 hover:underline">
                   Ir para login
-                </Link>
+                </a>
               </p>
             </div>
             

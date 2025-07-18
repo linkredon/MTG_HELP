@@ -235,18 +235,13 @@ export default function GoogleAuthMonitor() {
       // Verificar Amplify
       try {
         // Importar dinamicamente para evitar erros de SSR
-        const { getCurrentUser, fetchUserAttributes } = await import('@/lib/aws-auth-adapter');
+        const { getCurrentUser } = await import('@/lib/aws-auth-adapter');
         
         try {
           const currentUser = await getCurrentUser();
           addEvent('Session', `Amplify: Usuário autenticado - ${JSON.stringify(currentUser)}`);
           
-          try {
-            const attributes = await fetchUserAttributes();
-            addEvent('Session', `Amplify: Atributos do usuário - ${JSON.stringify(attributes)}`);
-          } catch (attrError) {
-            addEvent('Session', `Amplify: Erro ao buscar atributos - ${attrError}`);
-          }
+          // Remover todos os usos de fetchUserAttributes e acessar os atributos diretamente de currentUser se necessário.
         } catch (userError) {
           addEvent('Session', 'Amplify: Nenhum usuário autenticado');
         }
@@ -352,19 +347,19 @@ export default function GoogleAuthMonitor() {
               <h3 className="text-lg font-semibold mb-2">Ferramentas de Diagnóstico</h3>
               
               <div className="space-y-3">
-                <Link 
+                <a 
                   href="/auth-monitor/dashboard" 
                   className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md w-full block text-center"
                 >
                   Dashboard de Autenticação
-                </Link>
+                </a>
                 
-                <Link 
+                <a 
                   href="/auth-monitor/login-debugger" 
                   className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full block text-center"
                 >
                   Debugger de "Login pages unavailable"
-                </Link>
+                </a>
               </div>
             </div>
             

@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import React from 'react';
 import GoogleOAuthErrorChecker from '@/components/GoogleOAuthErrorChecker';
@@ -120,12 +121,12 @@ export default function GoogleOAuthErrorPage() {
         </div>
         
         <div className="mt-6 text-center">
-          <Link 
+          <a 
             href="/auth-monitor/dashboard"
             className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors"
           >
             Voltar para o Dashboard
-          </Link>
+          </a>
         </div>
       </div>
     </div>

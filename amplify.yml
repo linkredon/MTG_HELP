@@ -8,10 +8,15 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci
+        - npm ci --legacy-peer-deps
+        - echo "Node version:"
+        - node --version
+        - echo "NPM version:"
+        - npm --version
     build:
       commands:
-        - npm run build
+        - npm run build:amplify
+        - echo "Build completed successfully"
   artifacts:
     baseDirectory: .next
     files:
@@ -19,3 +24,4 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
+      - .next/cache/**/*

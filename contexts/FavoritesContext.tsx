@@ -34,30 +34,26 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
           // Carregar da API
           try {
             const response = await favoriteService.getAll()
-            if (response.success && response.data) {
+            if (response && response.success && response.data) {
               setFavorites(response.data.map((fav: any) => fav.card))
             } else {
-              console.log('Resposta da API de favoritos:', response)
-              // Se a API não retornou dados, usar localStorage como fallback
+              // Fallback para localStorage
               const savedFavorites = localStorage.getItem('mtg-favorites')
               if (savedFavorites) {
                 try {
                   setFavorites(JSON.parse(savedFavorites))
                 } catch (error) {
-                  console.error('Erro ao carregar favoritos do localStorage:', error)
                   localStorage.removeItem('mtg-favorites')
                 }
               }
             }
           } catch (apiError) {
-            console.warn('Erro ao carregar favoritos da API, usando localStorage:', apiError)
             // Fallback para localStorage
             const savedFavorites = localStorage.getItem('mtg-favorites')
             if (savedFavorites) {
               try {
                 setFavorites(JSON.parse(savedFavorites))
               } catch (error) {
-                console.error('Erro ao carregar favoritos do localStorage:', error)
                 localStorage.removeItem('mtg-favorites')
               }
             }
@@ -69,22 +65,18 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
             try {
               setFavorites(JSON.parse(savedFavorites))
             } catch (error) {
-              console.error('Erro ao carregar favoritos:', error)
               localStorage.removeItem('mtg-favorites')
             }
           }
         }
       } catch (error) {
-        console.error('Erro ao carregar favoritos:', error)
         // Em caso de erro, tentar carregar do localStorage
         try {
           const savedFavorites = localStorage.getItem('mtg-favorites')
           if (savedFavorites) {
             setFavorites(JSON.parse(savedFavorites))
           }
-        } catch (localError) {
-          console.error('Erro ao carregar favoritos do localStorage:', localError)
-        }
+        } catch (localError) {}
       } finally {
         setLoading(false)
       }
