@@ -27,6 +27,112 @@ async function getAuthenticatedUserId() {
   }
 }
 
+// Função para diagnosticar status da autenticação
+async function diagnoseAuthStatus() {
+  try {
+    console.log('🔍 Diagnosticando status da autenticação...');
+    
+    // Verificar se estamos no lado do cliente
+    if (typeof window === 'undefined') {
+      console.error('❌ Diagnóstico deve ser executado no lado do cliente');
+      return { authenticated: false, error: 'Executando no servidor' };
+    }
+    
+    // Verificar se o Amplify está configurado
+    try {
+      const { fetchAuthSession } = await import('aws-amplify/auth');
+      const session = await fetchAuthSession();
+      console.log('✅ Amplify configurado, sessão obtida:', session);
+      
+      if (session.tokens?.idToken) {
+        console.log('✅ Token de ID presente');
+      } else {
+        console.log('❌ Token de ID ausente');
+      }
+      
+      if (session.credentials?.accessKeyId) {
+        console.log('✅ Credenciais AWS presentes');
+      } else {
+        console.log('❌ Credenciais AWS ausentes');
+      }
+      
+      return { authenticated: true, session };
+    } catch (amplifyError) {
+      console.error('❌ Erro ao verificar sessão do Amplify:', amplifyError);
+      return { authenticated: false, error: amplifyError.message };
+    }
+  } catch (error) {
+    console.error('❌ Erro no diagnóstico de autenticação:', error);
+    return { authenticated: false, error: error.message };
+  }
+}
+
+// Função para testar diferentes estruturas de dados
+async function testTableStructure(tableName: string, testData: any) {
+  console.log(`Testando estrutura da tabela ${tableName} com dados:`, JSON.stringify(testData, null, 2));
+  
+  try {
+    const result = await awsDbService.create(tableName, testData);
+    console.log(`✅ Estrutura válida para ${tableName}:`, result);
+    return { success: true, data: testData };
+  } catch (error) {
+    console.error(`❌ Estrutura inválida para ${tableName}:`);
+    console.error('  - Mensagem:', error.message);
+    console.error('  - Nome:', error.name);
+    console.error('  - Código:', error.code);
+    console.error('  - Stack:', error.stack);
+    
+    // Se for AccessDeniedException, é problema de permissões
+    if (error.name === 'AccessDeniedException') {
+      console.error('  - Erro de permissão detectado');
+      console.error('  - Verifique se o usuário está autenticado e tem permissões para acessar o DynamoDB');
+      console.error('  - Estrutura completa do erro:', JSON.stringify(error, null, 2));
+      
+      // Tentar extrair mensagem específica do DynamoDB
+      if (error.message) {
+        console.error('  - Mensagem específica do DynamoDB:', error.message);
+      }
+      
+      // Tentar acessar propriedades específicas do erro
+      try {
+        if (error.$metadata) {
+          console.error('  - Metadata do erro:', error.$metadata);
+        }
+        if (error.$fault) {
+          console.error('  - Fault do erro:', error.$fault);
+        }
+      } catch (metadataError) {
+        console.error('  - Erro ao acessar metadata:', metadataError);
+      }
+    }
+    
+    // Se for ValidationException, tentar extrair mais detalhes
+    if (error.name === 'ValidationException') {
+      console.error('  - Detalhes da validação:', error);
+      console.error('  - Estrutura completa do erro:', JSON.stringify(error, null, 2));
+      
+      // Tentar extrair mensagem específica do DynamoDB
+      if (error.message) {
+        console.error('  - Mensagem específica do DynamoDB:', error.message);
+      }
+      
+      // Tentar acessar propriedades específicas do erro
+      try {
+        if (error.$metadata) {
+          console.error('  - Metadata do erro:', error.$metadata);
+        }
+        if (error.$fault) {
+          console.error('  - Fault do erro:', error.$fault);
+        }
+      } catch (metadataError) {
+        console.error('  - Erro ao acessar metadata:', metadataError);
+      }
+    }
+    
+    return { success: false, error: error.message };
+  }
+}
+
 // Serviço para gerenciar coleções
 export const collectionService = {
   // Obter todas as coleções do usuário
@@ -48,22 +154,98 @@ export const collectionService = {
     return awsDbService.getById(TABLES.COLLECTIONS, id);
   },
   
-  // Criar uma nova coleção
+  // Função para criar coleção
   async create(collectionData: any) {
-    const userId = await getAuthenticatedUserId();
-    if (!userId) {
-      return { success: false, error: 'Usuário não autenticado' };
+    console.log('🔄 Tentando criar coleção com dados:', JSON.stringify(collectionData, null, 2));
+    
+    try {
+      // Executar diagnóstico de autenticação primeiro
+      const authDiagnostic = await diagnoseAuthStatus();
+      console.log('📊 Resultado do diagnóstico de autenticação:', authDiagnostic);
+      
+      if (!authDiagnostic.authenticated) {
+        throw new Error(`Usuário não autenticado: ${authDiagnostic.error}`);
+      }
+      
+      // Testar diferentes estruturas de dados
+      const testResults = await Promise.all([
+        testTableStructure('collections', collectionData),
+        testTableStructure('collections', { ...collectionData, collectionId: collectionData.id }),
+        testTableStructure('collections', { ...collectionData, id: collectionData.id, collectionId: collectionData.id }),
+        testTableStructure('collections', { 
+          id: collectionData.id, 
+          name: collectionData.name, 
+          description: collectionData.description || '',
+          userId: collectionData.userId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          cards: collectionData.cards || []
+        })
+      ]);
+      
+      console.log('📊 Resultados dos testes:', testResults);
+      
+      // Encontrar o primeiro sucesso
+      const successResult = testResults.find(result => result.success);
+      if (successResult) {
+        console.log('✅ Estrutura válida encontrada:', successResult.data);
+        return successResult.data;
+      }
+      
+      // Se nenhum teste passou, mostrar todos os erros
+      console.error('❌ Todas as estruturas falharam. Erros:');
+      testResults.forEach((result, index) => {
+        if (!result.success) {
+          console.error(`  Teste ${index + 1}:`, result.error);
+        }
+      });
+      
+      throw new Error('Nenhuma estrutura de dados válida encontrada para a tabela collections');
+      
+    } catch (error) {
+      console.error('💥 Erro ao criar coleção:', error);
+      console.error('  - Tipo de erro:', error.constructor.name);
+      console.error('  - Mensagem:', error.message);
+      console.error('  - Stack:', error.stack);
+      
+      // Se for AccessDeniedException, é problema de permissões
+      if (error.name === 'AccessDeniedException') {
+        console.error('  - Erro de permissão detectado');
+        console.error('  - Verifique se o usuário está autenticado e tem permissões para acessar o DynamoDB');
+        throw new Error('Acesso negado ao banco de dados. Verifique se você está logado e tem permissões adequadas.');
+      }
+      
+      // Se for erro de autenticação
+      if (error.message?.includes('não autenticado') || error.message?.includes('Faça login')) {
+        console.error('  - Erro de autenticação detectado');
+        throw new Error('Usuário não autenticado. Faça login primeiro.');
+      }
+      
+      // Se for ValidationException, tentar extrair mais detalhes
+      if (error.name === 'ValidationException') {
+        console.error('  - Detalhes da validação:', error);
+        console.error('  - Estrutura completa do erro:', JSON.stringify(error, null, 2));
+        
+        // Tentar extrair mensagem específica do DynamoDB
+        if (error.message) {
+          console.error('  - Mensagem específica do DynamoDB:', error.message);
+        }
+        
+        // Tentar acessar propriedades específicas do erro
+        try {
+          if (error.$metadata) {
+            console.error('  - Metadata do erro:', error.$metadata);
+          }
+          if (error.$fault) {
+            console.error('  - Fault do erro:', error.$fault);
+          }
+        } catch (metadataError) {
+          console.error('  - Erro ao acessar metadata:', metadataError);
+        }
+      }
+      
+      throw error;
     }
-    
-    const collection = {
-      ...collectionData,
-      userId: userId,
-      cards: [],
-      createdAt: getCurrentTimestamp(),
-      updatedAt: getCurrentTimestamp()
-    };
-    
-    return awsDbService.create(TABLES.COLLECTIONS, collection);
   },
   
   // Atualizar uma coleção
@@ -222,15 +404,63 @@ export const deckService = {
       return { success: false, error: 'Usuário não autenticado' };
     }
     
-    const deck = {
-      ...deckData,
+    console.log('Tentando criar deck com diferentes estruturas...');
+    
+    // Estrutura 1: Básica
+    const structure1 = {
+      id: generateId(),
+      name: deckData.name,
       userId: userId,
-      cards: [],
+      createdAt: getCurrentTimestamp()
+    };
+    
+    let result = await testTableStructure(TABLES.DECKS, structure1);
+    if (result.success) {
+      return { success: true, data: result.data };
+    }
+    
+    // Estrutura 2: Com mais campos
+    const structure2 = {
+      id: generateId(),
+      name: deckData.name,
+      description: deckData.description || '',
+      format: deckData.format || 'Commander',
+      userId: userId,
       createdAt: getCurrentTimestamp(),
       updatedAt: getCurrentTimestamp()
     };
     
-    return awsDbService.create(TABLES.DECKS, deck);
+    result = await testTableStructure(TABLES.DECKS, structure2);
+    if (result.success) {
+      return { success: true, data: result.data };
+    }
+    
+    // Estrutura 3: Com deckId
+    const structure3 = {
+      id: generateId(),
+      deckId: generateId(),
+      name: deckData.name,
+      userId: userId,
+      createdAt: getCurrentTimestamp()
+    };
+    
+    result = await testTableStructure(TABLES.DECKS, structure3);
+    if (result.success) {
+      return { success: true, data: result.data };
+    }
+    
+    // Estrutura 4: Apenas campos essenciais
+    const structure4 = {
+      name: deckData.name,
+      userId: userId
+    };
+    
+    result = await testTableStructure(TABLES.DECKS, structure4);
+    if (result.success) {
+      return { success: true, data: result.data };
+    }
+    
+    return { success: false, error: 'Não foi possível encontrar uma estrutura válida para a tabela' };
   },
   
   // Atualizar um deck
@@ -391,6 +621,7 @@ export const favoriteService = {
     
     const favorite = {
       id: generateId(),
+      favoriteId: generateId(), // Campo obrigatório para a tabela
       userId: userId,
       ...cardData,
       createdAt: getCurrentTimestamp()

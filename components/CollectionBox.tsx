@@ -24,8 +24,8 @@ interface CollectionBoxProps {
 }
 
 export default function CollectionBox({ collection, onSelect, onDelete, onEdit, onDuplicate, onSetBackground, isActive }: CollectionBoxProps) {
-  const totalCards = collection.cards.reduce((sum, card) => sum + card.quantity, 0);
-  const uniqueCards = collection.cards.length;
+  const totalCards = collection.cards ? collection.cards.reduce((sum, card) => sum + card.quantity, 0) : 0;
+  const uniqueCards = collection.cards ? collection.cards.length : 0;
 
   return (
     <div

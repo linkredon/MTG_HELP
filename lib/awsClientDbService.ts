@@ -62,7 +62,12 @@ export const clientDbService = {
         }
       };
       
-      await dynamoDb.send(new PutCommand(params));
+      // Garantir que o comando é uma instância do SDK antes de enviar
+      const putCmd = new PutCommand(params);
+      if (!(putCmd instanceof PutCommand)) {
+        console.error('Comando passado para send não é uma instância de PutCommand:', putCmd);
+      }
+      await dynamoDb.send(putCmd);
       return { success: true, data: params.Item };
     } catch (error) {
       console.error(`[Cliente] Error creating item in ${tableName}:`, error);
@@ -80,7 +85,12 @@ export const clientDbService = {
         Key: { id }
       };
       
-      const result = await dynamoDb.send(new GetCommand(params));
+      // Garantir que o comando é uma instância do SDK antes de enviar
+      const getCmd = new GetCommand(params);
+      if (!(getCmd instanceof GetCommand)) {
+        console.error('Comando passado para send não é uma instância de GetCommand:', getCmd);
+      }
+      const result = await dynamoDb.send(getCmd);
       if (!result.Item) {
         return { success: false, error: 'Item not found' };
       }
@@ -118,7 +128,12 @@ export const clientDbService = {
         ReturnValues: "ALL_NEW" as const
       };
       
-      const result = await dynamoDb.send(new UpdateCommand(params));
+      // Garantir que o comando é uma instância do SDK antes de enviar
+      const updateCmd = new UpdateCommand(params);
+      if (!(updateCmd instanceof UpdateCommand)) {
+        console.error('Comando passado para send não é uma instância de UpdateCommand:', updateCmd);
+      }
+      const result = await dynamoDb.send(updateCmd);
       return { success: true, data: result.Attributes };
     } catch (error) {
       console.error(`[Cliente] Error updating item in ${tableName}:`, error);
@@ -160,7 +175,12 @@ export const clientDbService = {
       };
       
       try {
-        const result = await dynamoDb.send(new QueryCommand(params));
+        // Garantir que o comando é uma instância do SDK antes de enviar
+        const queryCmd = new QueryCommand(params);
+        if (!(queryCmd instanceof QueryCommand)) {
+          console.error('Comando passado para send não é uma instância de QueryCommand:', queryCmd);
+        }
+        const result = await dynamoDb.send(queryCmd);
         return { success: true, data: result.Items || [] };
       } catch (indexError: any) {
         // Se o índice não existir, usar scan com filtro
@@ -174,7 +194,12 @@ export const clientDbService = {
           }
         };
         
-        const scanResult = await dynamoDb.send(new ScanCommand(scanParams));
+        // Garantir que o comando é uma instância do SDK antes de enviar
+        const scanCmd = new ScanCommand(scanParams);
+        if (!(scanCmd instanceof ScanCommand)) {
+          console.error('Comando passado para send não é uma instância de ScanCommand:', scanCmd);
+        }
+        const scanResult = await dynamoDb.send(scanCmd);
         return { success: true, data: scanResult.Items || [] };
       }
     } catch (error) {
@@ -197,7 +222,12 @@ export const clientDbService = {
         params.ExclusiveStartKey = lastEvaluatedKey;
       }
       
-      const result = await dynamoDb.send(new ScanCommand(params));
+      // Garantir que o comando é uma instância do SDK antes de enviar
+      const scanCmd2 = new ScanCommand(params);
+      if (!(scanCmd2 instanceof ScanCommand)) {
+        console.error('Comando passado para send não é uma instância de ScanCommand:', scanCmd2);
+      }
+      const result = await dynamoDb.send(scanCmd2);
       return { 
         success: true, 
         data: result.Items || [],
@@ -243,7 +273,12 @@ export const clientDbService = {
         }
       }
       
-      const result = await dynamoDb.send(new QueryCommand(params));
+      // Garantir que o comando é uma instância do SDK antes de enviar
+      const queryCmd2 = new QueryCommand(params);
+      if (!(queryCmd2 instanceof QueryCommand)) {
+        console.error('Comando passado para send não é uma instância de QueryCommand:', queryCmd2);
+      }
+      const result = await dynamoDb.send(queryCmd2);
       return { success: true, data: result.Items || [] };
     } catch (error) {
       console.error(`[Cliente] Error querying items from ${tableName}:`, error);

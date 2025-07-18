@@ -43,13 +43,15 @@ export function configureAmplify() {
       ? [...localUrls, ...productionUrls]
       : [...productionUrls, ...localUrls];
 
+    const identityPoolId = process.env.NEXT_PUBLIC_IDENTITY_POOL_ID || 'us-east-2:8681c7d7-6e0e-494f-9f0a-fe9f8d949db5';
+
     // Log de diagnóstico para depuração
     console.log('Configuração final do Amplify:', {
       region,
       userPoolId,
       userPoolClientId,
       cognitoDomain,
-      identityPoolId: 'us-east-2:8681c7d7-6e0e-494f-9f0a-fe9f8d949db5',
+      identityPoolId,
       redirectSignIn,
       redirectSignOut
     });
@@ -60,6 +62,7 @@ export function configureAmplify() {
         Cognito: {
           userPoolId,
           userPoolClientId,
+          identityPoolId, // <-- agora usando a variável de ambiente
           loginWith: {
             email: true,
             oauth: {

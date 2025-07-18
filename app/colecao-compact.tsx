@@ -253,7 +253,8 @@ export default function ColecaoCompact({
   // Sugestões de busca com base no histórico e cartas populares
   const sugestoesBusca = useMemo(() => {
     const cartasPopulares = ['Lightning Bolt', 'Counterspell', 'Sol Ring', 'Swords to Plowshares', 'Dark Ritual'];
-    const cartasNaColecao = currentCollection ? currentCollection.cards.map((c: CollectionCard) => c.card.name).slice(0, 5) : [];
+    const cartasNaColecao = currentCollection && currentCollection.cards ? 
+      currentCollection.cards.map((c: CollectionCard) => c.card.name).slice(0, 5) : [];
     const todasSugestoes = [...cartasPopulares, ...cartasNaColecao];
     return Array.from(new Set(todasSugestoes));
   }, [currentCollection]);
@@ -309,7 +310,7 @@ export default function ColecaoCompact({
 
   // Função melhorada para filtrar e ordenar cartas da coleção
   const cartasFiltradas = useMemo(() => {
-    if (!currentCollection) return [];
+    if (!currentCollection || !currentCollection.cards) return [];
     let filtered: CollectionCard[] = currentCollection.cards;
 
     // Filtro por nome/busca

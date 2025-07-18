@@ -3,6 +3,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { fetchAuthSession } from './auth-adapter';
+import { fetchAuthSession as fetchAuthSessionAmplify } from 'aws-amplify/auth';
 
 // Interface para credenciais temporárias
 interface AwsTemporaryCredentials {
@@ -35,16 +36,7 @@ async function getTemporaryCredentials(retryAttempt = 0): Promise<AwsTemporaryCr
   // Limite de tentativas
   if (retryAttempt >= MAX_CREDENTIAL_ATTEMPTS) {
     console.error(`Falha após ${MAX_CREDENTIAL_ATTEMPTS} tentativas de obter credenciais`);
-    // Em vez de lançar erro, usar credenciais dummy para desenvolvimento
-    // Isso permite que o app continue funcionando mesmo sem credenciais válidas
-    console.warn('⚠️ Usando credenciais temporárias de fallback para desenvolvimento');
-    
-    // Credenciais dummy para desenvolvimento - não têm acesso real ao AWS
-    return {
-      accessKeyId: 'DUMMY_ACCESS_KEY_FOR_DEV',
-      secretAccessKey: 'DUMMY_SECRET_KEY_FOR_DEV',
-      sessionToken: 'DUMMY_SESSION_TOKEN_FOR_DEV',
-    };
+    throw new Error('Não foi possível obter credenciais AWS válidas após múltiplas tentativas');
   }
   
   try {
@@ -57,27 +49,71 @@ async function getTemporaryCredentials(retryAttempt = 0): Promise<AwsTemporaryCr
     
     console.log(`Tentativa ${retryAttempt + 1} de obter credenciais temporárias...`);
     
+    // Verificar se o usuário está autenticado
+    try {
+      const { getCurrentUser } = await import('aws-amplify/auth');
+      const currentUser = await getCurrentUser();
+      console.log('✅ Usuário autenticado:', currentUser.username);
+    } catch (authError) {
+      console.error('❌ Usuário não autenticado:', authError);
+      throw new Error('Usuário não autenticado. Faça login primeiro.');
+    }
+    
     // Obter credenciais da sessão atual do Amplify
     const session = await fetchAuthSession();
+    console.log('Retorno de fetchAuthSession (detalhado):', JSON.stringify(session, null, 2));
+    
+    // Tentar obter credenciais temporárias diretamente do Amplify
+    try {
+      const amplifySession = await fetchAuthSessionAmplify();
+      console.log('Amplify Session (detalhado):', JSON.stringify(amplifySession, null, 2));
+      
+      if (amplifySession.credentials?.accessKeyId && amplifySession.credentials?.secretAccessKey) {
+        console.log('✅ Credenciais temporárias obtidas do Amplify diretamente');
+        
+        cachedCredentials = {
+          accessKeyId: amplifySession.credentials.accessKeyId,
+          secretAccessKey: amplifySession.credentials.secretAccessKey,
+          sessionToken: amplifySession.credentials.sessionToken,
+        };
+        
+        if (amplifySession.credentials.expiration) {
+          credentialsExpiration = new Date(amplifySession.credentials.expiration);
+          console.log(`Credenciais válidas até: ${credentialsExpiration.toISOString()}`);
+        } else {
+          const expiresIn = new Date();
+          expiresIn.setHours(expiresIn.getHours() + 1);
+          credentialsExpiration = expiresIn;
+          console.log(`Definindo expiração padrão: ${credentialsExpiration.toISOString()}`);
+        }
+        
+        return cachedCredentials;
+      }
+    } catch (amplifyError) {
+      console.warn('Erro ao obter credenciais do Amplify diretamente:', amplifyError);
+    }
     
     // Verificar se temos credenciais válidas
-    if (!session.credentials?.accessKeyId || !session.credentials?.secretAccessKey) {
+    const credentials = session.credentials as any;
+    if (!credentials || !credentials.accessKeyId || !credentials.secretAccessKey) {
       console.warn('Sessão obtida mas sem credenciais válidas, tentando novamente em breve...');
       return getTemporaryCredentials(retryAttempt + 1);
     }
+    
+    console.log('Credenciais retornadas:', credentials);
     
     console.log('✅ Credenciais temporárias obtidas com sucesso');
     
     // Armazenar credenciais no cache
     cachedCredentials = {
-      accessKeyId: session.credentials.accessKeyId,
-      secretAccessKey: session.credentials.secretAccessKey,
-      sessionToken: session.credentials.sessionToken,
+      accessKeyId: credentials.accessKeyId,
+      secretAccessKey: credentials.secretAccessKey,
+      sessionToken: credentials.sessionToken,
     };
     
     // Definir expiração (se disponível)
-    if (session.credentials.expiration) {
-      credentialsExpiration = new Date(session.credentials.expiration);
+    if (credentials.expiration) {
+      credentialsExpiration = new Date(credentials.expiration);
       console.log(`Credenciais válidas até: ${credentialsExpiration.toISOString()}`);
     } else {
       // Padrão: 1 hora de validade
@@ -90,6 +126,11 @@ async function getTemporaryCredentials(retryAttempt = 0): Promise<AwsTemporaryCr
     return cachedCredentials;
   } catch (error: any) {
     console.error(`Erro ao obter credenciais temporárias (tentativa ${retryAttempt + 1}):`, error);
+    
+    // Se o erro é de autenticação, não tentar novamente
+    if (error?.message?.includes('não autenticado') || error?.message?.includes('Faça login')) {
+      throw error;
+    }
     
     // Verificar se é um erro de rate limit
     if (error?.name === 'TooManyRequestsException' || error?.message?.includes('Rate exceeded')) {
@@ -163,11 +204,13 @@ export async function getDynamoDbClientAsync() {
     // Usar um cliente mock que não faz nada, mas permite que a aplicação continue
     console.warn('⚠️ Usando cliente DynamoDB simulado para desenvolvimento');
     
-    // Criar um cliente mock que retorna dados vazios
+    // Criar um cliente mock que retorna dados vazios e ignora resolveMiddleware
     const mockClient = {
-      send: async () => ({ Items: [], Count: 0 })
+      send: async (command: any) => {
+        console.warn('[MOCK] Chamando send com comando:', command?.constructor?.name || typeof command);
+        return { Items: [], Count: 0 };
+      }
     };
-    
     // @ts-ignore - Mock client não é exatamente do tipo DynamoDBDocumentClient
     return mockClient;
   }
