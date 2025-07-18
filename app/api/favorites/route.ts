@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
     // Extrair ID do usuário do token
     const userId = authSession.tokens.idToken.payload.sub;
 
-    // TODO: Implementar busca no banco de dados
-    // Por enquanto, retornar array vazio
+    // Por enquanto, retornar array vazio para evitar problemas
+    // TODO: Implementar busca no banco de dados quando as credenciais AWS estiverem funcionando
     return NextResponse.json({
       success: true,
       data: []
@@ -25,8 +25,9 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Erro ao buscar favoritos:', error);
+    // Retornar resposta de erro em JSON válido
     return NextResponse.json(
-      { success: false, message: 'Erro interno do servidor' },
+      { success: false, message: 'Erro interno do servidor', data: [] },
       { status: 500 }
     );
   }
@@ -57,8 +58,8 @@ export async function POST(request: NextRequest) {
     // Extrair ID do usuário do token
     const userId = authSession.tokens.idToken.payload.sub;
 
-    // TODO: Implementar salvamento no banco de dados
-    // Por enquanto, retornar sucesso
+    // Por enquanto, retornar sucesso para evitar problemas
+    // TODO: Implementar salvamento no banco de dados quando as credenciais AWS estiverem funcionando
     return NextResponse.json({
       success: true,
       data: { card }
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Erro ao adicionar favorito:', error);
+    // Retornar resposta de erro em JSON válido
     return NextResponse.json(
       { success: false, message: 'Erro interno do servidor' },
       { status: 500 }

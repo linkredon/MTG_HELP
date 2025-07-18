@@ -58,10 +58,19 @@ export default function LoginClientPage() {
     console.log('useEffect - isAuthenticated:', isAuthenticated, 'user:', user);
     if (isAuthenticated && user) {
       console.log('Usuário já autenticado, redirecionando para a página inicial');
+      // Redirecionamento mais agressivo
       setTimeout(() => {
         console.log('Executando redirecionamento para /');
-        router.push('/');
+        window.location.href = '/';
       }, 100);
+      
+      // Backup: tentar novamente após 2 segundos
+      setTimeout(() => {
+        if (window.location.pathname === '/login') {
+          console.log('Redirecionamento de backup para /');
+          window.location.href = '/';
+        }
+      }, 2000);
     }
   }, [isAuthenticated, user, router]);
 
@@ -69,8 +78,16 @@ export default function LoginClientPage() {
   useEffect(() => {
     if (isAuthenticated && user && mode === 'login') {
       setTimeout(() => {
-        router.push('/');
+        window.location.href = '/';
       }, 100);
+      
+      // Backup: tentar novamente após 2 segundos
+      setTimeout(() => {
+        if (window.location.pathname === '/login') {
+          console.log('Redirecionamento de backup para /');
+          window.location.href = '/';
+        }
+      }, 2000);
     }
     // Se estiver em modo 'verify', não redirecionar
   }, [isAuthenticated, user, router, mode]);
