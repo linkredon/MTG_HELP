@@ -102,7 +102,7 @@ export default function LoginClientPage() {
       if (result.success) {
         console.log('Login bem-sucedido:', result.user);
         
-        document.cookie = 'mtg_user_authenticated=true; path=/; max-age=3600';
+        document.cookie = 'mtg_user_authenticated=true; path=/; max-age=3600; SameSite=Lax' + (window.location.protocol === 'https:' ? '; Secure' : '');
         
         setSuccess('Login realizado com sucesso! Redirecionando...');
         await refreshUser();
