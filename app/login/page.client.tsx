@@ -116,9 +116,11 @@ export default function LoginClientPage() {
         setSuccess('Login realizado com sucesso! Redirecionando...');
         await refreshUser();
         
+        // Forçar redirecionamento após login
         setTimeout(() => {
-          router.push('/');
-        }, 200);
+          console.log('Forçando redirecionamento para página inicial...');
+          window.location.href = '/';
+        }, 500);
       } else {
         setError(result.message || 'Falha na autenticação');
       }
@@ -320,17 +322,36 @@ export default function LoginClientPage() {
       </div>
       {/* Botão manual para ir para home após login */}
       {isAuthenticated && user && (
-        <div className="mt-4 p-3 bg-green-100 border border-green-300 rounded">
-          <p className="text-sm text-green-800 mb-2">
-            ✅ Usuário autenticado: {user.name}
+        <div className="mt-4 p-4 bg-green-100 border border-green-300 rounded-lg">
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+            <span className="text-green-800 font-medium">Usuário autenticado com sucesso!</span>
+          </div>
+          <p className="text-sm text-green-700 mb-3">
+            ✅ <strong>{user.name}</strong> ({user.email})
           </p>
-          <button
-            type="button"
-            onClick={() => router.push('/')}
-            className="w-full py-2 px-4 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Ir para página inicial
-          </button>
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => {
+                console.log('Redirecionamento manual para página inicial...');
+                window.location.href = '/';
+              }}
+              className="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+            >
+              Ir para página inicial
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                console.log('Tentando redirecionamento via router...');
+                router.push('/');
+              }}
+              className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              Tentar redirecionamento alternativo
+            </button>
+          </div>
         </div>
       )}
     </form>

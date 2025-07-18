@@ -77,7 +77,7 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const { user: authUser, isAuthenticated } = useAmplifyAuth();
+  const { user, isAuthenticated } = useAmplifyAuth();
   const [collections, setCollections] = useState<UserCollection[]>([]);
   const [currentCollectionId, setCurrentCollectionId] = useState<string | null>(null);
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -88,95 +88,25 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     return collections.find(c => c.id === currentCollectionId);
   }, [collections, currentCollectionId]);
 
-  // Carregar dados da API quando o usuÃ¡rio estiver autenticado
+  // Carregar dados da API quando o usuário estiver autenticado
   useEffect(() => {
-    const loadData = async () => {
-      if (isAuthenticated) {
-        setLoading(true);
-        try {
-          // Carregar coleções
-          const collectionsResponse = await collectionService.getAll();
-          if (collectionsResponse && collectionsResponse.success && collectionsResponse.data) {
-            setCollections(asUserCollectionArray(collectionsResponse.data));
-            if (collectionsResponse.data.length > 0 && !currentCollectionId) {
-              setCurrentCollectionId(collectionsResponse.data[0].id);
-            }
-          }
-
-          // Carregar decks
-          const decksResponse = await deckService.getAll();
-          if (decksResponse && decksResponse.success && decksResponse.data) {
-            setDecks(asDeckArray(decksResponse.data));
-          }
-
-          // Carregar favoritos
-          const favoritesResponse = await favoriteService.getAll();
-          if (favoritesResponse && favoritesResponse.success && favoritesResponse.data) {
-            setFavorites(favoritesResponse.data.map((fav: any) => fav.card) as MTGCard[]);
-          }
-        } catch (error) {
-          // Se falhar ao carregar dados, usar dados locais como fallback
-          const savedCollections = localStorage.getItem('mtg-collections');
-          if (savedCollections) {
-            try {
-              const parsedCollections = JSON.parse(savedCollections);
-              setCollections(parsedCollections);
-              if (parsedCollections.length > 0 && !currentCollectionId) {
-                setCurrentCollectionId(parsedCollections[0].id);
-              }
-            } catch (localError) {}
-          }
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        // Usuário não autenticado, usar localStorage como fallback
-        const savedCollections = localStorage.getItem('mtg-collections');
-        if (savedCollections) {
-          try {
-            const parsedCollections = JSON.parse(savedCollections);
-            setCollections(parsedCollections);
-            if (parsedCollections.length > 0 && !currentCollectionId) {
-              setCurrentCollectionId(parsedCollections[0].id);
-            }
-          } catch (error) {}
-        } else {
-          // Criar uma coleção padrão se não houver nenhuma
-          const defaultCollection: UserCollection = {
-            id: '1',
-            name: 'Minha Coleção',
-            description: 'Coleção principal de cartas Magic',
-            cards: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            isPublic: false
-          };
-          setCollections([defaultCollection]);
-          setCurrentCollectionId(defaultCollection.id);
-        }
-
-        const savedDecks = localStorage.getItem('mtg-decks');
-        if (savedDecks) {
-          try {
-            const parsedDecks = JSON.parse(savedDecks);
-            setDecks(parsedDecks);
-          } catch (error) {}
-        }
-
-        const savedFavorites = localStorage.getItem('mtg-favorites');
-        if (savedFavorites) {
-          try {
-            const parsedFavorites = JSON.parse(savedFavorites);
-            setFavorites(parsedFavorites);
-          } catch (error) {}
-        }
-        
-        setLoading(false);
+    async function loadData() {
+      if (!isAuthenticated || !user) {
+        console.log('AppContext: Usuário não autenticado, pulando carregamento de dados');
+        return;
       }
-    };
+
+      console.log('AppContext: Usuário autenticado, mas pulando carregamento de dados para evitar problemas de credenciais AWS');
+      
+      // Por enquanto, não carregar dados do DynamoDB para evitar problemas de credenciais
+      // que estão impedindo o redirecionamento após login
+      setCollections([]);
+      setDecks([]);
+      setFavorites([]);
+    }
 
     loadData();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   // Salvar dados no localStorage quando nÃ£o estiver autenticado
   useEffect(() => {
@@ -204,7 +134,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const response = await collectionService.create({ 
           name, 
           description,
-          userId: authUser?.id || 'unknown'
+          userId: user?.id || 'unknown'
         });
         if (response.success && response.data) {
           setCollections(prev => [...prev, asUserCollection(response.data)]);
