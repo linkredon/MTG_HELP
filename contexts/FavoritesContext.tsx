@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import type { MTGCard } from '@/types/mtg'
-import { favoriteService } from '@/utils/apiService'
+import { favoriteService } from '@/utils/awsApiService'
 import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext'
 
 interface FavoritesContextType {
@@ -138,7 +138,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       if (isAuthenticated && !authLoading) {
         // Remover via API
         try {
-          const response = await favoriteService.removeCard(cardId)
+          const response = await favoriteService.remove(cardId)
           if (response.success) {
             setFavorites(prev => prev.filter(card => card.id !== cardId))
           } else {

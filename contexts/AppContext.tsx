@@ -90,7 +90,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Carregar dados da API quando o usuário estiver autenticado
   useEffect(() => {
+    let isMounted = true;
+    
     async function loadData() {
+      if (!isMounted) return;
+      
       if (!isAuthenticated || !user) {
         console.log('AppContext: Usuário não autenticado, pulando carregamento de dados');
         return;
@@ -100,12 +104,18 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       
       // Por enquanto, não carregar dados do DynamoDB para evitar problemas de credenciais
       // que estão impedindo o redirecionamento após login
-      setCollections([]);
-      setDecks([]);
-      setFavorites([]);
+      if (isMounted) {
+        setCollections([]);
+        setDecks([]);
+        setFavorites([]);
+      }
     }
 
     loadData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [isAuthenticated, user]);
 
   // Salvar dados no localStorage quando nÃ£o estiver autenticado

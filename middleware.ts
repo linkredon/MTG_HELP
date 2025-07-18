@@ -8,6 +8,10 @@ const publicRoutes = [
   '/confirm-code',
   '/api/auth',
   '/api/register',
+  '/api/favorites', // Adicionar rotas de favoritos
+  '/api/collections', // Adicionar rotas de coleções
+  '/api/decks', // Adicionar rotas de decks
+  '/api/users', // Adicionar rotas de usuários
   '/_next',
   '/favicon.ico',
   '/auth-monitor', // Adicionada rota do monitor de autenticação
