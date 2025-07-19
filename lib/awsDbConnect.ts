@@ -154,7 +154,7 @@ export const awsDbService = isServer ? {
       // Primeiro tentar com o índice
       const params = {
         TableName: tableName,
-        IndexName: 'userId-index',
+        IndexName: 'UserIdIndex',
         KeyConditionExpression: 'userId = :userId',
         ExpressionAttributeValues: {
           ':userId': userId
@@ -165,7 +165,7 @@ export const awsDbService = isServer ? {
       return { success: true, data: result.Items || [] };
     } catch (indexError: any) {
       // Se o índice não existir, usar scan com filtro
-      console.warn(`Índice userId-index não encontrado para ${tableName}, usando scan com filtro`);
+              // Usando scan com filtro (índice não disponível)
       
       try {
         const scanParams = {

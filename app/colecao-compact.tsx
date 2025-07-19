@@ -777,7 +777,7 @@ export default function ColecaoCompact({
                 style={{ minWidth: '100px' }}
               >
                 <Library className="w-3 h-3 mr-1" />
-                Coleção ({currentCollection?.cards?.length || 0})
+                Coleção ({collections?.length || 0})
               </button>
               <button
                 onClick={() => setTab("estatisticas")}

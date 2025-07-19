@@ -66,40 +66,51 @@ class UniversalDbService implements DbServiceInterface {
   
   // Obter todos os itens de um usuário (com retry e fallback)
   async getByUserId(tableName: string, userId: string) {
+    console.log(`🔍 UniversalDbService.getByUserId chamado para tabela: ${tableName}, userId: ${userId}`);
+    console.log(`🌐 Ambiente: ${isClient ? 'Cliente' : 'Servidor'}`);
+    
     if (!isClient) {
       // No servidor, simplesmente use o serviço do servidor
-      return await serverDbService.getByUserId(tableName, userId);
+      console.log('🖥️ Usando serviço do servidor');
+      const result = await serverDbService.getByUserId(tableName, userId);
+      console.log('📊 Resultado do servidor:', result);
+      return result;
     }
     
     // No cliente, implementar retry e fallback
+    console.log('📱 Usando serviço do cliente');
     let attempt = 0;
     let lastError = null;
     
     // Tente algumas vezes com o cliente do lado do cliente
     while (attempt < MAX_DB_RETRIES) {
       try {
-        console.log(`Tentativa ${attempt + 1} de obter dados do usuário ${userId} da tabela ${tableName}...`);
+        console.log(`🔄 Tentativa ${attempt + 1} de obter dados do usuário ${userId} da tabela ${tableName}...`);
         const result = await clientDbService.getByUserId(tableName, userId);
+        console.log(`📊 Resultado da tentativa ${attempt + 1}:`, result);
+        
         if (result.success) {
           console.log(`✅ Dados obtidos com sucesso na tentativa ${attempt + 1}`);
           return result;
         }
         
         // Se não teve sucesso mas não lançou erro, registre e tente novamente
-        console.warn(`Tentativa ${attempt + 1} não teve sucesso, tentando novamente...`, result.error);
+        console.warn(`⚠️ Tentativa ${attempt + 1} não teve sucesso, tentando novamente...`, result.error);
         lastError = result.error;
       } catch (error) {
-        console.error(`Erro na tentativa ${attempt + 1}:`, error);
+        console.error(`❌ Erro na tentativa ${attempt + 1}:`, error);
         lastError = error;
       }
       
       // Aguardar antes de tentar novamente (backoff exponencial)
-      await wait(1000 * Math.pow(2, attempt));
+      const waitTime = 1000 * Math.pow(2, attempt);
+      console.log(`⏳ Aguardando ${waitTime}ms antes da próxima tentativa...`);
+      await wait(waitTime);
       attempt++;
     }
     
     // Se chegamos aqui, todas as tentativas com o cliente falharam
-    console.warn(`Todas as ${MAX_DB_RETRIES} tentativas falharam. Resultado vazio.`);
+    console.warn(`❌ Todas as ${MAX_DB_RETRIES} tentativas falharam. Resultado vazio.`);
     
     // Retornar um resultado vazio em vez de falhar completamente
     return { 

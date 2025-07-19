@@ -104,14 +104,69 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         return;
       }
 
-      console.log('AppContext: Usuário autenticado, mas pulando carregamento de dados para evitar problemas de credenciais AWS');
+      console.log('AppContext: Usuário autenticado, carregando dados do DynamoDB...');
       
-      // Por enquanto, não carregar dados do DynamoDB para evitar problemas de credenciais
-      // que estão impedindo o redirecionamento após login
+      // Timeout para garantir que o loading não fique infinito
+      const timeoutId = setTimeout(() => {
+        if (isMounted && loading) {
+          console.log('AppContext: Timeout atingido, finalizando loading');
+          setLoading(false);
+          setCollections([]);
+          setDecks([]);
+          setFavorites([]);
+        }
+      }, 10000); // 10 segundos de timeout
+      
+      // Carregar dados do DynamoDB
       if (isMounted) {
-        setCollections([]);
-        setDecks([]);
-        setFavorites([]);
+        try {
+          // Carregar coleções
+          const collectionsResponse = await collectionService.getAll();
+          console.log('Resposta das coleções:', collectionsResponse);
+          if (collectionsResponse.success && collectionsResponse.data) {
+            setCollections(asUserCollectionArray(collectionsResponse.data));
+            console.log('Coleções carregadas:', collectionsResponse.data.length);
+          } else {
+            console.log('Nenhuma coleção encontrada ou erro na resposta');
+            setCollections([]);
+          }
+          
+          // Carregar decks
+          const decksResponse = await deckService.getAll();
+          console.log('Resposta dos decks:', decksResponse);
+          if (decksResponse.success && decksResponse.data) {
+            setDecks(asDeckArray(decksResponse.data));
+            console.log('Decks carregados:', decksResponse.data.length);
+          } else {
+            console.log('Nenhum deck encontrado ou erro na resposta');
+            setDecks([]);
+          }
+          
+          // Carregar favoritos
+          const favoritesResponse = await favoriteService.getAll();
+          console.log('Resposta dos favoritos:', favoritesResponse);
+          if (favoritesResponse.success && favoritesResponse.data) {
+            setFavorites(favoritesResponse.data);
+            console.log('Favoritos carregados:', favoritesResponse.data.length);
+          } else {
+            console.log('Nenhum favorito encontrado ou erro na resposta');
+            setFavorites([]);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar dados:', error);
+          // Mesmo com erro, definir arrays vazios para não ficar em loading infinito
+          setCollections([]);
+          setDecks([]);
+          setFavorites([]);
+        } finally {
+          // Sempre finalizar o loading, mesmo com erros
+          if (isMounted) {
+            setLoading(false);
+            console.log('AppContext: Loading finalizado');
+          }
+          // Limpar o timeout
+          clearTimeout(timeoutId);
+        }
       }
     }
 

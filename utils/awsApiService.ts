@@ -19,10 +19,18 @@ const getCurrentTimestamp = () => new Date().toISOString();
 // Função auxiliar para obter o ID do usuário autenticado
 async function getAuthenticatedUserId() {
   try {
+    console.log('🔍 Obtendo usuário autenticado...');
     const currentUser = await getCurrentUser();
-    return currentUser?.attributes?.sub || currentUser?.username;
+    console.log('👤 Usuário obtido:', currentUser);
+    console.log('📋 Atributos:', currentUser?.attributes);
+    console.log('🆔 Sub:', currentUser?.attributes?.sub);
+    console.log('👤 Username:', currentUser?.username);
+    
+    const userId = currentUser?.attributes?.sub || currentUser?.username;
+    console.log('✅ UserId final:', userId);
+    return userId;
   } catch (error) {
-    console.error('Erro ao obter usuário autenticado:', error);
+    console.error('❌ Erro ao obter usuário autenticado:', error);
     return null;
   }
 }
@@ -138,13 +146,36 @@ export const collectionService = {
   // Obter todas as coleções do usuário
   async getAll() {
     try {
+      console.log('📚 Obtendo todas as coleções do usuário...');
       const userId = await getAuthenticatedUserId();
+      console.log('🆔 UserId para busca:', userId);
+      
       if (!userId) {
+        console.log('❌ Usuário não autenticado');
         return { success: false, error: 'Usuário não autenticado' };
       }
       
-      return awsDbService.getByUserId(TABLES.COLLECTIONS, userId);
+      console.log('🔍 Buscando coleções na tabela:', TABLES.COLLECTIONS);
+      const result = await awsDbService.getByUserId(TABLES.COLLECTIONS, userId);
+      console.log('📊 Resultado da busca de coleções:', result);
+      
+      if (result.success && result.data) {
+        console.log('✅ Coleções encontradas:', result.data.length);
+        result.data.forEach((collection, index) => {
+          console.log(`📋 Coleção ${index + 1}:`, {
+            id: collection.id,
+            name: collection.name,
+            userId: collection.userId,
+            cardsCount: collection.cards?.length || 0
+          });
+        });
+      } else {
+        console.log('⚠️ Nenhuma coleção encontrada ou erro:', result);
+      }
+      
+      return result;
     } catch (error) {
+      console.error('❌ Erro ao buscar coleções:', error);
       return { success: false, error: 'Erro ao verificar autenticação' };
     }
   },
@@ -393,39 +424,55 @@ export const deckService = {
     }
     return awsDbService.getByUserId(TABLES.DECKS, userId);
   },
-  async getById(id: string) {
-    return awsDbService.getById(TABLES.DECKS, id);
+  async getById(deckId: string) {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return { success: false, error: 'Usuário não autenticado' };
+    }
+    return awsDbService.getById(TABLES.DECKS, { userId, deckId });
   },
   async create(deckData: any) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    const createResult = await awsDbService.create(TABLES.DECKS, { ...deckData, userId });
+    
+    // Gerar um ID único para o deck
+    const deckId = generateId();
+    
+    const deckToCreate = {
+      userId: userId, // Chave de partição
+      deckId: deckId, // Chave de classificação
+      ...deckData,
+      createdAt: getCurrentTimestamp(),
+      updatedAt: getCurrentTimestamp()
+    };
+    
+    const createResult = await awsDbService.create(TABLES.DECKS, deckToCreate);
     return { success: createResult.success, data: createResult.data, error: createResult.error };
   },
-  async update(id: string, updates: any) {
+  async update(deckId: string, updates: any) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    const deck = await awsDbService.getById(TABLES.DECKS, id);
+    const deck = await awsDbService.getById(TABLES.DECKS, { userId, deckId });
     if (!deck.success || !deck.data || deck.data.userId !== userId) {
       return { success: false, error: 'Deck não encontrado ou acesso negado' };
     }
-    const updateResult = await awsDbService.update(TABLES.DECKS, id, updates);
+    const updateResult = await awsDbService.update(TABLES.DECKS, { userId, deckId }, updates);
     return { success: updateResult.success, data: updateResult.data, error: updateResult.error };
   },
-  async delete(id: string) {
+  async delete(deckId: string) {
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    const deck = await awsDbService.getById(TABLES.DECKS, id);
+    const deck = await awsDbService.getById(TABLES.DECKS, { userId, deckId });
     if (!deck.success || !deck.data || deck.data.userId !== userId) {
       return { success: false, error: 'Deck não encontrado ou acesso negado' };
     }
-    const deleteResult = await awsDbService.delete(TABLES.DECKS, id);
+    const deleteResult = await awsDbService.delete(TABLES.DECKS, { userId, deckId });
     return { success: deleteResult.success, data: deleteResult.data, error: deleteResult.error };
   },
   async addCard(deckId: string, cardData: any) {
@@ -433,7 +480,7 @@ export const deckService = {
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    const deck = await awsDbService.getById(TABLES.DECKS, deckId);
+    const deck = await awsDbService.getById(TABLES.DECKS, { userId, deckId });
     if (!deck.success || !deck.data) {
       return { success: false, error: 'Deck não encontrado' };
     }
@@ -447,7 +494,7 @@ export const deckService = {
     };
     const cards = deck.data.cards || [];
     cards.push(newCard);
-    const updateResult = await awsDbService.update(TABLES.DECKS, deckId, {
+    const updateResult = await awsDbService.update(TABLES.DECKS, { userId, deckId }, {
       cards,
       updatedAt: getCurrentTimestamp()
     });
@@ -458,7 +505,7 @@ export const deckService = {
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    const deck = await awsDbService.getById(TABLES.DECKS, deckId);
+    const deck = await awsDbService.getById(TABLES.DECKS, { userId, deckId });
     if (!deck.success || !deck.data) {
       return { success: false, error: 'Deck não encontrado' };
     }
@@ -467,7 +514,7 @@ export const deckService = {
     }
     const cards = deck.data.cards || [];
     const updatedCards = cards.filter((card: any) => card.id !== cardId);
-    const updateResult = await awsDbService.update(TABLES.DECKS, deckId, {
+    const updateResult = await awsDbService.update(TABLES.DECKS, { userId, deckId }, {
       cards: updatedCards,
       updatedAt: getCurrentTimestamp()
     });
@@ -478,7 +525,7 @@ export const deckService = {
     if (!userId) {
       return { success: false, error: 'Usuário não autenticado' };
     }
-    const deck = await awsDbService.getById(TABLES.DECKS, deckId);
+    const deck = await awsDbService.getById(TABLES.DECKS, { userId, deckId });
     if (!deck.success || !deck.data) {
       return { success: false, error: 'Deck não encontrado' };
     }
@@ -492,7 +539,7 @@ export const deckService = {
       }
       return card;
     });
-    const updateResult = await awsDbService.update(TABLES.DECKS, deckId, {
+    const updateResult = await awsDbService.update(TABLES.DECKS, { userId, deckId }, {
       cards: updatedCards,
       updatedAt: getCurrentTimestamp()
     });

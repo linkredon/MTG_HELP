@@ -55,30 +55,48 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
   };
 
   const stats = useMemo(() => {
+    // Verificar se collections existe e é um array
+    if (!collections || !Array.isArray(collections)) {
+      return {
+        totalCards: 0,
+        uniqueCards: 0,
+        totalDecks: 0,
+        totalFavorites: 0,
+        collectionValue: 0,
+        monthlyGrowth: 0,
+        avgCardValue: 0,
+        collectionsCount: 0,
+      };
+    }
+
     // Calcular estatísticas reais
-    const totalCards = collections.reduce((acc, col) => 
-      acc + col.cards.reduce((sum, card) => sum + card.quantity, 0), 0
-    );
+    const totalCards = collections.reduce((acc, col) => {
+      if (!col.cards || !Array.isArray(col.cards)) return acc;
+      return acc + col.cards.reduce((sum, card) => sum + (card.quantity || 0), 0);
+    }, 0);
     
-    const uniqueCards = collections.reduce((acc, col) => 
-      acc + col.cards.length, 0
-    );
+    const uniqueCards = collections.reduce((acc, col) => {
+      if (!col.cards || !Array.isArray(col.cards)) return acc;
+      return acc + col.cards.length;
+    }, 0);
     
     const totalDecks = decks?.length || 0;
     const totalFavorites = favorites?.length || 0;
     
     // Calcular valor da coleção (se disponível)
-    const collectionValue = collections.reduce((acc, col) => 
-      acc + col.cards.reduce((sum, card) => {
-        const price = parseFloat(card.card.prices?.usd || '0');
-        return sum + (price * card.quantity);
-      }, 0), 0
-    );
+    const collectionValue = collections.reduce((acc, col) => {
+      if (!col.cards || !Array.isArray(col.cards)) return acc;
+      return acc + col.cards.reduce((sum, card) => {
+        const price = parseFloat(card.card?.prices?.usd || '0');
+        return sum + (price * (card.quantity || 0));
+      }, 0);
+    }, 0);
     
     const avgCardValue = totalCards > 0 ? collectionValue / totalCards : 0;
 
     // Calcular crescimento baseado na data de criação das coleções
     const recentCollections = collections.filter(col => {
+      if (!col.createdAt) return false;
       const createdAt = new Date(col.createdAt);
       const oneMonthAgo = new Date();
       oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
@@ -111,17 +129,37 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
       email: authUser.email || '',
       avatar: authUser.avatar || undefined, // Usar undefined em vez de null
       joinedAt: new Date().toISOString(), // Usar data atual como fallback
-      collectionsCount: collections.length,
+      collectionsCount: collections?.length || 0,
       totalCards: stats.totalCards,
       achievements: [] // Será preenchido pelo sistema de conquistas
     };
-  }, [authUser, collections.length, stats.totalCards]);
+  }, [authUser, collections, stats.totalCards]);
 
-  // Cartas recentes baseadas na coleção atual
+  // Cartas recentes baseadas em todas as coleções
   const recentCards = useMemo(() => {
-    if (!currentCollection?.cards) return [];
+    if (!collections || !Array.isArray(collections)) return [];
     
-    return currentCollection.cards
+    // Coletar todas as cartas de todas as coleções
+    const allCards: any[] = [];
+    collections.forEach(collection => {
+      if (collection.cards && Array.isArray(collection.cards)) {
+        collection.cards.forEach(card => {
+          allCards.push({
+            ...card,
+            collectionName: collection.name || 'Coleção'
+          });
+        });
+      }
+    });
+    
+    // Ordenar por data de criação da coleção (mais recentes primeiro)
+    allCards.sort((a, b) => {
+      const dateA = new Date(a.collectionName === 'Coleção' ? Date.now() : 0);
+      const dateB = new Date(b.collectionName === 'Coleção' ? Date.now() : 0);
+      return dateB.getTime() - dateA.getTime();
+    });
+    
+    return allCards
       .slice(0, 4)
       .map(card => ({
         name: card.card.name,
@@ -129,23 +167,29 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
         rarity: card.card.rarity,
         addedAt: "recent",
         value: parseFloat(card.card.prices?.usd || '0'),
-        quantity: card.quantity
+        quantity: card.quantity,
+        collectionName: card.collectionName
       }));
-  }, [currentCollection]);
+  }, [collections]);
 
-  // Distribuição de cores baseada nas cartas reais
+  // Distribuição de cores baseada em todas as coleções
   const colorDistribution = useMemo(() => {
-    if (!currentCollection?.cards) return [];
+    if (!collections || !Array.isArray(collections)) return [];
     
     const colorCounts: { [key: string]: number } = {};
     let totalCards = 0;
     
-    currentCollection.cards.forEach(card => {
-      const colors = (card.card as any).colors || [];
-      colors.forEach(color => {
-        colorCounts[color] = (colorCounts[color] || 0) + card.quantity;
-        totalCards += card.quantity;
-      });
+    // Calcular cores de todas as coleções
+    collections.forEach(collection => {
+      if (collection.cards && Array.isArray(collection.cards)) {
+        collection.cards.forEach(card => {
+          const colors = (card.card as any).colors || [];
+          colors.forEach(color => {
+            colorCounts[color] = (colorCounts[color] || 0) + (card.quantity || 0);
+            totalCards += (card.quantity || 0);
+          });
+        });
+      }
     });
     
     const colorMap: { [key: string]: { name: string, bgColor: string } } = {
@@ -165,7 +209,7 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
-  }, [currentCollection]);
+  }, [collections]);
 
   // Adicionar valores padrão para weeklyProgress e weeklyGoal
   const weeklyProgress = 0;
@@ -420,7 +464,7 @@ export default function Painel({ onNavigate }: { onNavigate: (tab: string) => vo
                     <span className="text-gray-300">{item.color}</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-medium text-white">{item.percentage}%</span>
+                    <span className="font-medium text-white">{item.percentage.toFixed(0)}%</span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-800/70 rounded-full h-1.5">

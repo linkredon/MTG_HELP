@@ -47,6 +47,7 @@ export const clientDbService = {
     try {
       const dynamoDb = await getOrCreateClientSideDbClient();
       
+      // Garantir que sempre temos um ID
       const id = item.id || generateId();
       const timestamp = getCurrentTimestamp();
       
@@ -54,7 +55,7 @@ export const clientDbService = {
         TableName: tableName,
         Item: {
           ...item,
-          id,
+          id, // Sempre incluir o ID
           createdAt: item.createdAt || timestamp,
           updatedAt: timestamp
         }
@@ -73,15 +74,25 @@ export const clientDbService = {
     }
   },
   
-  // Obter um item por ID
-  async getById(tableName: string, id: string) {
+  // Obter um item por ID (suporta chaves simples e compostas)
+  async getById(tableName: string, key: string | { userId: string, deckId: string }) {
     try {
       const dynamoDb = await getOrCreateClientSideDbClient();
       
-      const params = {
-        TableName: tableName,
-        Key: { id }
-      };
+      let params;
+      if (typeof key === 'string') {
+        // Chave simples
+        params = {
+          TableName: tableName,
+          Key: { id: key }
+        };
+      } else {
+        // Chave composta (para tabelas como mtg_decks)
+        params = {
+          TableName: tableName,
+          Key: key
+        };
+      }
       
       // Garantir que o comando é uma instância do SDK antes de enviar
       const getCmd = new GetCommand(params);
@@ -99,8 +110,8 @@ export const clientDbService = {
     }
   },
   
-  // Atualizar um item
-  async update(tableName: string, id: string, updates: any) {
+  // Atualizar um item (suporta chaves simples e compostas)
+  async update(tableName: string, key: string | { userId: string, deckId: string }, updates: any) {
     try {
       const dynamoDb = await getOrCreateClientSideDbClient();
       const timestamp = getCurrentTimestamp();
@@ -125,13 +136,26 @@ export const clientDbService = {
         }
       });
       
-      const params: any = {
-        TableName: tableName,
-        Key: { id },
-        UpdateExpression: updateExpression,
-        ExpressionAttributeValues: expressionAttributeValues,
-        ReturnValues: "ALL_NEW" as const
-      };
+      let params: any;
+      if (typeof key === 'string') {
+        // Chave simples
+        params = {
+          TableName: tableName,
+          Key: { id: key },
+          UpdateExpression: updateExpression,
+          ExpressionAttributeValues: expressionAttributeValues,
+          ReturnValues: "ALL_NEW" as const
+        };
+      } else {
+        // Chave composta (para tabelas como mtg_decks)
+        params = {
+          TableName: tableName,
+          Key: key,
+          UpdateExpression: updateExpression,
+          ExpressionAttributeValues: expressionAttributeValues,
+          ReturnValues: "ALL_NEW" as const
+        };
+      }
       
       // Adicionar ExpressionAttributeNames apenas se houver palavras reservadas
       if (Object.keys(expressionAttributeNames).length > 0) {
@@ -151,15 +175,25 @@ export const clientDbService = {
     }
   },
   
-  // Excluir um item
-  async delete(tableName: string, id: string) {
+  // Excluir um item (suporta chaves simples e compostas)
+  async delete(tableName: string, key: string | { userId: string, deckId: string }) {
     try {
       const dynamoDb = await getOrCreateClientSideDbClient();
       
-      const params = {
-        TableName: tableName,
-        Key: { id }
-      };
+      let params;
+      if (typeof key === 'string') {
+        // Chave simples
+        params = {
+          TableName: tableName,
+          Key: { id: key }
+        };
+      } else {
+        // Chave composta (para tabelas como mtg_decks)
+        params = {
+          TableName: tableName,
+          Key: key
+        };
+      }
       
       await dynamoDb.send(new DeleteCommand(params));
       return { success: true };
@@ -177,7 +211,7 @@ export const clientDbService = {
       // Primeiro tentar com o índice
       const params = {
         TableName: tableName,
-        IndexName: 'userId-index',
+        IndexName: 'UserIdIndex',
         KeyConditionExpression: 'userId = :userId',
         ExpressionAttributeValues: {
           ':userId': userId
@@ -193,9 +227,7 @@ export const clientDbService = {
         const result = await dynamoDb.send(queryCmd);
         return { success: true, data: result.Items || [] };
       } catch (indexError: any) {
-        // Se o índice não existir, usar scan com filtro
-        console.warn(`Índice userId-index não encontrado para ${tableName}, usando scan com filtro`);
-        
+        // Se o índice não existir, usar scan com filtro (silenciosamente)
         const scanParams = {
           TableName: tableName,
           FilterExpression: 'userId = :userId',

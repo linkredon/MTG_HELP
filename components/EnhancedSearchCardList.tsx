@@ -667,13 +667,16 @@ export default function EnhancedSearchCardList({
 
   // Buscar contagem de versões para todas as cartas quando elas mudarem
   useEffect(() => {
-    cards.forEach(card => {
-      if (cardVersionCounts[card.id] === undefined) {
-        // Pequeno delay para não sobrecarregar a API
-        setTimeout(() => fetchVersionCount(card), Math.random() * 1000);
-      }
-    });
-  }, [cards, fetchVersionCount, cardVersionCounts]);
+    // Evitar loop infinito - só executar se cards mudou
+    const cardsToFetch = cards.filter(card => cardVersionCounts[card.id] === undefined);
+    
+    if (cardsToFetch.length > 0) {
+      // Limitar a 5 chamadas por vez para não sobrecarregar
+      cardsToFetch.slice(0, 5).forEach((card, index) => {
+        setTimeout(() => fetchVersionCount(card), index * 200); // 200ms entre cada chamada
+      });
+    }
+  }, [cards]); // Remover cardVersionCounts e fetchVersionCount das dependências
   const fetchCardVersions = useCallback(async (card: MTGCard) => {
     if (loadingVersions[card.id] || versionsData[card.id]) return;
     

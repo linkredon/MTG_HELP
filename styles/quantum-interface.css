@@ -1,749 +1,409 @@
-/* =================================================================
-   FUTURISTIC MTG INTERFACE - Compact Design System
-   ================================================================= */
+/* Quantum Interface - Construtor de Decks Melhorado */
 
-:root {
-  /* Futuristic Color Palette */
-  --primary-neon: #00fff0;
-  --secondary-neon: #ff0080;
-  --accent-neon: #8000ff;
-  --warning-neon: #ffff00;
-  --success-neon: #00ff40;
-  
-  /* Dark Glass Theme */
-  --glass-dark: rgba(0, 0, 0, 0.85);
-  --glass-medium: rgba(0, 0, 0, 0.65);
-  --glass-light: rgba(0, 0, 0, 0.45);
-  --glass-ultra: rgba(0, 0, 0, 0.95);
-  
-  /* Neon Glows */
-  --glow-primary: 0 0 10px var(--primary-neon), 0 0 20px var(--primary-neon);
-  --glow-secondary: 0 0 10px var(--secondary-neon);
-  --glow-accent: 0 0 10px var(--accent-neon);
-  
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, var(--primary-neon) 0%, var(--accent-neon) 100%);
-  --gradient-secondary: linear-gradient(135deg, var(--secondary-neon) 0%, var(--primary-neon) 100%);
-  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  
-  /* Compact Spacing - Reduzido */
-  --space-xs: 0.125rem;   /* 2px */
-  --space-sm: 0.25rem;    /* 4px */
-  --space-md: 0.5rem;     /* 8px */
-  --space-lg: 0.75rem;    /* 12px */
-  --space-xl: 1rem;       /* 16px */
-  --space-2xl: 1.5rem;    /* 24px */
-  --space-3xl: 2rem;      /* 32px */
-  
-  /* Typography - Mais compacta */
-  --font-display: 'Orbitron', 'SF Pro Display', system-ui, sans-serif;
-  --font-body: 'Inter', 'SF Pro Text', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.8125rem;
-  --font-size-md: 0.875rem;
-  --font-size-base: 0.9375rem;
-  --font-size-lg: 1rem;
-  --font-size-xl: 1.125rem;
-  --font-size-2xl: 1.25rem;
-  --line-height-tight: 1.2;
-  --line-height-normal: 1.4;
+.quantum-container {
+  @apply min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6;
 }
-
-/* Base Styles */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: var(--font-body);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-normal);
-  background: 
-    radial-gradient(circle at 20% 20%, var(--accent-neon) 0%, transparent 30%),
-    radial-gradient(circle at 80% 80%, var(--secondary-neon) 0%, transparent 30%),
-    radial-gradient(circle at 40% 60%, var(--primary-neon) 0%, transparent 30%),
-    linear-gradient(135deg, #000000 0%, #1a0033 50%, #000000 100%);
-  background-attachment: fixed;
-  background-size: 150% 150%;
-  color: white;
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* =================================================================
-   QUANTUM APP LAYOUT - COMPACTO
-   ================================================================= */
-
-.quantum-app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-.quantum-app::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300fff0' fill-opacity='0.02'%3E%3Cpath d='M20 20c0-11.046-8.954-20-20-20v40c11.046 0 20-8.954 20-20z'/%3E%3C/g%3E%3C/svg%3E") repeat;
-  background-size: 30px 30px;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* =================================================================
-   HOLOGRAPHIC HEADER - COMPACTO
-   ================================================================= */
 
 .quantum-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: var(--glass-ultra);
-  backdrop-filter: blur(15px);
-  border-bottom: 1px solid var(--primary-neon);
-  box-shadow: 0 2px 16px rgba(0, 255, 240, 0.2);
-  height: 3.5rem; /* Altura fixa compacta */
+  @apply flex items-center justify-between mb-8 p-6 bg-slate-800/50 rounded-xl border border-slate-700/50 backdrop-blur-sm;
 }
 
-.quantum-header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-sm) var(--space-lg);
-  max-width: 1600px; /* Expandido para usar mais espaço horizontal */
-  margin: 0 auto;
-  height: 100%;
+.quantum-header-left {
+  @apply flex-1;
 }
 
-.quantum-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  text-decoration: none;
-  color: white;
+.quantum-title {
+  @apply text-3xl font-bold text-white flex items-center mb-2;
 }
 
-.quantum-logo {
-  width: 2.5rem; /* Reduzido */
-  height: 2.5rem; /* Reduzido */
-  background: var(--gradient-primary);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: 1rem; /* Reduzido */
-  color: black;
-  text-shadow: none;
-  position: relative;
-  animation: quantum-pulse 3s ease-in-out infinite;
+.quantum-subtitle {
+  @apply text-slate-400 text-lg;
 }
 
-.quantum-logo::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  background: var(--gradient-primary);
-  border-radius: 50%;
-  opacity: 0.5;
-  animation: quantum-rotate 10s linear infinite;
-  z-index: -1;
+.quantum-header-right {
+  @apply flex items-center gap-3;
 }
 
-.quantum-brand-text {
-  font-family: var(--font-display);
+.quantum-filters {
+  @apply flex flex-col lg:flex-row gap-4 mb-6 p-4 bg-slate-800/30 rounded-lg border border-slate-700/30;
 }
 
-.quantum-brand-title {
-  font-size: 1.25rem; /* Reduzido */
-  font-weight: 700;
-  margin: 0;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.quantum-search {
+  @apply relative flex-1;
 }
 
-.quantum-brand-subtitle {
-  font-size: 0.6875rem; /* Reduzido */
-  margin: 0;
-  color: rgba(255, 255, 255, 0.7);
-  text-transform: uppercase;
-  letter-spacing: 1.5px; /* Reduzido */
-}
-
-/* =================================================================
-   HOLOGRAPHIC NAVIGATION - COMPACTO
-   ================================================================= */
-
-.quantum-nav {
-  padding: 0 var(--space-lg);
-  max-width: 1600px; /* Expandido */
-  margin: 0 auto;
-  width: 100%;
-}
-
-.quantum-nav-container {
-  background: var(--glass-medium);
-  backdrop-filter: blur(15px);
-  border-radius: 12px; /* Reduzido */
-  padding: var(--space-xs); /* Reduzido */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin: var(--space-md) 0; /* Reduzido */
-  position: relative;
-  overflow: hidden;
-}
-
-.quantum-nav-container::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-glass);
-  border-radius: 12px; /* Reduzido */
-  pointer-events: none;
-}
-
-.quantum-nav-tabs {
-  display: flex;
-  gap: var(--space-xs); /* Reduzido */
-  position: relative;
-  z-index: 1;
-}
-
-.quantum-tab {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs); /* Reduzido */
-  padding: var(--space-sm) var(--space-md); /* Reduzido */
-  border-radius: 10px; /* Reduzido */
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  min-width: 100px; /* Reduzido */
-  justify-content: center;
-}
-
-.quantum-tab::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-primary);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  border-radius: 10px;
-}
-
-.quantum-tab:hover {
-  color: white;
-  transform: translateY(-1px); /* Reduzido */
-}
-
-.quantum-tab:hover::before {
-  opacity: 0.1;
-}
-
-.quantum-tab.active {
-  color: white;
-  background: var(--glass-dark);
-  border: 1px solid var(--primary-neon);
-  box-shadow: var(--glow-primary);
-  text-shadow: 0 0 5px var(--primary-neon);
-}
-
-.quantum-tab.active::before {
-  opacity: 0.2;
-}
-
-.quantum-tab-icon {
-  width: 16px; /* Reduzido */
-  height: 16px; /* Reduzido */
-  filter: drop-shadow(0 0 2px currentColor);
-}
-
-.quantum-tab-text {
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-/* =================================================================
-   NEURAL CONTENT AREAS - COMPACTO
-   ================================================================= */
-
-.quantum-content {
-  flex: 1;
-  padding: 0 var(--space-lg) var(--space-lg);
-  max-width: 1600px; /* Expandido */
-  margin: 0 auto;
-  width: 100%;
-}
-
-.neural-section {
-  margin-bottom: var(--space-xl); /* Reduzido */
-}
-
-/* =================================================================
-   QUANTUM CARDS SYSTEM - COMPACTO
-   ================================================================= */
-
-.quantum-card {
-  background: var(--glass-medium);
-  backdrop-filter: blur(15px);
-  border-radius: 16px; /* Reduzido */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-  margin-bottom: var(--space-md); /* Reduzido */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.quantum-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-glass);
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.quantum-card:hover {
-  transform: translateY(-4px); /* Reduzido */
-  border-color: var(--primary-neon);
-  box-shadow: 
-    0 10px 20px rgba(0, 0, 0, 0.3),
-    0 0 15px rgba(0, 255, 240, 0.2);
-}
-
-.quantum-card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm); /* Reduzido */
-  padding: var(--space-md); /* Reduzido */
-  position: relative;
-  z-index: 1;
-}
-
-.quantum-card-icon {
-  width: 36px; /* Reduzido */
-  height: 36px; /* Reduzido */
-  background: var(--gradient-primary);
-  border-radius: 10px; /* Reduzido */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: black;
-  box-shadow: var(--glow-primary);
-}
-
-.quantum-card-content {
-  flex: 1;
-}
-
-.quantum-card-title {
-  font-family: var(--font-display);
-  font-size: var(--font-size-lg); /* Reduzido */
-  font-weight: 600;
-  margin: 0 0 var(--space-xs) 0;
-  color: white;
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-  line-height: var(--line-height-tight);
-}
-
-.quantum-card-subtitle {
-  font-size: var(--font-size-sm);
-  margin: 0;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.3;
-}
-
-.quantum-card-body {
-  padding: 0 var(--space-md) var(--space-md); /* Reduzido */
-  position: relative;
-  z-index: 1;
-}
-
-/* =================================================================
-   HOLOGRAPHIC BUTTONS - COMPACTO
-   ================================================================= */
-
-.quantum-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs); /* Reduzido */
-  padding: var(--space-sm) var(--space-md); /* Reduzido */
-  border-radius: 10px; /* Reduzido */
-  border: none;
-  background: var(--glass-medium);
-  color: white;
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-}
-
-.quantum-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-primary);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.quantum-btn:hover {
-  transform: translateY(-1px); /* Reduzido */
-  border-color: var(--primary-neon);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), var(--glow-primary);
-}
-
-.quantum-btn:hover::before {
-  opacity: 0.15;
-}
-
-.quantum-btn.primary {
-  background: var(--gradient-primary);
-  color: black;
-  border-color: var(--primary-neon);
-  box-shadow: var(--glow-primary);
-}
-
-.quantum-btn.secondary {
-  background: var(--gradient-secondary);
-  color: white;
-  border-color: var(--secondary-neon);
-  box-shadow: var(--glow-secondary);
-}
-
-.quantum-btn.accent {
-  background: var(--gradient-primary);
-  color: black;
-  border-color: var(--accent-neon);
-  box-shadow: var(--glow-accent);
-}
-
-.quantum-btn.compact {
-  padding: var(--space-xs) var(--space-sm);
-  font-size: var(--font-size-xs);
-}
-
-/* =================================================================
-   NEURAL GRID SYSTEM - COMPACTO
-   ================================================================= */
-
-.neural-grid {
-  display: grid;
-  gap: var(--space-md); /* Reduzido */
-  margin: var(--space-md) 0; /* Reduzido */
-}
-
-.neural-grid-2 {
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Reduzido */
-}
-
-.neural-grid-3 {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Reduzido */
-}
-
-.neural-grid-4 {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Reduzido */
-}
-
-.neural-grid-dense {
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Ainda mais compacto */
-  gap: var(--space-sm);
-}
-
-/* =================================================================
-   QUANTUM FORMS - COMPACTO
-   ================================================================= */
-
-.quantum-form-group {
-  margin-bottom: var(--space-md); /* Reduzido */
-}
-
-.quantum-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: var(--space-xs); /* Reduzido */
-  color: rgba(255, 255, 255, 0.9);
-  font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.5px; /* Reduzido */
+.quantum-search svg {
+  @apply absolute left-3 top-1/2 transform -translate-y-1/2;
 }
 
 .quantum-input {
-  width: 100%;
-  padding: var(--space-sm); /* Reduzido */
-  border-radius: 8px; /* Reduzido */
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: var(--glass-medium);
-  backdrop-filter: blur(10px);
-  color: white;
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  transition: all 0.2s ease;
-  height: 2rem; /* Altura fixa compacta */
+  @apply pl-10 bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500/20;
 }
 
-.quantum-input:focus {
-  outline: none;
-  border-color: var(--primary-neon);
-  box-shadow: 0 0 0 2px rgba(0, 255, 240, 0.2), var(--glow-primary);
-}
-
-.quantum-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+.quantum-filter-controls {
+  @apply flex items-center gap-3;
 }
 
 .quantum-select {
-  width: 100%;
-  padding: var(--space-sm); /* Reduzido */
-  border-radius: 8px; /* Reduzido */
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: var(--glass-medium);
-  backdrop-filter: blur(10px);
-  color: white;
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  height: 2rem; /* Altura fixa compacta */
+  @apply bg-slate-700/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500/20;
+}
+
+.quantum-content {
+  @apply space-y-6;
+}
+
+.quantum-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+}
+
+.quantum-card {
+  @apply bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm transition-all duration-300;
+}
+
+.quantum-card-hover {
+  @apply transform scale-105 border-cyan-500/30 shadow-lg shadow-cyan-500/10;
+}
+
+.quantum-card-header {
+  @apply flex items-start justify-between p-6 pb-4;
+}
+
+.quantum-card-title {
+  @apply flex items-center gap-3 flex-wrap;
+}
+
+.quantum-card-title h3 {
+  @apply text-lg font-semibold text-white;
+}
+
+.quantum-badge {
+  @apply bg-slate-700 text-slate-300 border border-slate-600;
+}
+
+.quantum-card-actions {
+  @apply flex items-center gap-1;
+}
+
+.quantum-button-icon {
+  @apply h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50;
+}
+
+.quantum-card-content {
+  @apply p-6 pt-0;
+}
+
+.quantum-card-stats {
+  @apply flex items-center justify-between mb-4;
+}
+
+.quantum-stat {
+  @apply flex items-center gap-2 text-sm text-slate-300;
+}
+
+.quantum-colors {
+  @apply flex items-center gap-1;
+}
+
+.quantum-card-footer {
+  @apply mt-4 pt-4 border-t border-slate-700/50;
+}
+
+.quantum-empty-state {
+  @apply text-center py-16 px-6;
+}
+
+/* Modal Styles */
+.quantum-modal {
+  @apply bg-slate-800 border border-slate-700 max-w-2xl;
+}
+
+.quantum-modal-title {
+  @apply text-xl font-semibold text-white flex items-center;
+}
+
+.quantum-modal-content {
+  @apply space-y-6;
+}
+
+.quantum-tabs {
+  @apply bg-slate-700/50 border border-slate-600;
+}
+
+.quantum-tab-content {
+  @apply space-y-4;
+}
+
+.quantum-form-group {
+  @apply space-y-2;
+}
+
+.quantum-label {
+  @apply text-sm font-medium text-slate-300 flex items-center gap-2;
 }
 
 .quantum-textarea {
-  width: 100%;
-  padding: var(--space-sm); /* Reduzido */
-  border-radius: 8px; /* Reduzido */
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: var(--glass-medium);
-  backdrop-filter: blur(10px);
-  color: white;
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  resize: vertical;
-  min-height: 80px; /* Reduzido */
+  @apply bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500/20;
 }
 
-/* =================================================================
-   HOLOGRAPHIC BADGES & STATUS - COMPACTO
-   ================================================================= */
-
-.quantum-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-sm); /* Reduzido */
-  border-radius: 12px; /* Reduzido */
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px; /* Reduzido */
-  border: 1px solid;
+.quantum-colors-selector {
+  @apply flex items-center gap-2 flex-wrap;
 }
 
-.quantum-badge.primary {
-  background: rgba(0, 255, 240, 0.15);
-  color: var(--primary-neon);
-  border-color: var(--primary-neon);
-  box-shadow: 0 0 5px rgba(0, 255, 240, 0.2); /* Reduzido */
+.quantum-color-button {
+  @apply w-10 h-10 rounded-full font-bold transition-all duration-200;
 }
 
-.quantum-badge.secondary {
-  background: rgba(255, 0, 128, 0.15);
-  color: var(--secondary-neon);
-  border-color: var(--secondary-neon);
-  box-shadow: 0 0 5px rgba(255, 0, 128, 0.2); /* Reduzido */
+.quantum-color-white {
+  @apply bg-yellow-400 text-yellow-900 hover:bg-yellow-300;
 }
 
-.quantum-badge.success {
-  background: rgba(0, 255, 64, 0.15);
-  color: var(--success-neon);
-  border-color: var(--success-neon);
-  box-shadow: 0 0 5px rgba(0, 255, 64, 0.2); /* Reduzido */
+.quantum-color-blue {
+  @apply bg-blue-500 text-white hover:bg-blue-400;
 }
 
-.quantum-badge.warning {
-  background: rgba(255, 255, 0, 0.15);
-  color: var(--warning-neon);
-  border-color: var(--warning-neon);
-  box-shadow: 0 0 5px rgba(255, 255, 0, 0.2); /* Reduzido */
+.quantum-color-black {
+  @apply bg-gray-800 text-white hover:bg-gray-700;
 }
 
-/* =================================================================
-   QUANTUM ANIMATIONS - SUAVIZADO
-   ================================================================= */
-
-@keyframes quantum-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
+.quantum-color-red {
+  @apply bg-red-500 text-white hover:bg-red-400;
 }
 
-@keyframes quantum-rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.quantum-color-green {
+  @apply bg-green-500 text-white hover:bg-green-400;
 }
 
-@keyframes quantum-glow {
-  0%, 100% { 
-    box-shadow: 0 0 10px var(--primary-neon);
-  }
-  50% { 
-    box-shadow: 0 0 20px var(--primary-neon), 0 0 30px var(--primary-neon);
-  }
+.quantum-checkbox {
+  @apply w-4 h-4 text-cyan-500 bg-slate-700 border-slate-600 rounded focus:ring-cyan-500/20;
 }
 
-@keyframes neural-float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); } /* Reduzido */
+.quantum-modal-footer {
+  @apply flex items-center justify-end gap-3 pt-6 border-t border-slate-700/50;
 }
 
-/* =================================================================
-   RESPONSIVE DESIGN - MAIS OTIMIZADO
-   ================================================================= */
+.quantum-collections-list {
+  @apply space-y-3 max-h-64 overflow-y-auto;
+}
 
+.quantum-collection-item {
+  @apply flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/50 transition-all duration-200;
+}
+
+.quantum-collection-item-has-card {
+  @apply border-green-500/30 bg-green-500/10;
+}
+
+.quantum-collection-info h4 {
+  @apply text-white font-medium;
+}
+
+.quantum-collection-info p {
+  @apply text-slate-400 text-sm;
+}
+
+.quantum-collection-actions {
+  @apply flex items-center gap-2;
+}
+
+.quantum-badge-success {
+  @apply bg-green-500/20 text-green-400 border-green-500/30;
+}
+
+/* Button Styles */
+.quantum-button-primary {
+  @apply bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-lg shadow-cyan-500/25 transition-all duration-200;
+}
+
+.quantum-button-secondary {
+  @apply bg-slate-700/50 text-slate-300 border border-slate-600 hover:bg-slate-700 hover:text-white transition-all duration-200;
+}
+
+.quantum-button-danger {
+  @apply bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 shadow-lg shadow-red-500/25 transition-all duration-200;
+}
+
+/* Notification Styles */
+.quantum-notification {
+  @apply fixed top-4 right-4 z-50 max-w-sm;
+}
+
+.quantum-notification-content {
+  @apply flex items-center gap-3 p-4 rounded-lg shadow-lg backdrop-blur-sm;
+}
+
+.quantum-notification-success {
+  @apply bg-green-500/20 border border-green-500/30 text-green-300;
+}
+
+.quantum-notification-error {
+  @apply bg-red-500/20 border border-red-500/30 text-red-300;
+}
+
+.quantum-notification-info {
+  @apply bg-blue-500/20 border border-blue-500/30 text-blue-300;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .quantum-header-content {
-    padding: var(--space-sm);
+  .quantum-header {
+    @apply flex-col items-start gap-4;
   }
   
-  .quantum-nav {
-    padding: 0 var(--space-sm);
+  .quantum-header-right {
+    @apply w-full justify-between;
   }
   
-  .quantum-content {
-    padding: 0 var(--space-sm) var(--space-lg);
+  .quantum-filters {
+    @apply flex-col;
   }
   
-  .quantum-nav-tabs {
-    flex-wrap: wrap;
+  .quantum-filter-controls {
+    @apply flex-wrap;
   }
   
-  .quantum-tab {
-    min-width: auto;
-    flex: 1;
-    padding: var(--space-xs) var(--space-sm);
-    font-size: var(--font-size-xs);
+  .quantum-grid {
+    @apply grid-cols-1;
   }
   
-  .neural-grid-2,
-  .neural-grid-3,
-  .neural-grid-4 {
-    grid-template-columns: 1fr;
+  .quantum-card-actions {
+    @apply flex-wrap;
   }
 }
 
-/* =================================================================
-   DENSIDADE DE DADOS - NOVO
-   ================================================================= */
-
-/* Tabelas densas */
-.quantum-table-container {
-  overflow-x: auto;
-  margin: var(--space-sm) 0;
-  border-radius: 10px;
-  background: var(--glass-medium);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Animation Classes */
+@keyframes quantum-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.quantum-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
+.quantum-card {
+  animation: quantum-fade-in 0.3s ease-out;
 }
 
-.quantum-table th {
-  background: var(--glass-dark);
-  font-weight: 600;
-  text-align: left;
-  padding: var(--space-xs) var(--space-sm);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--primary-neon);
+/* Hover Effects */
+.quantum-card:hover {
+  @apply transform scale-105;
 }
 
-.quantum-table td {
-  padding: var(--space-xs) var(--space-sm);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+.quantum-button-primary:hover {
+  @apply transform scale-105 shadow-xl;
 }
 
-.quantum-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.05);
+.quantum-button-secondary:hover {
+  @apply transform scale-105;
 }
 
-/* Cards densos */
-.quantum-card-dense {
-  padding: var(--space-sm);
-  margin-bottom: var(--space-sm);
+/* Focus States */
+.quantum-input:focus,
+.quantum-select:focus,
+.quantum-textarea:focus {
+  @apply ring-2 ring-cyan-500/20 border-cyan-500;
 }
 
-.quantum-card-dense .quantum-card-header {
-  padding: var(--space-xs) var(--space-sm);
-  gap: var(--space-xs);
+/* Loading States */
+.quantum-loading {
+  @apply opacity-50 pointer-events-none;
 }
 
-.quantum-card-dense .quantum-card-icon {
-  width: 24px;
-  height: 24px;
+.quantum-loading::after {
+  content: '';
+  @apply absolute inset-0 bg-slate-800/50 rounded-lg;
 }
 
-.quantum-card-dense .quantum-card-body {
-  padding: var(--space-xs) var(--space-sm);
+/* Success States */
+.quantum-success {
+  @apply border-green-500/30 bg-green-500/10;
 }
 
-/* Grid denso para cards/items */
-.compact-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: var(--space-xs);
+/* Error States */
+.quantum-error {
+  @apply border-red-500/30 bg-red-500/10;
 }
 
-.compact-list-item {
-  padding: var(--space-xs);
-  font-size: var(--font-size-sm);
+/* Disabled States */
+.quantum-disabled {
+  @apply opacity-50 pointer-events-none;
+}
+
+/* Custom Scrollbar */
+.quantum-collections-list::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.quantum-collections-list::-webkit-scrollbar-track {
+  @apply bg-slate-700/30 rounded;
+}
+
+.quantum-collections-list::-webkit-scrollbar-thumb {
+  @apply bg-slate-600 rounded hover:bg-slate-500;
+}
+
+/* Glass Effect */
+.quantum-glass {
+  @apply backdrop-blur-sm bg-white/10 border border-white/20;
+}
+
+/* Gradient Text */
+.quantum-gradient-text {
+  @apply bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent;
+}
+
+/* Pulse Animation */
+@keyframes quantum-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.quantum-pulse {
+  animation: quantum-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Shimmer Effect */
+@keyframes quantum-shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.quantum-shimmer {
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 200px 100%;
+  animation: quantum-shimmer 1.5s infinite;
+}
+
+/* Loading Spinner */
+.quantum-loading {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-xs);
-  border-radius: 6px;
-  background: var(--glass-medium);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  justify-content: center;
+  min-height: 200px;
+  gap: 1rem;
 }
 
-/* Compact Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.quantum-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(34, 197, 94, 0.3);
+  border-top: 3px solid #22c55e;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--primary-neon);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-neon);
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

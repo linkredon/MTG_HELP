@@ -16,46 +16,55 @@ import {
   Trash2, 
   Copy, 
   Edit3, 
+  Save, 
   Search, 
+  Filter, 
   BarChart3,
+  Target,
   Zap,
+  Users,
   Eye,
   Upload,
   Package,
   Hammer,
+  X,
+  Image,
+  Star,
+  BookOpen,
+  Download,
+  Share2,
+  Settings,
   ChevronRight,
   CheckCircle,
   AlertCircle,
-  Info,
-  BookOpen
+  Info
 } from "lucide-react"
+import '../styles/deck-viewer-compact.css'
+import '../styles/modal-fix.css'
+import '../styles/filtros-fix.css'
+import '../styles/dropdown-z-fix.css'
+import '../styles/deck-builder-enhanced.css'
+import '../styles/dropdown-fixes-enhanced.css'
+import '../styles/deck-importer-enhanced.css'
+import '../styles/modal-fix-enhanced.css'
 import '../styles/quantum-interface.css'
 import DeckBuilderEnhanced from './DeckBuilder-enhanced'
 
-export default function ConstrutorDecks() {
+export default function ConstrutorDecksEnhanced() {
   const { 
     decks, 
     collections,
-    loading,
     criarDeck, 
+    editarDeck, 
     deletarDeck, 
     duplicarDeck,
+    adicionarCartaAoDeck,
+    removerCartaDoDeck,
+    atualizarQuantidadeNoDeck,
     adicionarCartaAColecao,
     criarColecao
   } = useAppContext()
   const cardModalContext = useCardModal()
-  
-  // Mostrar loading enquanto os dados estão sendo carregados
-  if (loading) {
-    return (
-      <div className="quantum-container">
-        <div className="quantum-loading">
-          <div className="quantum-spinner"></div>
-          <p className="text-slate-400">Carregando construtor de decks...</p>
-        </div>
-      </div>
-    )
-  }
   
   // Estados locais para UI
   const [selectedDeck, setSelectedDeck] = useState<string | null>(null)
@@ -86,6 +95,10 @@ export default function ConstrutorDecks() {
   const [formatFilter, setFormatFilter] = useState('all')
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'cards' | 'format'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  
+  // Estado para armazenar as cartas de fundo selecionadas manualmente
+  const [backgroundCards, setBackgroundCards] = useState<{[deckId: string]: number}>({})
+  const [showCardSelector, setShowCardSelector] = useState<string | null>(null)
 
   // Função para mostrar notificações
   const showNotification = (type: 'success' | 'error' | 'info', message: string) => {
@@ -196,37 +209,9 @@ export default function ConstrutorDecks() {
 
   // Função para verificar se uma carta está na coleção
   const isCardInCollection = (cardId: string, collectionId: string) => {
-    try {
-      // Verificações defensivas robustas
-      if (!collections || !Array.isArray(collections)) {
-        console.log('isCardInCollection: collections não é um array válido');
-        return false;
-      }
-      
-      const collection = collections.find(c => c && c.id === collectionId);
-      if (!collection) {
-        console.log('isCardInCollection: coleção não encontrada');
-        return false;
-      }
-      
-      if (!collection.cards || !Array.isArray(collection.cards)) {
-        console.log('isCardInCollection: cards não é um array válido');
-        return false;
-      }
-      
-      // Verificar se cardId é válido
-      if (!cardId) {
-        console.log('isCardInCollection: cardId é inválido');
-        return false;
-      }
-      
-      return collection.cards.some((cc: any) => {
-        return cc && cc.card && cc.card.id === cardId;
-      });
-    } catch (error) {
-      console.error('Erro em isCardInCollection:', error);
-      return false;
-    }
+    const collection = collections.find(c => c.id === collectionId)
+    if (!collection) return false
+    return collection.cards.some((cc: any) => cc.card.id === cardId)
   }
 
   // Filtrar e ordenar decks
@@ -289,6 +274,7 @@ export default function ConstrutorDecks() {
         </div>
         
         <div className="quantum-content">
+          {/* Aqui vai o componente DeckViewer */}
           <div className="quantum-card">
             <CardHeader>
               <CardTitle>Visualizador de Deck</CardTitle>
@@ -328,6 +314,7 @@ export default function ConstrutorDecks() {
         </div>
         
         <div className="quantum-content">
+          {/* Componente DeckBuilder melhorado */}
           <DeckBuilderEnhanced 
             deckId={selectedDeck}
             onSave={(deckId) => {
@@ -361,6 +348,7 @@ export default function ConstrutorDecks() {
         </div>
         
         <div className="quantum-content">
+          {/* Aqui vai o componente DeckImporter */}
           <div className="quantum-card">
             <CardHeader>
               <CardTitle>Importar Deck</CardTitle>
@@ -462,7 +450,7 @@ export default function ConstrutorDecks() {
 
       {/* Lista de Decks */}
       <div className="quantum-content">
-        {!filteredDecks || filteredDecks.length === 0 ? (
+        {filteredDecks.length === 0 ? (
           <div className="quantum-empty-state">
             <Package className="w-16 h-16 text-slate-500 mb-4" />
             <h3 className="text-xl font-medium text-white mb-2">Nenhum deck encontrado</h3>
@@ -540,11 +528,11 @@ export default function ConstrutorDecks() {
                     <div className="quantum-stat">
                       <BarChart3 className="w-4 h-4 text-slate-400" />
                       <span className="text-sm text-slate-300">
-                        {deck.cards && Array.isArray(deck.cards) ? deck.cards.reduce((sum, c) => sum + (c?.quantity || 0), 0) : 0} cartas
+                        {deck.cards.reduce((sum, c) => sum + c.quantity, 0)} cartas
                       </span>
                     </div>
                     
-                    {deck.colors && Array.isArray(deck.colors) && deck.colors.length > 0 && (
+                    {deck.colors && deck.colors.length > 0 && (
                       <div className="quantum-colors">
                         {deck.colors.map((color) => (
                           <div
@@ -694,11 +682,11 @@ export default function ConstrutorDecks() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="new">Criar Nova Coleção</SelectItem>
-                        {collections && Array.isArray(collections) ? collections.map((collection) => (
+                        {collections.map((collection) => (
                           <SelectItem key={collection.id} value={collection.id}>
                             {collection.name}
                           </SelectItem>
-                        )) : null}
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -789,7 +777,7 @@ export default function ConstrutorDecks() {
             </p>
             
             <div className="quantum-collections-list">
-              {collections && Array.isArray(collections) ? collections.map((collection) => (
+              {collections.map((collection) => (
                 <div
                   key={collection.id}
                   className={`quantum-collection-item ${
@@ -801,7 +789,7 @@ export default function ConstrutorDecks() {
                   <div className="quantum-collection-info">
                     <h4 className="font-medium text-white">{collection.name}</h4>
                     <p className="text-sm text-slate-400">
-                      {collection.cards && Array.isArray(collection.cards) ? collection.cards.length : 0} cartas
+                      {collection.cards.length} cartas
                     </p>
                   </div>
                   
@@ -823,12 +811,7 @@ export default function ConstrutorDecks() {
                     )}
                   </div>
                 </div>
-              )) : (
-                <div className="quantum-empty-state">
-                  <Package className="w-8 h-8 text-slate-500 mb-2" />
-                  <p className="text-slate-400 text-sm">Nenhuma coleção encontrada</p>
-                </div>
-              )}
+              ))}
             </div>
           </div>
           
