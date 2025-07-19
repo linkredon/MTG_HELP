@@ -20,7 +20,7 @@ export default function CollectionIndicator({
 }: CollectionIndicatorProps) {
   const quantity = useMemo(() => {
     return collection
-      .filter(item => item.card.id === card.id)
+              .filter(item => item.card?.id === card.id)
       .reduce((total, item) => total + item.quantity, 0);
   }, [card.id, collection]);
 

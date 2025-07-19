@@ -44,7 +44,31 @@ export function configureAmplify() {
 
     const identityPoolId = process.env.NEXT_PUBLIC_IDENTITY_POOL_ID || 'us-east-2:8681c7d7-6e0e-494f-9f0a-fe9f8d949db5';
 
-    // Log de diagnóstico para depuração
+    
+    // Logs de diagnóstico para resolver problemas de autenticação
+    console.log("🔧 Diagnóstico da configuração:");
+    console.log("- Region:", region);
+    console.log("- User Pool ID:", userPoolId);
+    console.log("- Client ID:", userPoolClientId);
+    console.log("- Cognito Domain:", cognitoDomain);
+    console.log("- Identity Pool ID:", identityPoolId);
+    console.log("- Production URLs:", productionUrls);
+    console.log("- Local URLs:", localUrls);
+    console.log("- Current URL:", typeof window !== 'undefined' ? window.location.origin : 'Server-side');
+    
+
+    // Logs de diagnóstico para resolver problemas de autenticação
+    console.log("🔧 Diagnóstico da configuração:");
+    console.log("- Region:", region);
+    console.log("- User Pool ID:", userPoolId);
+    console.log("- Client ID:", userPoolClientId);
+    console.log("- Cognito Domain:", cognitoDomain);
+    console.log("- Identity Pool ID:", identityPoolId);
+    console.log("- Production URLs:", productionUrls);
+    console.log("- Local URLs:", localUrls);
+    console.log("- Current URL:", typeof window !== 'undefined' ? window.location.origin : 'Server-side');
+    
+// Log de diagnóstico para depuração
     console.log('Configuração final do Amplify:', {
       region,
       userPoolId,

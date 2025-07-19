@@ -87,7 +87,7 @@ const CardListWithVersions: React.FC<CardListWithVersionsProps> = ({
     
     // Função para verificar se uma carta está na coleção
     const verificarQuantidadeNaColecao = (card: MTGCard): number => {
-      const cardNaColecao = collectionCards.find(c => c.card.id === card.id);
+      const cardNaColecao = collectionCards.find(c => c.card?.id === card.id);
       return cardNaColecao ? cardNaColecao.quantity : 0;
     };
 
@@ -98,7 +98,7 @@ const CardListWithVersions: React.FC<CardListWithVersionsProps> = ({
           setErro(null);
 
           // Primeiro, buscar a carta original para obter o nome do oráculo
-          const cardOriginalObj = collectionCards.find(c => c.card.id === cardId);
+          const cardOriginalObj = collectionCards.find(c => c.card?.id === cardId);
           if (!cardOriginalObj) {
             throw new Error("Carta original não encontrada na coleção");
           }

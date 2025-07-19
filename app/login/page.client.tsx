@@ -68,7 +68,7 @@ export default function LoginClientPage() {
         console.log('Executando redirecionamento para /');
         // Usar replace em vez de href para evitar problemas de histórico
         window.location.replace('/');
-      }, 2000); // Aumentar para 2 segundos
+      }, 3000); // Aumentar para 3 segundos
       
       return () => clearTimeout(redirectTimer);
     }
@@ -119,13 +119,13 @@ export default function LoginClientPage() {
         setSuccess('Login realizado com sucesso! Redirecionando...');
         
         // Aguardar um pouco para garantir que o contexto seja atualizado
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Atualizar o contexto de autenticação
         await refreshUser();
         
         // Aguardar mais um pouco para garantir que tudo esteja sincronizado
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Forçar redirecionamento após login com replace
         console.log('Forçando redirecionamento para página inicial...');

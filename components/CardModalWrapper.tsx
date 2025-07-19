@@ -16,7 +16,7 @@ export default function CardModalWrapper({ children }: CardModalWrapperProps) {
   // Função para obter quantidade baseada na coleção atual do AppContext
   const getQuantidadeNaColecao = async (cardId: string): Promise<number> => {
     if (!currentCollection?.cards) return 0;
-    const card = currentCollection.cards.find((c: any) => c.card.id === cardId);
+    const card = currentCollection.cards.find((c: any) => c.card?.id === cardId);
     return card ? card.quantity : 0;
   };
 

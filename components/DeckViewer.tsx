@@ -87,7 +87,7 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
     
     const manaCurve: Record<number, number> = {};
     mainboard.forEach(card => {
-      const cmc = card.card.cmc || 0;
+      const cmc = card.card?.cmc || 0;
       const cmcKey = cmc >= 7 ? 7 : cmc;
       manaCurve[cmcKey] = (manaCurve[cmcKey] || 0) + card.quantity;
     });
@@ -134,11 +134,11 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
   // Função para mover cartas entre seções do deck
   const handleMoveCard = (cardId: string, fromCategory: 'mainboard' | 'sideboard' | 'commander', toCategory: 'mainboard' | 'sideboard' | 'commander') => {
     // Encontrar a carta no deck
-    const card = deck.cards.find(c => c.card.id === cardId && c.category === fromCategory);
+    const card = deck.cards.find(c => c.card?.id === cardId && c.category === fromCategory);
     if (!card) return;
     
     // Verificar se a carta já existe na categoria de destino
-    const existingCard = deck.cards.find(c => c.card.id === cardId && c.category === toCategory);
+    const existingCard = deck.cards.find(c => c.card?.id === cardId && c.category === toCategory);
     
     if (existingCard) {
       // Se já existe, aumentar a quantidade e remover da categoria original
@@ -161,7 +161,7 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
     if (commander.length > 0) {
       exportText += "Commander:\n";
       commander.forEach(deckCard => {
-        exportText += `${deckCard.quantity} ${deckCard.card.name}\n`;
+        exportText += `${deckCard.quantity} ${deckCard.card?.name || 'Unknown Card'}\n`;
       });
       exportText += "\n";
     }
@@ -169,7 +169,7 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
     if (mainboard.length > 0) {
       exportText += "Main Deck:\n";
       mainboard.forEach(deckCard => {
-        exportText += `${deckCard.quantity} ${deckCard.card.name}\n`;
+        exportText += `${deckCard.quantity} ${deckCard.card?.name || 'Unknown Card'}\n`;
       });
       exportText += "\n";
     }
@@ -177,7 +177,7 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
     if (sideboard.length > 0) {
       exportText += "Sideboard:\n";
       sideboard.forEach(deckCard => {
-        exportText += `${deckCard.quantity} ${deckCard.card.name}\n`;
+        exportText += `${deckCard.quantity} ${deckCard.card?.name || 'Unknown Card'}\n`;
       });
     }
     
@@ -489,7 +489,7 @@ const TypeDistributionDisplay: React.FC<{ cards: any[] }> = ({ cards }) => {
     const types: Record<string, number> = {};
     
     cards.forEach((deckCard) => {
-      const typeLine = deckCard.card.type_line?.toLowerCase() || '';
+      const typeLine = deckCard.card?.type_line?.toLowerCase() || '';
       let mainType = 'Other';
       
       if (typeLine.includes('creature')) mainType = 'Creature';

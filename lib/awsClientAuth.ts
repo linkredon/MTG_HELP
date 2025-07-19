@@ -196,7 +196,12 @@ export async function getDynamoDbClientAsync() {
     console.log('Cliente DynamoDB configurado com sucesso no lado do cliente');
     
     // Criar um cliente de documento para operações mais simples
-    cachedDynamoDBClient = DynamoDBDocumentClient.from(client);
+    cachedDynamoDBClient = DynamoDBDocumentClient.from(client, {
+      marshallOptions: {
+        convertEmptyValues: true,
+        removeUndefinedValues: true
+      }
+    });
     return cachedDynamoDBClient;
   } catch (error) {
     console.error('Erro ao configurar cliente DynamoDB:', error);

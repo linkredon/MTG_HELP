@@ -50,7 +50,7 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              onMoveCard(deckCard.card.id, currentCategory, 'mainboard');
+              onMoveCard(deckCard.card?.id || '', currentCategory, 'mainboard');
             }}
             className="w-6 h-6 rounded bg-green-600/70 hover:bg-green-500 text-white flex items-center justify-center"
             title="Mover para Main Deck"
@@ -62,7 +62,7 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              onMoveCard(deckCard.card.id, currentCategory, 'sideboard');
+              onMoveCard(deckCard.card?.id || '', currentCategory, 'sideboard');
             }}
             className="w-6 h-6 rounded bg-purple-600/70 hover:bg-purple-500 text-white flex items-center justify-center"
             title="Mover para Sideboard"
@@ -74,7 +74,7 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              onMoveCard(deckCard.card.id, currentCategory, 'commander');
+              onMoveCard(deckCard.card?.id || '', currentCategory, 'commander');
             }}
             className="w-6 h-6 rounded bg-yellow-600/70 hover:bg-yellow-500 text-white flex items-center justify-center"
             title="Mover para Commander"
@@ -99,12 +99,12 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {categoryCards.map((deckCard) => (
-              <div key={`${deckCard.card.id}-${deckCard.category}`} className="relative group">
+              <div key={`${deckCard.card?.id || 'unknown'}-${deckCard.category}`} className="relative group">
                 <div className="aspect-[63/88] bg-gray-800/80 rounded-md overflow-hidden shadow-md">
                   {getImageUrl(deckCard.card) ? (
                     <Image
                       src={getImageUrl(deckCard.card)}
-                      alt={deckCard.card.name}
+                      alt={deckCard.card?.name || 'Unknown Card'}
                       fill
                       className="object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
                       onClick={() => onCardClick(deckCard.card)}
@@ -112,7 +112,7 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-2">
-                      {deckCard.card.name}
+                      {deckCard.card?.name || 'Unknown Card'}
                     </div>
                   )}
                   
@@ -123,7 +123,7 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
                   {renderMoveMenu(deckCard)}
                   
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-white text-xs font-medium truncate">{deckCard.card.name}</p>
+                    <p className="text-white text-xs font-medium truncate">{deckCard.card?.name || 'Unknown Card'}</p>
                   </div>
                 </div>
               </div>
@@ -133,14 +133,14 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
           <div className="space-y-2">
             {categoryCards.map((deckCard) => (
               <div 
-                key={`${deckCard.card.id}-${deckCard.category}`} 
+                key={`${deckCard.card?.id || 'unknown'}-${deckCard.category}`} 
                 className="flex gap-3 p-3 bg-gray-800/40 rounded border border-gray-700 hover:bg-gray-700/40 transition-colors group"
               >
                 <div className="w-12 h-16 bg-gray-800 rounded overflow-hidden flex-shrink-0">
                   {getImageUrl(deckCard.card, 'normal') ? (
                     <Image
                       src={getImageUrl(deckCard.card, 'normal')}
-                      alt={deckCard.card.name}
+                      alt={deckCard.card?.name || 'Unknown Card'}
                       width={48}
                       height={64}
                       className="object-cover cursor-pointer"
@@ -148,7 +148,7 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-1">
-                      {deckCard.card.name}
+                      {deckCard.card?.name || 'Unknown Card'}
                     </div>
                   )}
                 </div>
@@ -156,26 +156,26 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-gray-100 font-medium text-sm cursor-pointer hover:text-blue-400 truncate" onClick={() => onCardClick(deckCard.card)}>
-                      {deckCard.card.name}
+                      {deckCard.card?.name || 'Unknown Card'}
                     </h3>
                     <Badge className="bg-blue-600/30 text-blue-200 border-0 text-xs flex-shrink-0">
                       {deckCard.quantity}x
                     </Badge>
                   </div>
                   
-                  <p className="text-gray-300 text-xs truncate">{deckCard.card.type_line}</p>
+                  <p className="text-gray-300 text-xs truncate">{deckCard.card?.type_line || 'Unknown Type'}</p>
                 </div>
                 
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="flex items-center gap-1 bg-gray-700 rounded">
                     <button
-                      onClick={() => onUpdateQuantity(deckCard.card.id, deckCard.category, deckCard.quantity - 1)}
+                      onClick={() => onUpdateQuantity(deckCard.card?.id || '', deckCard.category, deckCard.quantity - 1)}
                       className="h-6 w-6 p-0 hover:bg-red-600 text-red-400 hover:text-white rounded-l transition-colors flex items-center justify-center"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
                     <button
-                      onClick={() => onUpdateQuantity(deckCard.card.id, deckCard.category, deckCard.quantity + 1)}
+                      onClick={() => onUpdateQuantity(deckCard.card?.id || '', deckCard.category, deckCard.quantity + 1)}
                       className="h-6 w-6 p-0 hover:bg-green-600 text-green-400 hover:text-white rounded-r transition-colors flex items-center justify-center"
                     >
                       <Plus className="h-3 w-3" />
@@ -185,7 +185,7 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
                   {/* Botões para mover entre categorias */}
                   {deckCard.category !== 'mainboard' && (
                     <button
-                      onClick={() => onMoveCard(deckCard.card.id, deckCard.category, 'mainboard')}
+                      onClick={() => onMoveCard(deckCard.card?.id || '', deckCard.category, 'mainboard')}
                       className="h-6 w-6 p-0 bg-green-600/20 hover:bg-green-600 text-green-400 hover:text-white rounded transition-colors flex items-center justify-center"
                       title="Mover para Main Deck"
                     >
@@ -194,7 +194,7 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
                   )}
                   {deckCard.category !== 'sideboard' && (
                     <button
-                      onClick={() => onMoveCard(deckCard.card.id, deckCard.category, 'sideboard')}
+                      onClick={() => onMoveCard(deckCard.card?.id || '', deckCard.category, 'sideboard')}
                       className="h-6 w-6 p-0 bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white rounded transition-colors flex items-center justify-center"
                       title="Mover para Sideboard"
                     >
@@ -203,7 +203,7 @@ const EnhancedCardDisplay: React.FC<EnhancedCardDisplayProps> = ({
                   )}
                   {deckCard.category !== 'commander' && (
                     <button
-                      onClick={() => onMoveCard(deckCard.card.id, deckCard.category, 'commander')}
+                      onClick={() => onMoveCard(deckCard.card?.id || '', deckCard.category, 'commander')}
                       className="h-6 w-6 p-0 bg-yellow-600/20 hover:bg-yellow-600 text-yellow-400 hover:text-white rounded transition-colors flex items-center justify-center"
                       title="Mover para Commander"
                     >

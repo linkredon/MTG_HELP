@@ -114,7 +114,7 @@ const CollectionDisplay: React.FC<CollectionDisplayProps> = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {filteredCards.map((collectionCard: any) => {
         const card = collectionCard.card;
-        const inDeck = currentDeck.cards.find((dc: any) => dc.card.id === card.id);
+        const inDeck = currentDeck.cards.find((dc: any) => dc.card?.id === card.id);
         const isRecentlyAdded = recentlyAdded.has(card.id);
         
         return (

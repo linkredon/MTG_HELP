@@ -41,6 +41,7 @@ import MobileNavigation from '@/components/MobileNavigation'
 import { useAppContext } from '@/contexts/AppContext'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useAmplifyAuth } from '@/contexts/AmplifyAuthContext'
+import DataLoadTest from '@/components/DataLoadTest'
 import {
   Grid3X3,
   Library,

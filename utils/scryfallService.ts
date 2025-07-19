@@ -55,6 +55,42 @@ export const searchCardsWithTranslation = async (
     
     // Construir parâmetros de ordenação
     const orderParams = `&order=${scryfallOrder}&dir=${scryfallDir}`;
+    
+    // Função auxiliar para fazer fetch com timeout
+    const fetchWithTimeout = async (url: string, timeout = 15000) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        try {
+          controller.abort();
+        } catch (error) {
+          console.log('Erro ao abortar requisição:', error);
+        }
+      }, timeout);
+      
+      try {
+        const response = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'MTG-Helper/1.0'
+          }
+        });
+        clearTimeout(timeoutId);
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        // Se for um AbortError, não relançar - apenas logar
+        if (error.name === 'AbortError') {
+          console.log(`Timeout na requisição para: ${url}`);
+          return {
+            ok: false,
+            status: 408,
+            json: async () => ({ data: [], error: 'Request timeout' })
+          } as Response;
+        }
+        throw error;
+      }
+    };
       
     // Para termos compostos, tenta diferentes estratégias de busca
     if (query.includes(' ')) {
@@ -65,128 +101,161 @@ export const searchCardsWithTranslation = async (
       const url = `https://api.scryfall.com/cards/search?q=${encodedQuery}${orderParams}&unique=prints&page=1`;
       
       console.log(`Tentando busca padrão: ${url}`);
-      const response = await fetch(url);
-      
-      // Se a busca normal não retornar resultados, tenta estratégias alternativas
-      if (!response.ok || response.status === 404) {
-        console.log(`Busca padrão falhou para "${query}", tentando estratégias alternativas`);
+      try {
+        const response = await fetchWithTimeout(url);
         
-        // Estratégia especial para português: busca com lang:pt usando nome original
-        const ptLangQuery = `lang:pt "${query}"`;
-        const ptUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(ptLangQuery)}${orderParams}&unique=prints&page=1`;
-        
-        console.log(`Tentando busca em português: ${ptUrl}`);
-        const ptResponse = await fetch(ptUrl);
-        
-        if (ptResponse.ok) {
-          console.log(`Busca em português bem-sucedida para "${query}"`);
-          return ptResponse;
-        }
-        
-        // Estratégia 1: Busca com aspas para nome exato em inglês
-        const exactSearchQuery = `"${translatedQuery}"`;
-        const exactUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactSearchQuery)}${orderParams}&unique=prints&page=1`;
-        
-        console.log(`Tentando busca exata em inglês: ${exactUrl}`);
-        const exactResponse = await fetch(exactUrl);
-        
-        if (exactResponse.ok) {
-          console.log(`Busca exata em inglês bem-sucedida para "${query}"`);
-          return exactResponse;
-        }
-        
-        // Estratégia 2: Busca com nome em português E lang:pt
-        const ptNameQuery = `name:"${query}" lang:pt`;
-        const ptNameUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(ptNameQuery)}${orderParams}&unique=prints&page=1`;
-        
-        console.log(`Tentando busca específica em português: ${ptNameUrl}`);
-        const ptNameResponse = await fetch(ptNameUrl);
-        
-        if (ptNameResponse.ok) {
-          console.log(`Busca específica em português bem-sucedida para "${query}"`);
-          return ptNameResponse;
-        }
-        
-        // Estratégia 3: Busca com operador de nome para termo traduzido
-        const nameSearchQuery = `name:"${translatedQuery}"`;
-        const nameUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(nameSearchQuery)}${orderParams}&unique=prints&page=1`;
-        
-        console.log(`Tentando busca por nome exato em inglês: ${nameUrl}`);
-        const nameResponse = await fetch(nameUrl);
-        
-        if (nameResponse.ok) {
-          console.log(`Busca por nome exato em inglês bem-sucedida para "${query}"`);
-          return nameResponse;
-        }
-        
-        // Estratégia 4: Divide a busca em palavras individuais
-        const words = query.split(' ');
-        if (words.length > 1) {
-          // Procura tanto com termos em português quanto em inglês
-          const ptWords = words.filter(word => 
-            !['o', 'a', 'os', 'as', 'de', 'da', 'do', 'das', 'dos', 'em', 'na', 'no', 'nas', 'nos', 'para', 'com', 'por'].includes(word.toLowerCase())
-          );
+        // Se a busca normal não retornar resultados, tenta estratégias alternativas
+        if (!response.ok || response.status === 404) {
+          console.log(`Busca padrão falhou para "${query}", tentando estratégias alternativas`);
           
-          const enWords = translatedQuery.split(' ').filter(word => 
-            !['the', 'of', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'with', 'by'].includes(word.toLowerCase())
-          );
+          // Estratégia especial para português: busca com lang:pt usando nome original
+          const ptLangQuery = `lang:pt "${query}"`;
+          const ptUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(ptLangQuery)}${orderParams}&unique=prints&page=1`;
           
-          // Combina as palavras significativas das duas línguas sem duplicatas
-          // Usando Object.keys ao invés de Set para evitar problemas de compatibilidade
-          const uniqueWordsObj: Record<string, boolean> = {};
-          [...ptWords, ...enWords].forEach(word => {
-            uniqueWordsObj[word.toLowerCase()] = true;
-          });
-          const allSignificantWords = Object.keys(uniqueWordsObj);
-          
-          if (allSignificantWords.length > 0) {
-            // Estratégia 4.1: Busca fuzzy com palavras-chave significativas
-            const keywordSearch = allSignificantWords.join(' OR ');
-            const keywordUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(keywordSearch)}${orderParams}&unique=prints&page=1`;
+          console.log(`Tentando busca em português: ${ptUrl}`);
+          try {
+            const ptResponse = await fetchWithTimeout(ptUrl);
             
-            console.log(`Tentando busca por palavras-chave: ${keywordUrl}`);
-            const keywordResponse = await fetch(keywordUrl);
-            
-            if (keywordResponse.ok) {
-              console.log(`Busca por palavras-chave bem-sucedida para "${query}"`);
-              return keywordResponse;
+            if (ptResponse.ok) {
+              console.log(`Busca em português bem-sucedida para "${query}"`);
+              return ptResponse;
             }
+          } catch (error) {
+            console.log('Erro na busca em português:', error);
+          }
+          
+          // Estratégia 1: Busca com aspas para nome exato em inglês
+          const exactSearchQuery = `"${translatedQuery}"`;
+          const exactUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactSearchQuery)}${orderParams}&unique=prints&page=1`;
+          
+          console.log(`Tentando busca exata em inglês: ${exactUrl}`);
+          try {
+            const exactResponse = await fetchWithTimeout(exactUrl);
             
-            // Estratégia 4.2: Foca apenas na palavra mais específica/rara (geralmente mais distintiva)
-            if (allSignificantWords.length > 1) {
-              // Ordenamos as palavras por tamanho (geralmente palavras mais específicas são mais longas)
-              const sortedWords = [...allSignificantWords].sort((a, b) => b.length - a.length);
-              const specificWord = sortedWords[0];
+            if (exactResponse.ok) {
+              console.log(`Busca exata em inglês bem-sucedida para "${query}"`);
+              return exactResponse;
+            }
+          } catch (error) {
+            console.log('Erro na busca exata em inglês:', error);
+          }
+          
+          // Estratégia 2: Busca com nome em português E lang:pt
+          const ptNameQuery = `name:"${query}" lang:pt`;
+          const ptNameUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(ptNameQuery)}${orderParams}&unique=prints&page=1`;
+          
+          console.log(`Tentando busca específica em português: ${ptNameUrl}`);
+          try {
+            const ptNameResponse = await fetchWithTimeout(ptNameUrl);
+            
+            if (ptNameResponse.ok) {
+              console.log(`Busca específica em português bem-sucedida para "${query}"`);
+              return ptNameResponse;
+            }
+          } catch (error) {
+            console.log('Erro na busca específica em português:', error);
+          }
+          
+          // Estratégia 3: Busca com operador de nome para termo traduzido
+          const nameSearchQuery = `name:"${translatedQuery}"`;
+          const nameUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(nameSearchQuery)}${orderParams}&unique=prints&page=1`;
+          
+          console.log(`Tentando busca por nome exato em inglês: ${nameUrl}`);
+          try {
+            const nameResponse = await fetchWithTimeout(nameUrl);
+            
+            if (nameResponse.ok) {
+              console.log(`Busca por nome exato em inglês bem-sucedida para "${query}"`);
+              return nameResponse;
+            }
+          } catch (error) {
+            console.log('Erro na busca por nome exato em inglês:', error);
+          }
+          
+          // Estratégia 4: Divide a busca em palavras individuais
+          const words = query.split(' ');
+          if (words.length > 1) {
+            // Procura tanto com termos em português quanto em inglês
+            const ptWords = words.filter(word => 
+              !['o', 'a', 'os', 'as', 'de', 'da', 'do', 'das', 'dos', 'em', 'na', 'no', 'nas', 'nos', 'para', 'com', 'por'].includes(word.toLowerCase())
+            );
+            
+            const enWords = translatedQuery.split(' ').filter(word => 
+              !['the', 'of', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'with', 'by'].includes(word.toLowerCase())
+            );
+            
+            // Combina as palavras significativas das duas línguas sem duplicatas
+            // Usando Object.keys ao invés de Set para evitar problemas de compatibilidade
+            const uniqueWordsObj: Record<string, boolean> = {};
+            [...ptWords, ...enWords].forEach(word => {
+              uniqueWordsObj[word.toLowerCase()] = true;
+            });
+            const allSignificantWords = Object.keys(uniqueWordsObj);
+            
+            if (allSignificantWords.length > 0) {
+              // Estratégia 4.1: Busca fuzzy com palavras-chave significativas
+              const keywordSearch = allSignificantWords.join(' OR ');
+              const keywordUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(keywordSearch)}${orderParams}&unique=prints&page=1`;
               
-              const specificWordUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(specificWord)}${orderParams}&unique=prints&page=1`;
+              console.log(`Tentando busca por palavras-chave: ${keywordUrl}`);
+              try {
+                const keywordResponse = await fetchWithTimeout(keywordUrl);
+                
+                if (keywordResponse.ok) {
+                  console.log(`Busca por palavras-chave bem-sucedida para "${query}"`);
+                  return keywordResponse;
+                }
+              } catch (error) {
+                console.log('Erro na busca por palavras-chave:', error);
+              }
               
-              console.log(`Tentando busca com palavra específica "${specificWord}": ${specificWordUrl}`);
-              const specificResponse = await fetch(specificWordUrl);
-              
-              if (specificResponse.ok) {
-                console.log(`Busca por palavra específica bem-sucedida para "${query}"`);
-                return specificResponse;
+              // Estratégia 4.2: Foca apenas na palavra mais específica/rara (geralmente mais distintiva)
+              if (allSignificantWords.length > 1) {
+                // Ordenamos as palavras por tamanho (geralmente palavras mais específicas são mais longas)
+                const sortedWords = [...allSignificantWords].sort((a, b) => b.length - a.length);
+                const specificWord = sortedWords[0];
+                
+                const specificWordUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(specificWord)}${orderParams}&unique=prints&page=1`;
+                
+                console.log(`Tentando busca com palavra específica "${specificWord}": ${specificWordUrl}`);
+                try {
+                  const specificResponse = await fetchWithTimeout(specificWordUrl);
+                  
+                  if (specificResponse.ok) {
+                    console.log(`Busca por palavra específica bem-sucedida para "${query}"`);
+                    return specificResponse;
+                  }
+                } catch (error) {
+                  console.log('Erro na busca com palavra específica:', error);
+                }
               }
             }
           }
-        }
-        
-        // Última tentativa: busca fuzzy com a primeira palavra (para casos como "Llanowar Elves")
-        const firstWord = query.split(' ')[0];
-        if (firstWord && firstWord.length > 3) { // Evita palavras muito curtas
-          const fuzzyUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(firstWord)}${orderParams}&unique=prints&page=1`;
           
-          console.log(`Tentativa final com busca fuzzy para "${firstWord}": ${fuzzyUrl}`);
-          const fuzzyResponse = await fetch(fuzzyUrl);
-          
-          if (fuzzyResponse.ok) {
-            console.log(`Busca fuzzy bem-sucedida para "${firstWord}"`);
-            return fuzzyResponse;
+          // Última tentativa: busca fuzzy com a primeira palavra (para casos como "Llanowar Elves")
+          const firstWord = query.split(' ')[0];
+          if (firstWord && firstWord.length > 3) { // Evita palavras muito curtas
+            const fuzzyUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(firstWord)}${orderParams}&unique=prints&page=1`;
+            
+            console.log(`Tentativa final com busca fuzzy para "${firstWord}": ${fuzzyUrl}`);
+            try {
+              const fuzzyResponse = await fetchWithTimeout(fuzzyUrl);
+              
+              if (fuzzyResponse.ok) {
+                console.log(`Busca fuzzy bem-sucedida para "${firstWord}"`);
+                return fuzzyResponse;
+              }
+            } catch (error) {
+              console.log('Erro na busca fuzzy:', error);
+            }
           }
         }
+        
+        return response;
+      } catch (error) {
+        console.error('Erro na busca padrão:', error);
+        throw new Error('Falha na conexão com a API do Scryfall. Verifique sua conexão de internet.');
       }
-      
-      return response;
     } else {
       // Para termos simples, tentamos várias estratégias em sequência
       // 1. Busca combinada padrão
@@ -194,33 +263,46 @@ export const searchCardsWithTranslation = async (
       const url = `https://api.scryfall.com/cards/search?q=${encodedQuery}${orderParams}&unique=prints&page=1`;
       
       console.log(`Tentando busca padrão para termo simples: ${url}`);
-      const response = await fetch(url);
-      
-      // Se falhar, tenta outras abordagens
-      if (!response.ok || response.status === 404) {
-        // 2. Tentar busca em português específica
-        const ptQuery = `lang:pt "${query}"`;
-        const ptUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(ptQuery)}${orderParams}&unique=prints&page=1`;
+      try {
+        const response = await fetchWithTimeout(url);
         
-        console.log(`Tentando busca em português para termo simples: ${ptUrl}`);
-        const ptResponse = await fetch(ptUrl);
-        
-        if (ptResponse.ok) {
-          return ptResponse;
+        // Se falhar, tenta outras abordagens
+        if (!response.ok || response.status === 404) {
+          // 2. Tentar busca em português específica
+          const ptQuery = `lang:pt "${query}"`;
+          const ptUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(ptQuery)}${orderParams}&unique=prints&page=1`;
+          
+          console.log(`Tentando busca em português para termo simples: ${ptUrl}`);
+          try {
+            const ptResponse = await fetchWithTimeout(ptUrl);
+            
+            if (ptResponse.ok) {
+              return ptResponse;
+            }
+          } catch (error) {
+            console.log('Erro na busca em português para termo simples:', error);
+          }
+          
+          // 3. Tentar busca fuzzy para termo simples
+          const fuzzyUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(query)}${orderParams}&unique=prints&page=1`;
+          
+          console.log(`Tentando busca fuzzy para termo simples: ${fuzzyUrl}`);
+          try {
+            const fuzzyResponse = await fetchWithTimeout(fuzzyUrl);
+            
+            if (fuzzyResponse.ok) {
+              return fuzzyResponse;
+            }
+          } catch (error) {
+            console.log('Erro na busca fuzzy para termo simples:', error);
+          }
         }
         
-        // 3. Tentar busca fuzzy para termo simples
-        const fuzzyUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(query)}${orderParams}&unique=prints&page=1`;
-        
-        console.log(`Tentando busca fuzzy para termo simples: ${fuzzyUrl}`);
-        const fuzzyResponse = await fetch(fuzzyUrl);
-        
-        if (fuzzyResponse.ok) {
-          return fuzzyResponse;
-        }
+        return response;
+      } catch (error) {
+        console.error('Erro na busca para termo simples:', error);
+        throw new Error('Falha na conexão com a API do Scryfall. Verifique sua conexão de internet.');
       }
-      
-      return response;
     }
   } catch (e) {
     console.error('Erro ao buscar cartas com tradução:', e);

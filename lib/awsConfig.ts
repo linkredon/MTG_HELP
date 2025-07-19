@@ -24,5 +24,6 @@ export const TABLES = {
   USERS: process.env.DYNAMODB_USERS_TABLE || process.env.NEXT_PUBLIC_DYNAMODB_USERS_TABLE || 'mtg_users',
   COLLECTIONS: process.env.DYNAMODB_COLLECTIONS_TABLE || process.env.NEXT_PUBLIC_DYNAMODB_COLLECTIONS_TABLE || 'mtg_collections',
   DECKS: process.env.DYNAMODB_DECKS_TABLE || process.env.NEXT_PUBLIC_DYNAMODB_DECKS_TABLE || 'mtg_decks',
+  DECK_CARDS: process.env.DYNAMODB_DECK_CARDS_TABLE || process.env.NEXT_PUBLIC_DYNAMODB_DECK_CARDS_TABLE || 'DeckCard',
   FAVORITES: process.env.DYNAMODB_FAVORITES_TABLE || process.env.NEXT_PUBLIC_DYNAMODB_FAVORITES_TABLE || 'mtg_favorites'
 };

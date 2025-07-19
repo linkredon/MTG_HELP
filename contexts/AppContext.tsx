@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import type { ApiResponse } from '@/types/api';
 import ClientAuthChecker from '@/components/ClientAuthChecker';
 
@@ -52,6 +52,15 @@ interface AppContextType {
   atualizarQuantidadeNoDeck: (deckId: string, cardId: string, novaQuantidade: number, category?: 'mainboard' | 'sideboard' | 'commander') => Promise<void>;
   getCartasUsadasEmDecks: (cardId: string) => Array<{deck: Deck, quantity: number, category: string}>;
   importarDeckDeLista: (deckList: string, deckData: any) => Promise<string>;
+  carregarCartasDoDeck: (deckId: string) => Promise<DeckCard[]>;
+  calculateDeckStats: (deck: any) => {
+    mainboard: number;
+    sideboard: number;
+    commander: number;
+    total: number;
+    unique: number;
+    manaCurve: Record<number, number>;
+  };
   
   // Favoritos
   favorites: MTGCard[];
@@ -92,106 +101,128 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     return collections.find(c => c.id === currentCollectionId);
   }, [collections, currentCollectionId]);
 
-  // Carregar dados da API quando o usuário estiver autenticado
+  // Carregar dados quando autenticado
   useEffect(() => {
     let isMounted = true;
-    
+    let loadedForUser = '';
+    let loadingTimeout: NodeJS.Timeout | null = null;
+
     async function loadData() {
-      if (!isMounted) return;
-      
-      if (!isAuthenticated || !user) {
-        console.log('AppContext: Usuário não autenticado, pulando carregamento de dados');
+      if (!user?.id) {
+        console.log('📱 AppContext: Usuário não autenticado ou sem ID válido');
+        setLoading(false);
         return;
       }
-
-      console.log('AppContext: Usuário autenticado, carregando dados do DynamoDB...');
       
-      // Timeout para garantir que o loading não fique infinito
-      const timeoutId = setTimeout(() => {
-        if (isMounted && loading) {
-          console.log('AppContext: Timeout atingido, finalizando loading');
+      // Evitar recarregar se já carregou para este usuário
+      if (loadedForUser === user.id) {
+        console.log('🔄 AppContext: Dados já carregados para este usuário:', user.id);
+        setLoading(false);
+        return;
+      }
+      
+      console.log('🔄 AppContext: Iniciando carregamento de dados para usuário:', user.id);
+      loadedForUser = user.id;
+      setLoading(true);
+      
+      // Timeout de segurança para evitar loops infinitos
+      loadingTimeout = setTimeout(() => {
+        if (isMounted) {
+          console.warn('⏰ AppContext: Timeout de carregamento atingido');
           setLoading(false);
           setCollections([]);
           setDecks([]);
           setFavorites([]);
         }
-      }, 15000); // Aumentar para 15 segundos
+      }, 15000); // 15 segundos
       
-      // Carregar dados do DynamoDB
-      if (isMounted) {
-        try {
-          // Carregar coleções
-          const collectionsResponse = await collectionService.getAll();
-          console.log('Resposta das coleções:', collectionsResponse);
-          if (collectionsResponse.success && collectionsResponse.data) {
-            setCollections(asUserCollectionArray(collectionsResponse.data));
-            console.log('Coleções carregadas:', collectionsResponse.data.length);
-          } else {
-            console.log('Nenhuma coleção encontrada ou erro na resposta');
-            setCollections([]);
-          }
-          
-          // Carregar decks
-          const decksResponse = await deckService.getAll();
-          console.log('Resposta dos decks:', decksResponse);
-          if (decksResponse.success && decksResponse.data) {
-            setDecks(asDeckArray(decksResponse.data));
-            console.log('Decks carregados:', decksResponse.data.length);
-          } else {
-            console.log('Nenhum deck encontrado ou erro na resposta');
-            setDecks([]);
-          }
-          
-          // Carregar favoritos
-          const favoritesResponse = await favoriteService.getAll();
-          console.log('Resposta dos favoritos:', favoritesResponse);
-          if (favoritesResponse.success && favoritesResponse.data) {
-            setFavorites(favoritesResponse.data);
-            console.log('Favoritos carregados:', favoritesResponse.data.length);
-          } else {
-            console.log('Nenhum favorito encontrado ou erro na resposta');
-            setFavorites([]);
-          }
-        } catch (error) {
-          console.error('Erro ao carregar dados:', error);
-          // Mesmo com erro, definir arrays vazios para não ficar em loading infinito
+      try {
+        // Carregar dados de forma sequencial para evitar sobrecarga
+        console.log('📚 AppContext: Carregando coleções...');
+        const collectionsResponse = await collectionService.getAll();
+        
+        if (isMounted && collectionsResponse.success) {
+          setCollections(asUserCollectionArray(collectionsResponse.data));
+          console.log('✅ AppContext: Coleções carregadas:', collectionsResponse.data.length);
+        } else {
+          console.warn('⚠️ AppContext: Falha ao carregar coleções');
+          setCollections([]);
+        }
+        
+        console.log('🎴 AppContext: Carregando decks...');
+        const decksResponse = await deckService.getAll();
+        
+        if (isMounted && decksResponse.success) {
+          setDecks(asDeckArray(decksResponse.data));
+          console.log('✅ AppContext: Decks carregados:', decksResponse.data.length);
+        } else {
+          console.warn('⚠️ AppContext: Falha ao carregar decks');
+          setDecks([]);
+        }
+        
+        console.log('⭐ AppContext: Carregando favoritos...');
+        const favoritesResponse = await favoriteService.getAll();
+        
+        if (isMounted && favoritesResponse.success) {
+          setFavorites(favoritesResponse.data);
+          console.log('✅ AppContext: Favoritos carregados:', favoritesResponse.data.length);
+        } else {
+          console.warn('⚠️ AppContext: Falha ao carregar favoritos');
+          setFavorites([]);
+        }
+        
+        console.log('✅ AppContext: Carregamento de dados concluído');
+        
+      } catch (error) {
+        console.error('❌ AppContext: Erro geral no carregamento:', error);
+        if (isMounted) {
           setCollections([]);
           setDecks([]);
           setFavorites([]);
-        } finally {
-          // Sempre finalizar o loading, mesmo com erros
-          if (isMounted) {
-            setLoading(false);
-            console.log('AppContext: Loading finalizado');
-          }
-          // Limpar o timeout
-          clearTimeout(timeoutId);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+          if (loadingTimeout) clearTimeout(loadingTimeout);
         }
       }
     }
-
-    loadData();
+    
+    // Só carregar se autenticado e com ID válido
+    if (isAuthenticated && user?.id) {
+      loadData();
+    } else {
+      setLoading(false);
+    }
     
     return () => {
       isMounted = false;
+      if (loadingTimeout) clearTimeout(loadingTimeout);
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.id]);
 
-  // Salvar dados no localStorage quando nÃ£o estiver autenticado
+  // Salvar dados no localStorage quando não estiver autenticado
+  const prevCollectionsRef = useRef(collections);
+  const prevDecksRef = useRef(decks);
+  const prevFavoritesRef = useRef(favorites);
+
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated && collections !== prevCollectionsRef.current) {
+      prevCollectionsRef.current = collections;
       safeLocalStorageSave('mtg-collections', collections);
     }
   }, [collections, isAuthenticated]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated && decks !== prevDecksRef.current) {
+      prevDecksRef.current = decks;
       safeLocalStorageSave('mtg-decks', decks);
     }
   }, [decks, isAuthenticated]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated && favorites !== prevFavoritesRef.current) {
+      prevFavoritesRef.current = favorites;
       safeLocalStorageSave('mtg-favorites', favorites);
     }
   }, [favorites, isAuthenticated]);
@@ -455,7 +486,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // FunÃ§Ã£o para obter quantidade de uma carta na coleÃ§Ã£o
   const getQuantidadeNaColecao = (cardId: string): number => {
-    const card = currentCollection?.cards?.find(c => c.card.id === cardId);
+    const card = currentCollection?.cards?.find(c => c.card?.id === cardId);
     return card ? card.quantity : 0;
   };
 
@@ -463,6 +494,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Criar novo deck
   const criarDeck = async (deckData: Omit<Deck, 'id' | 'createdAt' | 'lastModified'>): Promise<string> => {
+    console.log('🔄 AppContext: criarDeck chamada:', {
+      deckData,
+      isAuthenticated
+    });
+
     if (isAuthenticated) {
       try {
         const deckToCreate = {
@@ -470,23 +506,34 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           description: deckData.description || '',
           format: deckData.format,
           colors: deckData.colors || [],
-          cards: [],
           isPublic: deckData.isPublic || false,
           tags: deckData.tags || []
         };
         
+        console.log('📤 AppContext: Chamando deckService.create...');
         const response = await deckService.create(deckToCreate);
+        console.log('📊 AppContext: Resposta do deckService.create:', response);
+        
         if (response.success && response.data) {
           const newDeck = response.data as Deck;
+          console.log('✅ AppContext: Deck criado com sucesso:', {
+            id: newDeck.id,
+            name: newDeck.name
+          });
+          
           setDecks(prev => [...prev, newDeck]);
+          
+          // Retornar o ID do deck
+          console.log('🆔 AppContext: ID do deck retornado:', newDeck.id);
           return newDeck.id;
         }
         throw new Error('Erro ao criar deck');
       } catch (error) {
-        console.error('Erro ao criar deck:', error);
+        console.error('❌ AppContext: Erro ao criar deck:', error);
         throw error;
       }
     } else {
+      console.log('📱 AppContext: Usando fallback localStorage');
       // Fallback para localStorage
       const newDeck: Deck = {
         ...deckData,
@@ -495,6 +542,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         lastModified: new Date().toISOString(),
       };
       setDecks(prev => [...prev, newDeck]);
+      console.log('✅ AppContext: Deck criado no localStorage:', newDeck.id);
       return newDeck.id;
     }
   };
@@ -630,6 +678,113 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
+  // Calcular estatísticas do deck
+  const calculateDeckStats = useCallback((deck: any) => {
+    if (!deck || !deck.cards) return;
+    
+    // Garantir que cards é um array
+    const cards = Array.isArray(deck.cards) ? deck.cards : [];
+    if (cards.length === 0) {
+      return {
+        mainboard: 0,
+        sideboard: 0,
+        commander: 0,
+        total: 0,
+        unique: 0,
+        manaCurve: {}
+      };
+    }
+
+    const mainboard = cards.filter((c: any) => c.category === 'mainboard');
+    const sideboard = cards.filter((c: any) => c.category === 'sideboard');
+    const commander = cards.filter((c: any) => c.category === 'commander');
+    
+    const mainboardCount = mainboard.reduce((sum: number, c: any) => sum + (c.quantity || 1), 0);
+    const sideboardCount = sideboard.reduce((sum: number, c: any) => sum + (c.quantity || 1), 0);
+    const commanderCount = commander.reduce((sum: number, c: any) => sum + (c.quantity || 1), 0);
+    
+    const manaCurve: Record<number, number> = {};
+    mainboard.forEach((card: any) => {
+      // Verificar se card é válido
+      if (!card) return;
+      
+      // Lidar com diferentes estruturas de dados
+      let cmc = 0;
+      
+      try {
+        // Tentar diferentes caminhos para obter o CMC
+        if (card.card && card.card.cmc !== undefined) {
+          cmc = card.card.cmc;
+        } else if (card.cmc !== undefined) {
+          cmc = card.cmc;
+        } else if (card.cardData && card.cardData.cmc !== undefined) {
+          cmc = card.cardData.cmc;
+        } else if (card.name && card.card && typeof card.card === 'object') {
+          // Se temos um objeto card, tentar acessar cmc de diferentes formas
+          cmc = card.card.cmc || card.card.convertedManaCost || 0;
+        }
+      } catch (error) {
+        console.warn('Erro ao obter CMC da carta:', card, error);
+        cmc = 0;
+      }
+      
+      const cmcKey = cmc >= 7 ? 7 : cmc;
+      const quantity = card.quantity || 1;
+      manaCurve[cmcKey] = (manaCurve[cmcKey] || 0) + quantity;
+    });
+    
+    return {
+      mainboard: mainboardCount,
+      sideboard: sideboardCount,
+      commander: commanderCount,
+      total: mainboardCount + sideboardCount + commanderCount,
+      unique: cards.length,
+      manaCurve
+    };
+  }, []);
+
+  // Carregar cartas de um deck
+  const carregarCartasDoDeck = async (deckId: string) => {
+    console.log('🔄 AppContext: carregarCartasDoDeck chamada:', { deckId, isAuthenticated });
+    
+    if (isAuthenticated) {
+      try {
+        console.log('📤 AppContext: Chamando deckService.getDeckCards...');
+        const response = await deckService.getDeckCards(deckId);
+        console.log('📊 AppContext: Resultado do getDeckCards:', response);
+        
+        if (response.success && response.data) {
+          console.log('✅ AppContext: Cartas carregadas com sucesso:', response.data.length);
+          
+          // Atualizar o deck no estado local com as cartas
+          setDecks(prev => prev.map(deck => {
+            if (deck.id === deckId) {
+              console.log('🔄 AppContext: Atualizando deck com cartas:', deck.name);
+              return {
+                ...deck,
+                cards: response.data
+              };
+            }
+            return deck;
+          }));
+          
+          return response.data;
+        } else {
+          console.error('❌ AppContext: Erro ao carregar cartas:', response.error);
+          return [];
+        }
+      } catch (error) {
+        console.error('❌ AppContext: Erro ao carregar cartas do deck:', error);
+        return [];
+      }
+    } else {
+      console.log('📱 AppContext: Usando fallback localStorage');
+      // No localStorage, as cartas já estão no deck
+      const deck = decks.find(d => d.id === deckId);
+      return deck?.cards || [];
+    }
+  };
+
   // Adicionar carta ao deck
   const adicionarCartaAoDeck = async (
     deckId: string, 
@@ -637,31 +792,56 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     category: 'mainboard' | 'sideboard' | 'commander' = 'mainboard',
     quantity: number = 1
   ): Promise<void> => {
+    console.log('🔄 AppContext: adicionarCartaAoDeck chamada:', {
+      deckId,
+      cardName: card.name,
+      category,
+      quantity,
+      isAuthenticated
+    });
+
     if (isAuthenticated) {
       try {
-        await deckService.addCard(deckId, {
+        console.log('📤 AppContext: Chamando deckService.addCard...');
+        const addCardResult = await deckService.addCard(deckId, {
           card,
           quantity,
-          isSideboard: category === 'sideboard',
-          isCommander: category === 'commander',
           category
         });
+        console.log('📊 AppContext: Resultado do addCard:', addCardResult);
         
-        // Atualizar estado local
-        const response = await deckService.getById(deckId);
-        if (response.success) {
-          setDecks(prev => prev.map(deck => deck.id === deckId ? response.data as Deck : deck));
+        if (!addCardResult.success) {
+          throw new Error(addCardResult.error || 'Erro ao adicionar carta');
         }
+        
+        console.log('✅ AppContext: deckService.addCard executado com sucesso');
+        
+        // Recarregar as cartas do deck após adicionar
+        console.log('📤 AppContext: Recarregando cartas do deck...');
+        const cardsResult = await carregarCartasDoDeck(deckId);
+        console.log('📊 AppContext: Cartas recarregadas:', cardsResult);
+        
+        // Atualizar estatísticas do deck
+        const updatedDeck = decks.find(d => d.id === deckId);
+        if (updatedDeck) {
+          const deckWithCards = { ...updatedDeck, cards: cardsResult };
+          const stats = calculateDeckStats(deckWithCards);
+          console.log('📊 AppContext: Estatísticas atualizadas:', stats);
+        }
+        
       } catch (error) {
-        console.error('Erro ao adicionar carta ao deck:', error);
+        console.error('❌ AppContext: Erro ao adicionar carta ao deck:', error);
         throw error;
       }
     } else {
+      console.log('📱 AppContext: Usando fallback localStorage');
       // Fallback para localStorage
       setDecks(prev => prev.map(deck => {
         if (deck.id === deckId) {
+          console.log('🔍 AppContext: Procurando carta existente no deck');
           const existingCard = deck.cards.find(c => c.card.id === card.id && c.category === category);
           if (existingCard) {
+            console.log('➕ AppContext: Carta já existe, aumentando quantidade');
             return {
               ...deck,
               cards: deck.cards.map(c => 
@@ -672,6 +852,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
               lastModified: new Date().toISOString()
             };
           } else {
+            console.log('🆕 AppContext: Adicionando nova carta ao deck');
             return {
               ...deck,
               cards: [...deck.cards, { card, quantity, category }],
@@ -681,6 +862,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         }
         return deck;
       }));
+      console.log('✅ AppContext: Estado local atualizado');
     }
   };
 
@@ -696,7 +878,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const deck = decks.find(d => d.id === deckId);
         if (!deck) return;
         
-        const cardInDeck = deck.cards.find(c => c.card.id === cardId && c.category === category);
+        const cardInDeck = deck.cards.find(c => c.card?.id === cardId && c.category === category);
         if (!cardInDeck) return;
         
         if (cardInDeck._id) {
@@ -718,7 +900,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         if (deck.id === deckId) {
           return {
             ...deck,
-            cards: deck.cards.filter(c => !(c.card.id === cardId && c.category === category)),
+            cards: deck.cards.filter(c => !(c.card?.id === cardId && c.category === category)),
             lastModified: new Date().toISOString()
           };
         }
@@ -745,7 +927,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const deck = decks.find(d => d.id === deckId);
         if (!deck) return;
         
-        const cardInDeck = deck.cards.find(c => c.card.id === cardId && c.category === category);
+        const cardInDeck = deck.cards.find(c => c.card?.id === cardId && c.category === category);
         if (!cardInDeck) return;
         
         if (cardInDeck._id) {
@@ -768,7 +950,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           return {
             ...deck,
             cards: deck.cards.map(c => 
-              c.card.id === cardId && c.category === category
+              c.card?.id === cardId && c.category === category
                 ? { ...c, quantity: novaQuantidade }
                 : c
             ),
@@ -786,7 +968,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     
     decks.forEach(deck => {
       deck.cards.forEach(deckCard => {
-        if (deckCard.card.id === cardId) {
+        if (deckCard.card?.id === cardId) {
           result.push({
             deck,
             quantity: deckCard.quantity,
@@ -981,6 +1163,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       atualizarQuantidadeNoDeck,
       getCartasUsadasEmDecks,
       importarDeckDeLista,
+      carregarCartasDoDeck,
+      calculateDeckStats,
       favorites,
       addFavorite,
       removeFavorite,

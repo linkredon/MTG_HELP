@@ -211,7 +211,7 @@ export default function ConstrutorDecksEnhanced() {
   const isCardInCollection = (cardId: string, collectionId: string) => {
     const collection = collections.find(c => c.id === collectionId)
     if (!collection) return false
-    return collection.cards.some((cc: any) => cc.card.id === cardId)
+    return collection.cards.some((cc: any) => cc.card?.id === cardId)
   }
 
   // Filtrar e ordenar decks

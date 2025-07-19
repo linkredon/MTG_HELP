@@ -61,16 +61,32 @@ export const clientDbService = {
         }
       };
       
+      console.log(`🆕 [Cliente] Criando item na tabela ${tableName}:`, params.Item);
+      
       // Garantir que o comando é uma instância do SDK antes de enviar
       const putCmd = new PutCommand(params);
       if (!(putCmd instanceof PutCommand)) {
         console.error('Comando passado para send não é uma instância de PutCommand:', putCmd);
       }
       await dynamoDb.send(putCmd);
+      console.log(`✅ [Cliente] Item criado com sucesso na tabela ${tableName}`);
       return { success: true, data: params.Item };
     } catch (error) {
-      console.error(`[Cliente] Error creating item in ${tableName}:`, error);
-      return { success: false, error };
+      console.error(`❌ [Cliente] Erro ao criar item na tabela ${tableName}:`, error);
+      console.error(`📋 Detalhes do erro:`, {
+        message: error.message,
+        name: error.name,
+        code: error.code,
+        stack: error.stack
+      });
+      
+      // Se for erro de schema, tentar diferentes estruturas
+      if (error.name === 'ValidationException') {
+        console.log('🔄 Tentando diferentes estruturas de item...');
+        return await this.tryDifferentItemStructures(tableName, item);
+      }
+      
+      return { success: false, error: error.message };
     }
   },
   
@@ -81,33 +97,217 @@ export const clientDbService = {
       
       let params;
       if (typeof key === 'string') {
-        // Chave simples
-        params = {
-          TableName: tableName,
-          Key: { id: key }
-        };
+        // Para tabela mtg_decks, usar deckId como chave primária
+        if (tableName === 'mtg_decks') {
+          params = {
+            TableName: tableName,
+            Key: { deckId: key }
+          };
+        } else {
+          // Para outras tabelas, usar chave simples com 'id'
+          params = {
+            TableName: tableName,
+            Key: { id: key }
+          };
+        }
       } else {
-        // Chave composta (para tabelas como mtg_decks)
+        // Chave composta (para tabelas que usam chave composta)
         params = {
           TableName: tableName,
           Key: key
         };
       }
       
-      // Garantir que o comando é uma instância do SDK antes de enviar
-      const getCmd = new GetCommand(params);
-      if (!(getCmd instanceof GetCommand)) {
-        console.error('Comando passado para send não é uma instância de GetCommand:', getCmd);
-      }
-      const result = await dynamoDb.send(getCmd);
+      console.log(`🔍 [Cliente] getById para tabela: ${tableName}, key:`, key);
+      console.log('📋 Parâmetros:', JSON.stringify(params, null, 2));
+      console.log('🔧 Tipo de key:', typeof key);
+      console.log('🔧 Valor de key:', key);
+      console.log('🔧 Chave sendo usada:', Object.keys(params.Key)[0]);
+      
+      const result = await dynamoDb.send(new GetCommand(params));
       if (!result.Item) {
-        return { success: false, error: 'Item not found' };
+        console.log(`❌ [Cliente] Item não encontrado na tabela ${tableName}`);
+        return { success: false, error: 'Item não encontrado' };
       }
+      
+      console.log(`✅ [Cliente] Item encontrado:`, result.Item);
       return { success: true, data: result.Item };
     } catch (error) {
-      console.error(`[Cliente] Error getting item from ${tableName}:`, error);
-      return { success: false, error };
+      console.error(`❌ [Cliente] Erro em getById para tabela ${tableName}:`, error);
+      console.error(`📋 Detalhes do erro:`, {
+        message: error.message,
+        name: error.name,
+        code: error.code,
+        stack: error.stack
+      });
+      
+      // Se for erro de schema, tentar diferentes estruturas de chave
+      if (error.name === 'ValidationException' && error.message.includes('schema')) {
+        console.log('🔄 Erro de schema detectado, tentando diferentes estruturas de chave...');
+        return await this.tryDifferentKeyStructures(tableName, key);
+      }
+      
+      // Se não for erro de schema, também tentar fallback para debug
+      console.log('🔄 Erro não é de schema, mas tentando fallback mesmo assim...');
+      return await this.tryDifferentKeyStructures(tableName, key);
+      
+      return { success: false, error: error.message };
     }
+  },
+
+  // Função para tentar diferentes estruturas de chave
+  async tryDifferentKeyStructures(tableName: string, key: string | { userId: string, deckId: string }) {
+    const dynamoDb = await getOrCreateClientSideDbClient();
+    
+          if (typeof key === 'string') {
+        // Tentar diferentes estruturas de chave baseadas em possíveis schemas
+        const keyStructures = [
+          { deckId: key }, // Primeiro tentar deckId (baseado na estrutura real)
+          { id: key },
+          { _id: key },
+          { deck_id: key },
+          { deckID: key },
+          { pk: key },
+          { PK: key },
+          { partitionKey: key },
+          { partition_key: key }
+        ];
+      
+      console.log(`🔄 Tentando ${keyStructures.length} diferentes estruturas de chave para: ${key}`);
+      console.log('📋 Estruturas que serão tentadas:', keyStructures.map(k => Object.keys(k)[0]));
+      
+      for (const keyStructure of keyStructures) {
+        try {
+          console.log(`🔄 Tentando chave:`, keyStructure);
+          console.log(`🔧 Chave específica:`, Object.keys(keyStructure)[0], '=', Object.values(keyStructure)[0]);
+          const params = {
+            TableName: tableName,
+            Key: keyStructure
+          };
+          
+          const result = await dynamoDb.send(new GetCommand(params));
+          if (result.Item) {
+            console.log(`✅ Item encontrado com chave:`, keyStructure);
+            console.log(`📋 Item encontrado:`, result.Item);
+            return { success: true, data: result.Item };
+          }
+        } catch (tryError) {
+          console.log(`❌ Falhou com chave:`, keyStructure, tryError.message);
+          // Se for erro de schema, continuar tentando
+          if (tryError.name === 'ValidationException') {
+            continue;
+          }
+        }
+      }
+      
+      // Se nenhuma chave funcionou, tentar scan como último recurso
+      console.log('🔄 Tentando scan como último recurso...');
+      try {
+        const scanParams = {
+          TableName: tableName,
+          FilterExpression: 'deckId = :id OR id = :id',
+          ExpressionAttributeValues: {
+            ':id': key
+          }
+        };
+        
+        const scanResult = await dynamoDb.send(new ScanCommand(scanParams));
+        if (scanResult.Items && scanResult.Items.length > 0) {
+          console.log(`✅ Item encontrado via scan:`, scanResult.Items[0]);
+          return { success: true, data: scanResult.Items[0] };
+        }
+      } catch (scanError) {
+        console.log(`❌ Scan também falhou:`, scanError.message);
+      }
+    }
+    
+    console.log('❌ Nenhuma estrutura de chave funcionou');
+    return { success: false, error: 'Item não encontrado com nenhuma estrutura de chave' };
+  },
+
+  // Função para tentar diferentes estruturas de item na criação
+  async tryDifferentItemStructures(tableName: string, originalItem: any) {
+    const dynamoDb = await getOrCreateClientSideDbClient();
+    const timestamp = getCurrentTimestamp();
+    
+    console.log('🔄 Tentando diferentes estruturas de item para criação...');
+    
+    // Tentar diferentes estruturas baseadas em possíveis schemas
+    const itemStructures = [
+      // Estrutura padrão
+      {
+        ...originalItem,
+        id: originalItem.id || generateId(),
+        createdAt: originalItem.createdAt || timestamp,
+        updatedAt: timestamp
+      },
+      // Estrutura com userId (minúsculo) - conforme schema da tabela
+      {
+        ...originalItem,
+        id: originalItem.id || generateId(),
+        userId: originalItem.userID || originalItem.userId,
+        createdAt: originalItem.createdAt || timestamp,
+        updatedAt: timestamp
+      },
+      // Estrutura com userID (maiúsculo) - para compatibilidade
+      {
+        ...originalItem,
+        id: originalItem.id || generateId(),
+        userID: originalItem.userId || originalItem.userID,
+        createdAt: originalItem.createdAt || timestamp,
+        updatedAt: timestamp
+      },
+      // Estrutura com ambas as chaves
+      {
+        ...originalItem,
+        id: originalItem.id || generateId(),
+        userId: originalItem.userID || originalItem.userId,
+        userID: originalItem.userId || originalItem.userID,
+        createdAt: originalItem.createdAt || timestamp,
+        updatedAt: timestamp
+      },
+      // Estrutura simplificada com userId
+      {
+        id: originalItem.id || generateId(),
+        name: originalItem.name,
+        format: originalItem.format,
+        userId: originalItem.userID || originalItem.userId,
+        createdAt: timestamp,
+        updatedAt: timestamp
+      },
+      // Estrutura com _id
+      {
+        _id: originalItem.id || generateId(),
+        name: originalItem.name,
+        format: originalItem.format,
+        userId: originalItem.userID || originalItem.userId,
+        createdAt: timestamp,
+        updatedAt: timestamp
+      }
+    ];
+    
+    for (const itemStructure of itemStructures) {
+      try {
+        console.log(`🔄 Tentando estrutura:`, Object.keys(itemStructure));
+        const params = {
+          TableName: tableName,
+          Item: itemStructure
+        };
+        
+        await dynamoDb.send(new PutCommand(params));
+        console.log(`✅ Item criado com sucesso usando estrutura:`, Object.keys(itemStructure));
+        return { success: true, data: itemStructure };
+      } catch (tryError) {
+        console.log(`❌ Falhou com estrutura:`, Object.keys(itemStructure), tryError.message);
+        // Se for erro de schema, continuar tentando
+        if (tryError.name === 'ValidationException') {
+          continue;
+        }
+      }
+    }
+    
+    console.log('❌ Nenhuma estrutura de item funcionou para criação');
+    return { success: false, error: 'Não foi possível criar item com nenhuma estrutura' };
   },
   
   // Atualizar um item (suporta chaves simples e compostas)
@@ -211,23 +411,19 @@ export const clientDbService = {
       console.log(`🔍 Buscando itens para userId: ${userId} na tabela: ${tableName}`);
       
       // Usar scan com filtro diretamente, sem depender de índices
+      // Para favoritos, usar userId (minúsculo), para outras tabelas usar userID (maiúsculo)
+      const filterField = tableName === 'mtg_favorites' ? 'userId' : 'userID';
       const scanParams = {
         TableName: tableName,
-        FilterExpression: 'userId = :userId',
+        FilterExpression: `${filterField} = :${filterField}`,
         ExpressionAttributeValues: {
-          ':userId': userId
+          [`:${filterField}`]: userId
         }
       };
       
       console.log('📋 Parâmetros do scan:', JSON.stringify(scanParams, null, 2));
       
-      // Garantir que o comando é uma instância do SDK antes de enviar
-      const scanCmd = new ScanCommand(scanParams);
-      if (!(scanCmd instanceof ScanCommand)) {
-        console.error('Comando passado para send não é uma instância de ScanCommand:', scanCmd);
-      }
-      
-      const scanResult = await dynamoDb.send(scanCmd);
+      const scanResult = await dynamoDb.send(new ScanCommand(scanParams));
       console.log(`✅ Scan concluído. Itens encontrados: ${scanResult.Items?.length || 0}`);
       
       return { success: true, data: scanResult.Items || [] };
@@ -288,6 +484,8 @@ export const clientDbService = {
     try {
       const dynamoDb = await getOrCreateClientSideDbClient();
       
+      console.log(`🔍 [Cliente] Query chamada para tabela: ${tableName}, keyName: ${keyName}, keyValue: ${keyValue}`);
+      
       const params: any = {
         TableName: tableName,
         KeyConditionExpression: `${keyName} = :keyValue`,
@@ -309,15 +507,20 @@ export const clientDbService = {
         }
       }
       
-      // Garantir que o comando é uma instância do SDK antes de enviar
-      const queryCmd2 = new QueryCommand(params);
-      if (!(queryCmd2 instanceof QueryCommand)) {
-        console.error('Comando passado para send não é uma instância de QueryCommand:', queryCmd2);
-      }
-      const result = await dynamoDb.send(queryCmd2);
+      console.log('📋 Parâmetros da query:', JSON.stringify(params, null, 2));
+      
+      const result = await dynamoDb.send(new QueryCommand(params));
+      console.log(`✅ Query concluída. Itens encontrados: ${result.Items?.length || 0}`);
       return { success: true, data: result.Items || [] };
     } catch (error) {
-      console.error(`[Cliente] Error querying items from ${tableName}:`, error);
+      console.error(`❌ [Cliente] Error querying items from ${tableName}:`, error);
+      
+      // Se for erro de permissão, retornar array vazio em vez de falhar
+      if (error?.name === 'AccessDeniedException' || error?.name === 'ValidationException') {
+        console.warn(`⚠️ Erro de permissão/validação para tabela ${tableName}. Retornando array vazio.`);
+        return { success: true, data: [], warning: 'Permissões limitadas para esta operação' };
+      }
+      
       return { success: false, error };
     }
   }

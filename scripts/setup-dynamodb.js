@@ -90,13 +90,13 @@ const tableDefinitions = [
     ],
     AttributeDefinitions: [
       { AttributeName: 'id', AttributeType: 'S' },
-      { AttributeName: 'userId', AttributeType: 'S' }
+      { AttributeName: 'userID', AttributeType: 'S' }
     ],
     GlobalSecondaryIndexes: [
       {
         IndexName: 'UserIdIndex',
         KeySchema: [
-          { AttributeName: 'userId', KeyType: 'HASH' }
+          { AttributeName: 'userID', KeyType: 'HASH' }
         ],
         Projection: {
           ProjectionType: 'ALL'

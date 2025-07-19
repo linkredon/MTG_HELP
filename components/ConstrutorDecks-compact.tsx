@@ -31,6 +31,10 @@ import {
 } from "lucide-react"
 import '../styles/quantum-interface.css'
 import DeckBuilderEnhanced from './DeckBuilder-enhanced'
+import DeckViewer from './DeckViewer'
+
+// Função utilitária para garantir que deck.cards sempre seja um array
+const safeDeckCards = (deck: any) => Array.isArray(deck?.cards) ? deck.cards : [];
 
 export default function ConstrutorDecks() {
   const { 
@@ -199,24 +203,23 @@ export default function ConstrutorDecks() {
     try {
       // Verificações defensivas robustas
       if (!collections || !Array.isArray(collections)) {
-        console.log('isCardInCollection: collections não é um array válido');
+        return false;
+      }
+      
+      if (!cardId || typeof cardId !== 'string' || cardId.trim() === '') {
+        return false;
+      }
+      
+      if (!collectionId || typeof collectionId !== 'string' || collectionId.trim() === '') {
         return false;
       }
       
       const collection = collections.find(c => c && c.id === collectionId);
       if (!collection) {
-        console.log('isCardInCollection: coleção não encontrada');
         return false;
       }
       
       if (!collection.cards || !Array.isArray(collection.cards)) {
-        console.log('isCardInCollection: cards não é um array válido');
-        return false;
-      }
-      
-      // Verificar se cardId é válido
-      if (!cardId) {
-        console.log('isCardInCollection: cardId é inválido');
         return false;
       }
       
@@ -248,8 +251,8 @@ export default function ConstrutorDecks() {
           comparison = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
           break
         case 'cards':
-          const aTotal = a.cards.reduce((sum, c) => sum + c.quantity, 0)
-          const bTotal = b.cards.reduce((sum, c) => sum + c.quantity, 0)
+          const aTotal = safeDeckCards(a).reduce((sum, c) => sum + c.quantity, 0)
+          const bTotal = safeDeckCards(b).reduce((sum, c) => sum + c.quantity, 0)
           comparison = aTotal - bTotal
           break
         case 'format':
@@ -289,14 +292,14 @@ export default function ConstrutorDecks() {
         </div>
         
         <div className="quantum-content">
-          <div className="quantum-card">
-            <CardHeader>
-              <CardTitle>Visualizador de Deck</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Componente DeckViewer será integrado aqui</p>
-            </CardContent>
-          </div>
+          <DeckViewer 
+            deckId={selectedDeck!}
+            onClose={() => {
+              setSelectedDeck(null)
+              setViewMode('list')
+            }}
+            onEdit={() => setViewMode('builder')}
+          />
         </div>
       </div>
     )
@@ -540,7 +543,7 @@ export default function ConstrutorDecks() {
                     <div className="quantum-stat">
                       <BarChart3 className="w-4 h-4 text-slate-400" />
                       <span className="text-sm text-slate-300">
-                        {deck.cards && Array.isArray(deck.cards) ? deck.cards.reduce((sum, c) => sum + (c?.quantity || 0), 0) : 0} cartas
+                        {safeDeckCards(deck).reduce((sum, c) => sum + (c?.quantity || 0), 0)} cartas
                       </span>
                     </div>
                     

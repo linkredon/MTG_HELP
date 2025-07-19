@@ -12,8 +12,28 @@
  */
 export const getPrioritizedImages = (card: any): any => {
   try {
+    // Verificar se card é válido
+    if (!card) {
+      console.warn('Card é undefined ou null');
+      return null;
+    }
+    
+    // Log para debug da estrutura da carta
+    console.log('🔍 Estrutura da carta recebida:', {
+      name: card.name,
+      hasImageUris: !!card.image_uris,
+      hasPrintsSearchUri: !!card.prints_search_uri,
+      hasCardFaces: !!card.card_faces,
+      keys: Object.keys(card)
+    });
+    
     // Se não tiver versões impressas, retorna as imagens padrão
-    if (!card.prints_search_uri) {
+    if (!card.prints_search_uri && !card.image_uris) {
+      // Tentar usar URL direta se disponível
+      if (card.image_url) {
+        return { normal: card.image_url };
+      }
+      
       return card.image_uris || (card.card_faces?.[0]?.image_uris ? { 
         isDoubleFaced: true,
         front: card.card_faces[0].image_uris,
@@ -39,11 +59,23 @@ export const getPrioritizedImages = (card: any): any => {
     }
     
     // Se não encontrar em português, retorna as imagens padrão
-    return card.image_uris || (card.card_faces?.[0]?.image_uris ? { 
+    const defaultImages = card.image_uris || (card.card_faces?.[0]?.image_uris ? { 
       isDoubleFaced: true,
       front: card.card_faces[0].image_uris,
       back: card.card_faces[1]?.image_uris
     } : null);
+    
+    // Se não tiver imagens padrão, tentar usar dados básicos da carta
+    if (!defaultImages && card.name) {
+      console.warn('Carta sem imagens, usando fallback:', card.name);
+      // Tentar gerar URL do Scryfall baseada no nome da carta
+      const encodedName = encodeURIComponent(card.name);
+      const scryfallUrl = `https://api.scryfall.com/cards/named?exact=${encodedName}`;
+      console.log('🔗 URL do Scryfall para busca:', scryfallUrl);
+      return null;
+    }
+    
+    return defaultImages;
   } catch (e) {
     console.error('Erro ao processar imagens da carta:', e);
     return null;

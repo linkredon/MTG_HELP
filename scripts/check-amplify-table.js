@@ -1,23 +1,24 @@
 const { DynamoDBClient, DescribeTableCommand, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
-require('dotenv').config();
+const { Amplify } = require('@aws-amplify/core');
+const awsExports = require('../aws-exports.js').default;
 
-// Configuração do cliente DynamoDB
-const client = new DynamoDBClient({
-  region: process.env.AMZ_REGION || 'us-east-2',
-  credentials: {
-    accessKeyId: process.env.AMZ_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AMZ_SECRET_ACCESS_KEY
-  }
-});
+// Configurar Amplify
+Amplify.configure(awsExports);
 
-const docClient = DynamoDBDocumentClient.from(client);
-
-async function checkTableStructure() {
+async function checkAmplifyTable() {
   try {
-    console.log('🔍 Verificando estrutura da tabela mtg_decks...');
+    console.log('🔍 Verificando estrutura da tabela mtg_decks usando credenciais do Amplify...');
+    
+    // Criar cliente DynamoDB usando credenciais do Amplify
+    const client = new DynamoDBClient({
+      region: awsExports.aws_project_region
+    });
+    
+    const docClient = DynamoDBDocumentClient.from(client);
     
     // Descrever a tabela
+    console.log('📊 Descrevendo tabela...');
     const describeResult = await docClient.send(new DescribeTableCommand({
       TableName: 'mtg_decks'
     }));
@@ -64,9 +65,54 @@ async function checkTableStructure() {
       });
     }
     
+    // Testar criação de um item de teste
+    console.log('\n🧪 Testando criação de item...');
+    const testItem = {
+      id: 'test-deck-' + Date.now(),
+      userID: 'test-user-id',
+      name: 'Test Deck',
+      format: 'Standard',
+      colors: ['Red'],
+      description: 'Test deck for validation',
+      isPublic: false,
+      tags: ['test'],
+      createdAt: new Date().toISOString(),
+      lastModified: new Date().toISOString()
+    };
+    
+    console.log('📋 Item de teste:', testItem);
+    
+    try {
+      const putResult = await docClient.send(new (require('@aws-sdk/client-dynamodb').PutCommand)({
+        TableName: 'mtg_decks',
+        Item: testItem
+      }));
+      console.log('✅ Item de teste criado com sucesso!');
+      
+      // Remover o item de teste
+      await docClient.send(new (require('@aws-sdk/client-dynamodb').DeleteCommand)({
+        TableName: 'mtg_decks',
+        Key: { id: testItem.id }
+      }));
+      console.log('🗑️ Item de teste removido');
+      
+    } catch (createError) {
+      console.error('❌ Erro ao criar item de teste:', createError);
+      console.error('📋 Detalhes do erro:', {
+        message: createError.message,
+        name: createError.name,
+        code: createError.code
+      });
+    }
+    
   } catch (error) {
     console.error('❌ Erro ao verificar estrutura da tabela:', error);
+    console.error('📋 Detalhes do erro:', {
+      message: error.message,
+      name: error.name,
+      code: error.code
+    });
   }
 }
 
-checkTableStructure(); 
+checkAmplifyTable(); 
