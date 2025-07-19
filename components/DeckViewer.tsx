@@ -44,6 +44,35 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
   
   const deck = decks.find(d => d.id === deckId);
   
+  // Debug: Verificar se o deck tem backgroundImage
+  console.log('🎨 [DeckViewer] Background Image Debug:', {
+    deckId,
+    deckName: deck?.name,
+    backgroundImage: deck?.backgroundImage,
+    hasBackgroundImage: !!deck?.backgroundImage,
+    allDecks: decks.map(d => ({ id: d.id, name: d.name, backgroundImage: d.backgroundImage }))
+  });
+  
+  // Debug: Verificar o estilo aplicado
+  const backgroundStyle = {
+    backgroundImage: deck?.backgroundImage ? `url(${deck.backgroundImage})` : undefined,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundColor: deck?.backgroundImage ? 'transparent' : undefined
+  };
+  
+  console.log('🎨 [DeckViewer] Background Style:', backgroundStyle);
+  
+  // Debug: Verificar se o deck foi encontrado e suas cartas
+  console.log('🔍 [DeckViewer] Debug:', {
+    deckId,
+    deckFound: !!deck,
+    deckName: deck?.name,
+    cardsCount: deck?.cards?.length || 0,
+    cards: deck?.cards?.slice(0, 3) || [], // Primeiras 3 cartas para debug
+  });
+  
   const [editedDeck, setEditedDeck] = useState({
     name: deck?.name || '',
     format: deck?.format || 'Standard',
@@ -62,34 +91,50 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
 
   // Filtrar cartas
   const filteredCards = useMemo(() => {
-    let filtered = deck.cards;
+    let filtered = deck.cards || [];
+    
+    // Debug: Verificar estrutura das cartas
+    console.log('🔍 [DeckViewer] Estrutura das cartas:', {
+      totalCards: filtered.length,
+      sampleCard: filtered[0],
+      cardsWithCardData: filtered.filter(c => c.card || c.cardData).length,
+      cardsWithoutData: filtered.filter(c => !c.card && !c.cardData).length,
+      filteredCardsCount: 0 // Será atualizado após o filtro
+    });
     
     if (filterCategory !== 'all') {
       filtered = filtered.filter(card => card.category === filterCategory);
     }
     
     if (searchTerm.trim()) {
-      filtered = filtered.filter(card => cardMatchesSearchTerm(card.card, searchTerm));
+      filtered = filtered.filter(card => {
+        const cardData = card.card || card.cardData;
+        return cardData && cardMatchesSearchTerm(cardData, searchTerm);
+      });
     }
+    
+    // Atualizar o log com o número final de cartas filtradas
+    console.log('🔍 [DeckViewer] Cartas filtradas:', filtered.length);
     
     return filtered;
   }, [deck.cards, filterCategory, searchTerm]);
 
   // Estatísticas do deck
   const stats = useMemo(() => {
-    const mainboard = deck.cards.filter(c => c.category === 'mainboard');
-    const sideboard = deck.cards.filter(c => c.category === 'sideboard');
-    const commander = deck.cards.filter(c => c.category === 'commander');
+    const mainboard = (deck.cards || []).filter(c => c.category === 'mainboard');
+    const sideboard = (deck.cards || []).filter(c => c.category === 'sideboard');
+    const commander = (deck.cards || []).filter(c => c.category === 'commander');
     
-    const mainboardCount = mainboard.reduce((sum, c) => sum + c.quantity, 0);
-    const sideboardCount = sideboard.reduce((sum, c) => sum + c.quantity, 0);
-    const commanderCount = commander.reduce((sum, c) => sum + c.quantity, 0);
+    const mainboardCount = mainboard.reduce((sum, c) => sum + (c.quantity || 0), 0);
+    const sideboardCount = sideboard.reduce((sum, c) => sum + (c.quantity || 0), 0);
+    const commanderCount = commander.reduce((sum, c) => sum + (c.quantity || 0), 0);
     
     const manaCurve: Record<number, number> = {};
     mainboard.forEach(card => {
-      const cmc = card.card?.cmc || 0;
+      const cardData = card.card || card.cardData;
+      const cmc = cardData?.cmc || 0;
       const cmcKey = cmc >= 7 ? 7 : cmc;
-      manaCurve[cmcKey] = (manaCurve[cmcKey] || 0) + card.quantity;
+      manaCurve[cmcKey] = (manaCurve[cmcKey] || 0) + (card.quantity || 0);
     });
     
     return {
@@ -97,7 +142,7 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
       sideboard: sideboardCount,
       commander: commanderCount,
       total: mainboardCount + sideboardCount + commanderCount,
-      unique: deck.cards.length,
+      unique: (deck.cards || []).length,
       manaCurve
     };
   }, [deck.cards]);
@@ -193,7 +238,32 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
   };
 
   return (
-    <div className="quantum-card min-h-[calc(100vh-80px)] p-0 m-0">
+    <div 
+      className="min-h-[calc(100vh-80px)] p-0 m-0 relative overflow-hidden"
+      style={backgroundStyle}
+    >
+      {/* Background blur overlay */}
+      {deck.backgroundImage && (
+        <>
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-md"
+            style={{ zIndex: 1 }}
+          />
+          {/* Debug: Elemento para verificar se a imagem carregou */}
+          <div 
+            className="absolute inset-0 opacity-0"
+            style={{ 
+              zIndex: 0,
+              backgroundImage: `url(${deck.backgroundImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          />
+        </>
+      )}
+      
+      {/* Content container */}
+      <div className="relative z-10 min-h-full bg-black/20 backdrop-blur-sm rounded-lg m-2">
       {/* Header compacto */}
       <div className="sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-cyan-500/30 shadow-lg">
         <div className="flex items-center justify-between gap-2 p-2">
@@ -425,6 +495,7 @@ const DeckViewer: React.FC<DeckViewerProps> = ({ deckId, onClose, onEdit }) => {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };

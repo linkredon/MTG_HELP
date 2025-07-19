@@ -690,15 +690,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     const result: Array<{deck: Deck, quantity: number, category: string}> = [];
     
     decks.forEach(deck => {
-      deck.cards.forEach(deckCard => {
-        if (deckCard.card.id === cardId) {
-          result.push({
-            deck,
-            quantity: deckCard.quantity,
-            category: deckCard.category
-          });
-        }
-      });
+      if (deck.cards && Array.isArray(deck.cards)) {
+        deck.cards.forEach(deckCard => {
+          if (deckCard.card.id === cardId) {
+            result.push({
+              deck,
+              quantity: deckCard.quantity,
+              category: deckCard.category
+            });
+          }
+        });
+      }
     });
     
     return result;

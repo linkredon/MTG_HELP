@@ -146,4 +146,5 @@ export interface Deck {
   description?: string;
   isPublic: boolean;
   tags: string[];
+  backgroundImage?: string;
 }

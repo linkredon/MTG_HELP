@@ -113,7 +113,7 @@ export default function DeckSelector({
                         {deck.format}
                       </Badge>
                       <Badge variant="secondary" className="text-xs badge">
-                        {deck.cards.reduce((sum, c) => sum + c.quantity, 0)} cartas
+                        {(deck.cards || []).reduce((sum, c) => sum + c.quantity, 0)} cartas
                       </Badge>
                     </div>
                   </SelectItem>

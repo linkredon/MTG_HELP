@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import Image from "next/image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
@@ -12,6 +13,7 @@ import DeckSelector from "./DeckSelector-enhanced"
 import CollectionDeckUsage from "./CollectionDeckUsage"
 import { useCardModal } from "../contexts/CardModalContext"
 import { useAppContext } from "../contexts/AppContext"
+import { getImageUrl } from "../utils/imageService"
 import type { MTGCard } from "@/types/mtg"
 
 // Componentes auxiliares para lidar com as chamadas assíncronas
@@ -336,35 +338,34 @@ export default function CardModal() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-2">
             {/* Imagem da carta */}
             <div className="flex justify-center">
-              {(card.image_uris?.normal) ? (
-                <img 
-                  src={card.image_uris.normal} 
-                  alt={card.name}
-                  className="card-modal-image max-h-[80vh] object-contain"
-                  crossOrigin="anonymous"
-                />
-              ) : card.card_faces?.[0]?.image_uris?.normal ? (
-                <div className="space-y-4">
-                  <img 
-                    src={card.card_faces[0].image_uris.normal} 
-                    alt={card.name + " (frente)"}
-                    className="card-modal-image max-h-[38vh] object-contain"
-                    crossOrigin="anonymous"
-                  />
-                  {card.card_faces[1]?.image_uris?.normal && (
-                    <img 
-                      src={card.card_faces[1].image_uris.normal} 
-                      alt={card.name + " (verso)"}
-                      className="card-modal-image max-h-[38vh] object-contain"
-                      crossOrigin="anonymous"
-                    />
-                  )}
-                </div>
-              ) : (
-                <div className="w-full h-96 bg-gray-700 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-400">Imagem não disponível</span>
-                </div>
-              )}
+              {(() => {
+                const imageUrl = getImageUrl(card, 'normal');
+                return (
+                  <div className="relative w-full max-w-md">
+                    {imageUrl ? (
+                      <div className="relative aspect-[63/88] max-h-[80vh]">
+                        <Image 
+                          src={imageUrl}
+                          alt={card.name}
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 768px) 100vw, 400px"
+                          onError={() => {
+                            // Fallback será mostrado automaticamente pelo Next.js
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-96 bg-gray-700 rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-gray-400 text-sm mb-2">Imagem não disponível</div>
+                          <div className="text-gray-500 text-xs">{card.name}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Informações da carta */}

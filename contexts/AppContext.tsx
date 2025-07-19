@@ -549,27 +549,38 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Editar deck existente
   const editarDeck = async (deckId: string, updates: Partial<Deck>): Promise<void> => {
+    console.log('🔄 [AppContext] editarDeck chamada:', { deckId, updates });
+    
     if (isAuthenticated) {
       try {
         const response = await deckService.update(deckId, updates);
+        console.log('📡 [AppContext] Resposta da API:', response);
         if (response.success) {
-          setDecks(prev => prev.map(deck => 
-            deck.id === deckId 
-              ? { ...deck, ...updates }
-              : deck
-          ));
+          setDecks(prev => {
+            const updated = prev.map(deck => 
+              deck.id === deckId 
+                ? { ...deck, ...updates }
+                : deck
+            );
+            console.log('✅ [AppContext] Estado atualizado:', updated.find(d => d.id === deckId));
+            return updated;
+          });
         }
       } catch (error) {
-        console.error('Erro ao editar deck:', error);
+        console.error('❌ Erro ao editar deck:', error);
         throw error;
       }
     } else {
       // Fallback para localStorage
-      setDecks(prev => prev.map(deck => 
-        deck.id === deckId 
-          ? { ...deck, ...updates, lastModified: new Date().toISOString() }
-          : deck
-      ));
+      setDecks(prev => {
+        const updated = prev.map(deck => 
+          deck.id === deckId 
+            ? { ...deck, ...updates, lastModified: new Date().toISOString() }
+            : deck
+        );
+        console.log('✅ [AppContext] Estado local atualizado:', updated.find(d => d.id === deckId));
+        return updated;
+      });
     }
   };
 
@@ -967,15 +978,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     const result: Array<{deck: Deck, quantity: number, category: string}> = [];
     
     decks.forEach(deck => {
-      deck.cards.forEach(deckCard => {
-        if (deckCard.card?.id === cardId) {
-          result.push({
-            deck,
-            quantity: deckCard.quantity,
-            category: deckCard.category
-          });
-        }
-      });
+      if (deck.cards && Array.isArray(deck.cards)) {
+        deck.cards.forEach(deckCard => {
+          if (deckCard.card?.id === cardId) {
+            result.push({
+              deck,
+              quantity: deckCard.quantity,
+              category: deckCard.category
+            });
+          }
+        });
+      }
     });
     
     return result;

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from 'react'
+import Image from 'next/image'
 import { useAppContext } from '@/contexts/AppContext'
 import { useCardModal } from '@/contexts/CardModalContext'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   Plus, 
@@ -27,9 +28,12 @@ import {
   CheckCircle,
   AlertCircle,
   Info,
-  BookOpen
+  BookOpen,
+  Image as ImageIcon,
+  FileText
 } from "lucide-react"
 import '../styles/quantum-interface.css'
+import '../styles/deck-background-selector.css'
 import DeckBuilderEnhanced from './DeckBuilder-enhanced'
 import DeckViewer from './DeckViewer'
 
@@ -44,6 +48,7 @@ export default function ConstrutorDecks() {
     criarDeck, 
     deletarDeck, 
     duplicarDeck,
+    editarDeck,
     adicionarCartaAColecao,
     criarColecao
   } = useAppContext()
@@ -74,6 +79,13 @@ export default function ConstrutorDecks() {
     visible: boolean
   }>({ type: 'info', message: '', visible: false })
 
+  // Função para selecionar um deck e automaticamente ativar o visualizador
+  const handleSelectDeck = (deckId: string) => {
+    setSelectedDeck(deckId)
+    // Automaticamente ativar o visualizador quando um deck é selecionado
+    setViewMode('viewer')
+  }
+
   // Estados para criação de deck
   const [newDeckData, setNewDeckData] = useState({
     name: '',
@@ -90,6 +102,10 @@ export default function ConstrutorDecks() {
   const [formatFilter, setFormatFilter] = useState('all')
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'cards' | 'format'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  
+  // Estado para armazenar as cartas de fundo selecionadas manualmente
+  const [backgroundCards, setBackgroundCards] = useState<{[deckId: string]: number}>({})
+  const [showCardSelector, setShowCardSelector] = useState<string | null>(null)
 
   // Função para mostrar notificações
   const showNotification = (type: 'success' | 'error' | 'info', message: string) => {
@@ -231,6 +247,47 @@ export default function ConstrutorDecks() {
       return false;
     }
   }
+
+  // Função para obter URL da imagem da carta
+  const getImageUrl = (card: any, size: 'small' | 'normal' | 'large' = 'normal'): string => {
+    try {
+      if (!card) return '';
+      
+      // Se a carta tem image_uris direto, use
+      if (card.image_uris && card.image_uris[size]) {
+        return card.image_uris[size];
+      }
+      
+      // Se tem image_uris mas não tem o tamanho específico, use normal
+      if (card.image_uris && card.image_uris.normal) {
+        return card.image_uris.normal;
+      }
+      
+      // Se tem image_url direto, use
+      if (card.image_url) {
+        return card.image_url;
+      }
+      
+      // Se tem card_faces (carta dupla face)
+      if (card.card_faces && card.card_faces[0] && card.card_faces[0].image_uris) {
+        const frontImage = card.card_faces[0].image_uris[size] || card.card_faces[0].image_uris.normal;
+        if (frontImage) {
+          return frontImage;
+        }
+      }
+      
+      // Fallback: gerar URL do Scryfall baseada no nome
+      if (card.name) {
+        const encodedName = encodeURIComponent(card.name.trim());
+        const version = size === 'small' ? 'small' : size === 'large' ? 'large' : 'normal';
+        return `https://api.scryfall.com/cards/named?exact=${encodedName}&format=image&version=${version}`;
+      }
+      
+      return '';
+    } catch (e) {
+      return '';
+    }
+  };
 
   // Filtrar e ordenar decks
   const filteredDecks = useMemo(() => {
@@ -498,13 +555,11 @@ export default function ConstrutorDecks() {
                   
                   <div className="quantum-card-actions">
                     <Button
-                      onClick={() => {
-                        setSelectedDeck(deck.id)
-                        setViewMode('viewer')
-                      }}
+                      onClick={() => handleSelectDeck(deck.id)}
                       variant="ghost"
                       size="sm"
                       className="quantum-button-icon"
+                      title="Visualizar Deck"
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
@@ -516,8 +571,18 @@ export default function ConstrutorDecks() {
                       variant="ghost"
                       size="sm"
                       className="quantum-button-icon"
+                      title="Editar Deck"
                     >
                       <Edit3 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={() => setShowCardSelector(deck.id)}
+                      variant="ghost"
+                      size="sm"
+                      className="quantum-button-icon"
+                      title="Definir Imagem de Fundo"
+                    >
+                      <ImageIcon className="w-4 h-4" />
                     </Button>
                     <Button
                       onClick={() => handleDuplicateDeck(deck.id)}
@@ -844,6 +909,96 @@ export default function ConstrutorDecks() {
               Fechar
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Seleção de Carta de Fundo */}
+      <Dialog open={!!showCardSelector} onOpenChange={() => setShowCardSelector(null)}>
+        <DialogContent className="quantum-card-dense overflow-hidden border border-cyan-500/20 bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-lg focus:outline-none fixed-modal card-selector-modal z-[10000]">
+          <DialogHeader>
+            <div className="flex items-center justify-between border-b border-cyan-500/20 pb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-cyan-400" />
+                <DialogTitle className="text-lg font-medium text-cyan-400">Escolher Imagem de Fundo</DialogTitle>
+              </div>
+              <Button
+                onClick={() => setShowCardSelector(null)}
+                className="h-7 w-7 p-0 rounded-full bg-gray-800/60 hover:bg-gray-700/60 border-none"
+              >
+                <Plus className="h-3.5 w-3.5 text-gray-400 rotate-45" />
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto p-1 quantum-scrollbar">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              {showCardSelector && (() => {
+                const deck = decks.find(d => d.id === showCardSelector);
+                if (!deck) return <p className="text-red-400">Deck não encontrado</p>;
+                
+                return deck.cards.map((deckCard, index) => {
+                  const cardData = deckCard.card || deckCard.cardData;
+                  if (!cardData) return null;
+                  
+                  return (
+                    <div
+                      key={`${cardData.id}-${index}`}
+                      className="relative cursor-pointer rounded-md overflow-hidden transition-all hover:scale-[1.03] group ring-1 ring-gray-700 hover:ring-cyan-400"
+                      onClick={async () => {
+                        const imageUrl = cardData.image_uris?.art_crop || cardData.image_uris?.normal;
+                        if (imageUrl && showCardSelector) {
+                          console.log('🎨 Aplicando imagem de fundo:', { deckId: showCardSelector, imageUrl });
+                          try {
+                            await editarDeck(showCardSelector, { backgroundImage: imageUrl });
+                            console.log('✅ Imagem aplicada com sucesso');
+                            showNotification('success', 'Imagem de fundo aplicada!');
+                          } catch (error) {
+                            console.error('❌ Erro ao aplicar imagem:', error);
+                            showNotification('error', 'Erro ao aplicar imagem de fundo');
+                          }
+                          setShowCardSelector(null);
+                        }
+                      }}
+                    >
+                      {cardData.image_uris?.small ? (
+                        <Image
+                          src={cardData.image_uris.small}
+                          alt={cardData.name}
+                          width={146}
+                          height={204}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.png';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="w-8 h-8 mx-auto mb-2 bg-gray-600 rounded-full flex items-center justify-center">
+                              <ImageIcon className="w-4 h-4 text-gray-400" />
+                            </div>
+                            <p className="text-xs text-gray-400">Sem imagem</p>
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1">
+                        <p className="text-xs text-white truncate">{cardData.name}</p>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+          <DialogFooter className="pt-4 border-t border-cyan-500/20">
+            <Button variant="outline" className="quantum-btn compact" onClick={() => {
+              if (showCardSelector) {
+                editarDeck(showCardSelector, { backgroundImage: undefined });
+              }
+              setShowCardSelector(null);
+            }}>Usar Padrão</Button>
+            <Button className="quantum-btn primary compact" onClick={() => setShowCardSelector(null)}>Concluído</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

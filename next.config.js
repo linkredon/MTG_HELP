@@ -3,7 +3,24 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
 
   images: {
-    domains: ['c1.scryfall.com', 'c2.scryfall.com', 'cards.scryfall.io'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'c1.scryfall.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'c2.scryfall.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cards.scryfall.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.scryfall.com',
+      },
+    ],
   },
   // Desabilitar a geração de arquivos de trace
   generateBuildId: async () => {

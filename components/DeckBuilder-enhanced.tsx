@@ -1,1256 +1,879 @@
 "use client"
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import '../styles/deck-builder-enhanced.css';
-import '../styles/dropdown-fixes-enhanced.css';
-import '../styles/card-search-enhanced.css';
-import '../styles/quantum-interface.css';
-import { useAppContext } from '@/contexts/AppContext';
-import { translatePtToEn, cardMatchesSearchTerm } from '@/utils/translationService';
-import { getImageUrl } from '@/utils/imageService';
-import { searchCardsWithTranslation } from '@/utils/scryfallService';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCardModal } from '@/contexts/CardModalContext';
-import SearchCardList from '@/components/SearchCardList';
-import { 
-  Search, Plus, Minus, X, Save, Settings, Target, 
-  Library, Download, RefreshCw, AlertCircle, Loader2,
-  Grid3X3, List, Filter, Package, Eye, Info,
-  BookOpen, Star, CheckCircle, AlertTriangle, ArrowLeft,
-  Heart, Crown, Zap, Shield, Sword, Edit3, Copy, Trash2,
-  PieChart, BarChart3, FileText, Play, Pause, RotateCcw
-} from 'lucide-react';
-import Image from 'next/image';
-import type { MTGCard } from '@/types/mtg';
+import React, { useState, useEffect, useMemo } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
+import { Button } from "./ui/button"
+import { Badge } from "./ui/badge"
+import { Input } from "./ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import { Textarea } from "./ui/textarea"
+import { Plus, Bookmark, ExternalLink, X, Info, Layers, Palette, Search, Filter, RefreshCw, Trash2, Edit3, Save, Eye, EyeOff, Grid3X3, List, PlusCircle, MinusCircle, ArrowUpDown, ArrowUp, ArrowDown, Settings, Package } from "lucide-react"
+import { useCardModal } from "../contexts/CardModalContext"
+import { useAppContext } from "../contexts/AppContext"
+import { getImageUrl } from "../utils/imageService"
+import CardSearchModal from "./CardSearchModal"
+import type { MTGCard } from "@/types/mtg"
+import "../styles/deck-builder-enhanced.css"
+
+// Constantes para filtros
+const raridades = ["all", "common", "uncommon", "rare", "mythic", "special", "bonus"]
+const tipos = [
+  "all", "creature", "artifact", "enchantment", "instant", "sorcery", 
+  "planeswalker", "land", "token", "artifact creature", "enchantment creature"
+]
+const subtipos = [
+  "all", "elf", "goblin", "zombie", "angel", "dragon", "vampire", "wizard", 
+  "warrior", "human", "beast", "spirit", "sliver", "merfolk", "dinosaur", 
+  "giant", "elemental", "knight", "soldier", "rogue", "cleric"
+]
+const supertipos = ["all", "legendary", "basic", "snow", "world", "ongoing"]
+const foils = ["all", "foil", "nonfoil"]
+const coresMana = ["W", "U", "B", "R", "G", "C"]
 
 interface DeckBuilderEnhancedProps {
-  deckId?: string;
-  onSave?: (deckId: string) => void;
-  onCancel?: () => void;
+  deckId?: string
 }
 
-const getCardImage = (card: MTGCard, size: 'small' | 'normal' = 'small'): string => {
-  if (!card) {
-    console.warn('getCardImage: card é undefined ou null');
-    return '';
-  }
-  return getImageUrl(card, size);
-};
-
-const DeckBuilderEnhanced: React.FC<DeckBuilderEnhancedProps> = ({ deckId, onSave, onCancel }) => {
-  const { 
-    decks, 
-    collections,
-    adicionarCartaAoDeck,
-    removerCartaDoDeck,
-    atualizarQuantidadeNoDeck,
-    adicionarCartaAColecao,
-    criarColecao,
-    editarDeck,
-    deletarDeck,
-    duplicarDeck,
-    criarDeck,
-    carregarCartasDoDeck,
-    calculateDeckStats
-  } = useAppContext();
+export default function DeckBuilderEnhanced({ deckId }: DeckBuilderEnhancedProps) {
+  const { openModal } = useCardModal()
+  const { decks, editarDeck, deletarDeck } = useAppContext()
   
-  const cardModalContext = useCardModal();
+  // Estado do deck
+  const [deck, setDeck] = useState<any>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   
-  // Estados locais
-  const [currentDeck, setCurrentDeck] = useState<any>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<MTGCard[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<'mainboard' | 'sideboard' | 'commander'>('mainboard');
-  const [showAddToCollection, setShowAddToCollection] = useState<string | null>(null);
-  const [selectedCardForCollection, setSelectedCardForCollection] = useState<any>(null);
-  const [notification, setNotification] = useState<{
-    type: 'success' | 'error' | 'info'
-    message: string
-    visible: boolean
-  }>({ type: 'info', message: '', visible: false });
-
-  // Estados para filtros
-  const [raridade, setRaridade] = useState('all');
-  const [tipo, setTipo] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-
-  // Estados para visualização e edição
-  const [showDeckViewer, setShowDeckViewer] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deckStats, setDeckStats] = useState<any>(null);
-
-  // Debounce para busca
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
-
-  // Função para mostrar notificações
-  const showNotification = (type: 'success' | 'error' | 'info', message: string) => {
-    setNotification({ type, message, visible: true });
-    setTimeout(() => {
-      setNotification(prev => ({ ...prev, visible: false }));
-    }, 3000);
-  };
-
-  // Carregar deck atual
+  // Estados para visualização (igual ao EnhancedCardDisplay)
+  const [viewMode, setViewMode] = useState<'grid' | 'spoiler'>('grid')
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
+  
+  // Estados para busca de cartas
+  const [showSearchModal, setShowSearchModal] = useState(false)
+  
+  // Estados para edição do deck
+  const [editingDeck, setEditingDeck] = useState({
+    name: '',
+    format: '',
+    description: '',
+    colors: [] as string[],
+    tags: [] as string[]
+  })
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  
+  // Estados para modais
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showMoveModal, setShowMoveModal] = useState(false)
+  const [moveCardData, setMoveCardData] = useState<{
+    cardId: string
+    fromCategory: 'mainboard' | 'sideboard' | 'commander'
+    toCategory: 'mainboard' | 'sideboard' | 'commander'
+    cardName: string
+    currentQuantity: number
+  } | null>(null)
+  
+  // Carregar deck
   useEffect(() => {
-    console.log('🔄 Carregando deck atual:', { deckId, decksCount: decks.length });
-    
     if (deckId) {
-      const deck = decks.find(d => d.id === deckId);
-      console.log('📊 Deck encontrado:', deck);
-      
-      if (deck) {
-        console.log('✅ Deck carregado com sucesso:', {
-          id: deck.id,
-          name: deck.name,
-          cardsCount: deck.cards?.length || 0,
-          cards: deck.cards
-        });
-        setCurrentDeck(deck);
-        calculateDeckStats(deck);
-        
-        // Carregar cartas do deck se estiver autenticado
-        if (deck.cards?.length === 0) {
-          console.log('📤 Carregando cartas do deck...');
-          carregarCartasDoDeck(deckId).then(cards => {
-            console.log('📊 Cartas carregadas:', cards);
-            if (cards.length > 0) {
-              const updatedDeck = { ...deck, cards };
-              setCurrentDeck(updatedDeck);
-              const stats = calculateDeckStats(updatedDeck);
-              setDeckStats(stats);
-            }
-          });
-        }
-      } else {
-        console.error('❌ Deck não encontrado para ID:', deckId);
+      const foundDeck = decks.find(d => d.id === deckId)
+      if (foundDeck) {
+        setDeck(foundDeck)
+        setEditingDeck({
+          name: foundDeck.name || '',
+          format: foundDeck.format || '',
+          description: foundDeck.description || '',
+          colors: foundDeck.colors || [],
+          tags: foundDeck.tags || []
+        })
       }
+    }
+  }, [deckId, decks])
+  
+
+  
+  // Função para adicionar carta ao deck com validação de commander
+  const handleAddCardToDeck = (card: MTGCard, category: 'mainboard' | 'sideboard' | 'commander', quantity: number = 1) => {
+    if (!deck) return
+    
+    // Validação especial para commander
+    if (category === 'commander') {
+      // Verificar se é lendária
+      if (!card.type_line?.toLowerCase().includes('legendary')) {
+        alert('Apenas cartas lendárias podem ser commander.')
+        return
+      }
+      
+      // Verificar se já tem commander
+      const existingCommander = deck.cards?.find((deckCard: any) => {
+        const cardData = deckCard.card || deckCard.cardData
+        return deckCard.category === 'commander' && cardData?.id !== card.id
+      })
+      
+      if (existingCommander) {
+        const existingCardData = existingCommander.card || existingCommander.cardData
+        const hasPartner = existingCardData?.type_line?.toLowerCase().includes('partner')
+        const newCardHasPartner = card.type_line?.toLowerCase().includes('partner')
+        
+        // Se o commander atual tem partner e a nova carta também tem partner, pode adicionar
+        if (hasPartner && newCardHasPartner) {
+          // OK - pode ter dois commanders parceiros
+        } else {
+          // Perguntar se quer substituir
+          if (!confirm(`Você já tem um commander: ${existingCardData?.name}. Deseja substituí-lo por ${card.name}?`)) {
+            return
+          }
+        }
+      }
+    }
+    
+    const existingCard = deck.cards?.find((deckCard: any) => {
+      const cardData = deckCard.card || deckCard.cardData
+      return cardData?.id === card.id && deckCard.category === category
+    })
+    
+    if (existingCard) {
+      const updatedCards = deck.cards.map((deckCard: any) => {
+        const cardData = deckCard.card || deckCard.cardData
+        if (cardData?.id === card.id && deckCard.category === category) {
+          return { ...deckCard, quantity: deckCard.quantity + quantity }
+        }
+        return deckCard
+      })
+      setDeck({ ...deck, cards: updatedCards })
+      setHasUnsavedChanges(true)
     } else {
-      console.log('🆕 Criando novo deck...');
-      // Criar novo deck
-      const newDeck = {
-        id: 'new',
-        name: 'Novo Deck',
-        format: 'Standard',
-        colors: [],
-        cards: [],
-        description: ''
-      };
-      console.log('✅ Novo deck criado:', newDeck);
-      setCurrentDeck(newDeck);
-    }
-  }, [deckId, decks, carregarCartasDoDeck]);
-
-  // Cleanup do timeout quando componente for desmontado
-  useEffect(() => {
-    return () => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
-      }
-    };
-  }, [searchTimeout]);
-
-  // Buscar cartas com tratamento de erro melhorado e debounce
-  const handleSearch = useCallback(async (term: string) => {
-    if (!term.trim()) {
-      setSearchResults([]);
-      setSearchError(null);
-      return;
-    }
-
-    setIsSearching(true);
-    setSearchError(null);
-    
-    try {
-      const results = await searchCardsWithTranslation(term);
-      setSearchResults(results);
-    } catch (error) {
-      console.error('Erro ao buscar cartas:', error);
-      
-      // Determinar o tipo de erro para mostrar mensagem apropriada
-      let errorMessage = 'Erro na busca. Verifique sua conexão e tente novamente.';
-      
-      if (error instanceof Error) {
-        if (error.message.includes('timeout') || error.message.includes('abort')) {
-          errorMessage = 'Tempo limite excedido. Tente novamente.';
-        } else if (error.message.includes('Failed to fetch')) {
-          errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
-        } else if (error.message.includes('API do Scryfall')) {
-          errorMessage = error.message;
-        }
-      }
-      
-      setSearchError(errorMessage);
-      showNotification('error', 'Erro ao buscar cartas. Tente novamente.');
-    } finally {
-      setIsSearching(false);
-    }
-  }, []);
-
-  // Função com debounce para busca
-  const handleSearchWithDebounce = useCallback((term: string) => {
-    // Limpar timeout anterior se existir
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
-    }
-
-    // Se o termo estiver vazio, limpar resultados imediatamente
-    if (!term.trim()) {
-      setSearchResults([]);
-      setSearchError(null);
-      return;
-    }
-
-    // Criar novo timeout para debounce
-    const newTimeout = setTimeout(() => {
-      handleSearch(term);
-    }, 500); // 500ms de debounce
-
-    setSearchTimeout(newTimeout);
-  }, [handleSearch, searchTimeout]);
-
-  // Adicionar carta ao deck
-  const handleAddCard = async (card: MTGCard, category: 'mainboard' | 'sideboard' | 'commander' = 'mainboard', quantity: number = 1) => {
-    console.log('🔄 Iniciando adição de carta ao deck:', {
-      card: card?.name || 'Unknown Card',
-      category,
-      quantity,
-      deckId: currentDeck?.id,
-      deckName: currentDeck?.name,
-      isNewDeck: currentDeck?.id === 'new'
-    });
-
-    if (!currentDeck) {
-      console.error('❌ Deck atual não encontrado');
-      showNotification('error', 'Deck não encontrado');
-      return;
-    }
-
-    // Se é um deck novo, criar primeiro
-    if (currentDeck.id === 'new') {
-      console.log('🆕 Criando deck antes de adicionar carta...');
-      try {
-        const newDeckData = {
-          name: currentDeck.name,
-          description: currentDeck.description,
-          format: currentDeck.format,
-          colors: currentDeck.colors,
-          cards: [],
-          isPublic: false,
-          tags: []
-        };
-        
-        const newDeckId = await criarDeck(newDeckData);
-        console.log('✅ Deck criado com ID:', newDeckId);
-        
-        // Atualizar o deck atual com o novo ID
-        setCurrentDeck(prev => ({ ...prev, id: newDeckId }));
-        
-        // Agora adicionar a carta
-        await adicionarCartaAoDeck(newDeckId, card, category, quantity);
-        console.log('✅ Carta adicionada ao novo deck!');
-        showNotification('success', `${card?.name || 'Carta'} adicionada ao deck!`);
-        
-        // Recalcular estatísticas
-        console.log('📊 Recalculando estatísticas...');
-        const updatedDeck = { ...currentDeck, id: newDeckId };
-        const stats = calculateDeckStats(updatedDeck);
-        setDeckStats(stats);
-        console.log('✅ Estatísticas recalculadas');
-      } catch (error) {
-        console.error('❌ Erro ao criar deck:', error);
-        showNotification('error', `Erro ao criar deck: ${error.message || 'Erro desconhecido'}`);
-      }
-      return;
-    }
-
-    try {
-      console.log('📤 Chamando adicionarCartaAoDeck...');
-      await adicionarCartaAoDeck(currentDeck.id, card, category, quantity);
-      console.log('✅ Carta adicionada com sucesso!');
-              showNotification('success', `${card?.name || 'Carta'} adicionada ao deck!`);
-      
-      // Recalcular estatísticas
-      console.log('📊 Recalculando estatísticas...');
-      const updatedDeck = { ...currentDeck };
-      const stats = calculateDeckStats(updatedDeck);
-      setDeckStats(stats);
-      console.log('✅ Estatísticas recalculadas');
-    } catch (error) {
-      console.error('❌ Erro ao adicionar carta ao deck:', error);
-      showNotification('error', `Erro ao adicionar carta: ${error.message || 'Erro desconhecido'}`);
-    }
-  };
-
-  // Remover carta do deck
-  const handleRemoveCard = async (cardId: string, category: 'mainboard' | 'sideboard' | 'commander' = 'mainboard') => {
-    if (!currentDeck) return;
-
-    try {
-      await removerCartaDoDeck(currentDeck.id, cardId, category);
-      showNotification('success', 'Carta removida do deck!');
-      // Recalcular estatísticas
-      const updatedDeck = { ...currentDeck };
-      const stats = calculateDeckStats(updatedDeck);
-      setDeckStats(stats);
-    } catch (error) {
-      showNotification('error', 'Erro ao remover carta do deck');
-    }
-  };
-
-  // Atualizar quantidade
-  const handleUpdateQuantity = async (cardId: string, newQuantity: number, category: 'mainboard' | 'sideboard' | 'commander' = 'mainboard') => {
-    if (!currentDeck) return;
-
-    try {
-      await atualizarQuantidadeNoDeck(currentDeck.id, cardId, newQuantity, category);
-      showNotification('success', 'Quantidade atualizada!');
-      // Recalcular estatísticas
-      const updatedDeck = { ...currentDeck };
-      const stats = calculateDeckStats(updatedDeck);
-      setDeckStats(stats);
-    } catch (error) {
-      showNotification('error', 'Erro ao atualizar quantidade');
-    }
-  };
-
-  // Mover carta entre seções
-  const handleMoveCard = async (cardId: string, fromCategory: 'mainboard' | 'sideboard' | 'commander', toCategory: 'mainboard' | 'sideboard' | 'commander') => {
-    if (!currentDeck) return;
-
-    try {
-      const card = (currentDeck.cards ?? []).find((c: any) => {
-        if (!c) return false;
-        let cardIdToCheck = '';
-        if (c.cardData && c.cardData.id) {
-          cardIdToCheck = c.cardData.id;
-        } else if (c.card && c.card.id) {
-          cardIdToCheck = c.card.id;
-        } else if (c.id) {
-          cardIdToCheck = c.id;
-        }
-        return cardIdToCheck === cardId && c.category === fromCategory;
-      });
-      
-      if (!card) return;
-      
-      const existingCard = (currentDeck.cards ?? []).find((c: any) => {
-        if (!c) return false;
-        let cardIdToCheck = '';
-        if (c.cardData && c.cardData.id) {
-          cardIdToCheck = c.cardData.id;
-        } else if (c.card && c.card.id) {
-          cardIdToCheck = c.card.id;
-        } else if (c.id) {
-          cardIdToCheck = c.id;
-        }
-        return cardIdToCheck === cardId && c.category === toCategory;
-      });
-      
-      if (existingCard) {
-        await atualizarQuantidadeNoDeck(currentDeck.id, cardId, existingCard.quantity + card.quantity, toCategory);
-        await removerCartaDoDeck(currentDeck.id, cardId, fromCategory);
-      } else {
-        // Obter o objeto da carta para adicionar
-        const cardToAdd = card.card || card.cardData || card;
-        await adicionarCartaAoDeck(currentDeck.id, cardToAdd, toCategory, card.quantity);
-        await removerCartaDoDeck(currentDeck.id, cardId, fromCategory);
-      }
-      
-      showNotification('success', 'Carta movida com sucesso!');
-      // Recalcular estatísticas
-      const updatedDeck = { ...currentDeck };
-      const stats = calculateDeckStats(updatedDeck);
-      setDeckStats(stats);
-    } catch (error) {
-      showNotification('error', 'Erro ao mover carta');
-    }
-  };
-
-  // Adicionar carta à coleção
-  const handleAddCardToCollection = async (card: any, collectionId: string) => {
-    try {
-      await adicionarCartaAColecao(collectionId, {
+      const newCard = {
         card: card,
-        quantity: 1,
-        condition: 'NM',
-        isFoil: false
-      });
-      setShowAddToCollection(null);
-      setSelectedCardForCollection(null);
-      showNotification('success', 'Carta adicionada à coleção!');
-    } catch (error) {
-      showNotification('error', 'Erro ao adicionar carta à coleção');
-    }
-  };
-
-  // Verificar se uma carta está na coleção
-  const isCardInCollection = (cardId: string, collectionId: string) => {
-    const collection = collections.find(c => c.id === collectionId);
-    if (!collection) return false;
-    return (collection.cards ?? []).some((cc: any) => {
-      // Verificar se cc é válido
-      if (!cc) return false;
-      
-      // Tentar diferentes estruturas para obter o ID da carta
-      let cardIdToCheck = '';
-      
-      if (cc.card && cc.card.id) {
-        cardIdToCheck = cc.card.id;
-      } else if (cc.id) {
-        cardIdToCheck = cc.id;
-      } else if (cc.cardData && cc.cardData.id) {
-        cardIdToCheck = cc.cardData.id;
+        quantity: quantity,
+        category: category
       }
-      
-      return cardIdToCheck === cardId;
-    });
-  };
-
-  // Verificar se uma carta está no deck
-  const isCardInDeck = (cardId: string, category: 'mainboard' | 'sideboard' | 'commander' = 'mainboard') => {
-    if (!currentDeck) return false;
-    return (currentDeck.cards ?? []).some((dc: any) => {
-      // Verificar se dc é válido
-      if (!dc) return false;
-      
-      // Tentar diferentes estruturas para obter o ID da carta
-      let cardIdToCheck = '';
-      
-      if (dc.cardData && dc.cardData.id) {
-        cardIdToCheck = dc.cardData.id;
-      } else if (dc.card && dc.card.id) {
-        cardIdToCheck = dc.card.id;
-      } else if (dc.id) {
-        cardIdToCheck = dc.id;
+          const updatedCards = [...(deck.cards || []), newCard]
+    setDeck({ ...deck, cards: updatedCards })
+    setHasUnsavedChanges(true)
+    }
+  }
+  
+  // Função para abrir modal da carta
+  const handleCardClick = (card: MTGCard) => {
+    openModal(card)
+  }
+  
+  // Função para mover carta entre categorias
+  const handleMoveCard = (cardId: string, fromCategory: 'mainboard' | 'sideboard' | 'commander', toCategory: 'mainboard' | 'sideboard' | 'commander') => {
+    if (!deck) return
+    
+    const updatedCards = deck.cards.map((deckCard: any) => {
+      const cardData = deckCard.card || deckCard.cardData
+      if (cardData?.id === cardId && deckCard.category === fromCategory) {
+        return { ...deckCard, category: toCategory }
       }
-      
-      return cardIdToCheck === cardId && dc.category === category;
-    });
-  };
-
-  // Obter quantidade da carta no deck
-  const getCardQuantityInDeck = (cardId: string, category: 'mainboard' | 'sideboard' | 'commander' = 'mainboard') => {
-    if (!currentDeck) return 0;
-    const deckCard = (currentDeck.cards ?? []).find((dc: any) => {
-      // Verificar se dc é válido
-      if (!dc) return false;
-      
-      // Tentar diferentes estruturas para obter o ID da carta
-      let cardIdToCheck = '';
-      
-      if (dc.cardData && dc.cardData.id) {
-        cardIdToCheck = dc.cardData.id;
-      } else if (dc.card && dc.card.id) {
-        cardIdToCheck = dc.card.id;
-      } else if (dc.id) {
-        cardIdToCheck = dc.id;
-      }
-      
-      return cardIdToCheck === cardId && dc.category === category;
-    });
-    return deckCard ? (deckCard.quantity || 1) : 0;
-  };
-
-  // Obter quantidade da carta na coleção
-  const getCardQuantityInCollection = (cardId: string, collectionId: string) => {
-    const collection = collections.find(c => c.id === collectionId);
-    if (!collection) return 0;
-    const collectionCard = (collection.cards ?? []).find((cc: any) => {
-      // Verificar se cc é válido
-      if (!cc) return false;
-      
-      // Tentar diferentes estruturas para obter o ID da carta
-      let cardIdToCheck = '';
-      
-      if (cc.card && cc.card.id) {
-        cardIdToCheck = cc.card.id;
-      } else if (cc.id) {
-        cardIdToCheck = cc.id;
-      } else if (cc.cardData && cc.cardData.id) {
-        cardIdToCheck = cc.cardData.id;
-      }
-      
-      return cardIdToCheck === cardId;
-    });
-    return collectionCard ? (collectionCard.quantity || 1) : 0;
-  };
-
-  // Função utilitária para garantir que deck.cards sempre seja um array
-  const safeDeckCards = (deck: any) => Array.isArray(deck?.cards) ? deck.cards : [];
-
-  // Funções de gerenciamento do deck
-  const handleSaveDeck = async () => {
-    if (!currentDeck) return;
-    
-    try {
-      await onSave?.(currentDeck.id);
-      showNotification('success', 'Deck salvo com sucesso!');
-    } catch (error) {
-      showNotification('error', 'Erro ao salvar deck');
-    }
-  };
-
-  const handleDuplicateDeck = async () => {
-    if (!currentDeck) return;
-    
-    try {
-      await duplicarDeck(currentDeck.id, `${currentDeck.name} (Cópia)`);
-      showNotification('success', 'Deck duplicado com sucesso!');
-    } catch (error) {
-      showNotification('error', 'Erro ao duplicar deck');
-    }
-  };
-
-  const handleDeleteDeck = async () => {
-    if (!currentDeck) return;
-    
-    try {
-      await deletarDeck(currentDeck.id);
-      showNotification('success', 'Deck deletado com sucesso!');
-      onCancel?.();
-    } catch (error) {
-      showNotification('error', 'Erro ao deletar deck');
-    }
-  };
-
-  const exportDeckList = () => {
-    if (!currentDeck) return;
-    
-    const mainboard = (currentDeck.cards ?? []).filter((c: any) => c.category === 'mainboard');
-    const sideboard = (currentDeck.cards ?? []).filter((c: any) => c.category === 'sideboard');
-    const commander = (currentDeck.cards ?? []).filter((c: any) => c.category === 'commander');
-    
-    let exportText = `// ${currentDeck.name}\n// Formato: ${currentDeck.format}\n\n`;
-    
-    if (commander.length > 0) {
-      exportText += "Commander:\n";
-      commander.forEach((deckCard: any) => {
-        const cardName = deckCard.cardData?.name || deckCard.card?.name || deckCard.name || 'Unknown Card';
-        const quantity = deckCard.quantity || 1;
-        exportText += `${quantity} ${cardName}\n`;
-      });
-      exportText += "\n";
-    }
-    
-    if (mainboard.length > 0) {
-      exportText += "Main Deck:\n";
-      mainboard.forEach((deckCard: any) => {
-        const cardName = deckCard.cardData?.name || deckCard.card?.name || deckCard.name || 'Unknown Card';
-        const quantity = deckCard.quantity || 1;
-        exportText += `${quantity} ${cardName}\n`;
-      });
-      exportText += "\n";
-    }
-    
-    if (sideboard.length > 0) {
-      exportText += "Sideboard:\n";
-      sideboard.forEach((deckCard: any) => {
-        const cardName = deckCard.cardData?.name || deckCard.card?.name || deckCard.name || 'Unknown Card';
-        const quantity = deckCard.quantity || 1;
-        exportText += `${quantity} ${cardName}\n`;
-      });
-    }
-    
-    const blob = new Blob([exportText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${currentDeck.name}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    showNotification('success', 'Lista do deck exportada!');
-  };
-
-  if (!currentDeck) {
-    return (
-      <div className="quantum-container">
-        <div className="quantum-loading">
-          <Loader2 className="w-8 h-8 animate-spin" />
-          <span>Carregando deck...</span>
-        </div>
-      </div>
-    );
+      return deckCard
+    })
+    setDeck({ ...deck, cards: updatedCards })
+    setHasUnsavedChanges(true)
   }
 
-  return (
-    <div className="quantum-container">
-      {/* Header Melhorado */}
-      <div className="quantum-header">
-        <div className="quantum-header-left">
-          <Button
-            onClick={onCancel}
-            variant="ghost"
-            className="quantum-button-back"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar aos Decks
-          </Button>
-          
-          <div className="quantum-deck-info">
-            <h1 className="quantum-title">
-              <Target className="w-6 h-6 mr-3" />
-              {currentDeck.name}
-            </h1>
-            <p className="quantum-subtitle">
-              Construtor de Deck - {currentDeck.format}
-            </p>
-          </div>
+  // Função para abrir modal de mover carta
+  const handleMoveCardWithQuantity = (cardId: string, fromCategory: 'mainboard' | 'sideboard' | 'commander', toCategory: 'mainboard' | 'sideboard' | 'commander', cardName: string, currentQuantity: number) => {
+    setMoveCardData({
+      cardId,
+      fromCategory,
+      toCategory,
+      cardName,
+      currentQuantity
+    })
+    setShowMoveModal(true)
+  }
+
+  // Função para executar o movimento com quantidade
+  const executeMoveCard = (quantity: number) => {
+    if (!moveCardData || !deck) return
+    
+    const { cardId, fromCategory, toCategory } = moveCardData
+    
+    // Sempre cria uma nova entrada na categoria de destino com a quantidade especificada
+    const updatedCards = deck.cards.map((deckCard: any) => {
+      const cardData = deckCard.card || deckCard.cardData
+      if (cardData?.id === cardId && deckCard.category === fromCategory) {
+        return { ...deckCard, quantity: deckCard.quantity - quantity }
+      }
+      return deckCard
+    }).filter((deckCard: any) => deckCard.quantity > 0)
+    
+    // Adiciona a nova entrada na categoria de destino
+    const sourceCard = deck.cards.find((deckCard: any) => {
+      const cardData = deckCard.card || deckCard.cardData
+      return cardData?.id === cardId && deckCard.category === fromCategory
+    })
+    
+    if (sourceCard) {
+      const newCard = {
+        ...sourceCard,
+        category: toCategory,
+        quantity: quantity
+      }
+      updatedCards.push(newCard)
+    }
+    
+    setDeck({ ...deck, cards: updatedCards })
+    
+    setHasUnsavedChanges(true)
+    setShowMoveModal(false)
+    setMoveCardData(null)
+  }
+  
+  // Função para atualizar quantidade
+  const handleUpdateQuantity = (cardId: string, category: 'mainboard' | 'sideboard' | 'commander', newQuantity: number) => {
+    if (!deck) return
+    
+    const updatedCards = deck.cards.map((deckCard: any) => {
+      const cardData = deckCard.card || deckCard.cardData
+      if (cardData?.id === cardId && deckCard.category === category) {
+        return { ...deckCard, quantity: newQuantity }
+      }
+      return deckCard
+    }).filter((deckCard: any) => deckCard.quantity > 0)
+    setDeck({ ...deck, cards: updatedCards })
+    setHasUnsavedChanges(true)
+  }
+  
+  // Função para remover carta
+  const handleRemoveCard = (cardId: string, category: 'mainboard' | 'sideboard' | 'commander') => {
+    if (!deck) return
+    
+    const updatedCards = deck.cards.filter((deckCard: any) => {
+      const cardData = deckCard.card || deckCard.cardData
+      return !(cardData?.id === cardId && deckCard.category === category)
+    })
+    setDeck({ ...deck, cards: updatedCards })
+    setHasUnsavedChanges(true)
+  }
+  
+  // Função para salvar deck
+  const handleSaveDeck = async () => {
+    if (!deck) return
+    
+    try {
+      await editarDeck(deck.id, deck)
+      setIsEditing(false)
+      setHasUnsavedChanges(false)
+    } catch (error) {
+      console.error('Erro ao salvar deck:', error)
+    }
+  }
+  
+  // Função para deletar deck
+  const handleDeleteDeck = async () => {
+    if (!deck) return
+    
+    try {
+      await deletarDeck(deck.id)
+    } catch (error) {
+      console.error('Erro ao deletar deck:', error)
+    }
+  }
+  
+  // Obter commander atual
+  const currentCommander = useMemo(() => {
+    if (!deck?.cards) return null
+    const commanderCard = deck.cards.find((deckCard: any) => deckCard.category === 'commander')
+    if (commanderCard) {
+      return commanderCard.card || commanderCard.cardData
+    }
+    return null
+  }, [deck?.cards])
+  
+  // Verificar se tem commander parceiro
+  const hasPartnerCommander = useMemo(() => {
+    if (!currentCommander) return false
+    return currentCommander.type_line?.toLowerCase().includes('partner')
+  }, [currentCommander])
+  
+  // Calcular estatísticas do deck
+  const deckStats = useMemo(() => {
+    if (!deck?.cards) return { totalCards: 0, manaCurve: {}, colors: {} }
+    
+    const stats = {
+      totalCards: 0,
+      manaCurve: {} as Record<number, number>,
+      colors: {} as Record<string, number>
+    }
+    
+    deck.cards.forEach((deckCard: any) => {
+      const cardData = deckCard.card || deckCard.cardData
+      if (cardData) {
+        stats.totalCards += deckCard.quantity
+        
+        const cmc = cardData.cmc || 0
+        stats.manaCurve[cmc] = (stats.manaCurve[cmc] || 0) + deckCard.quantity
+        
+        if (cardData.color_identity) {
+          cardData.color_identity.forEach((color: string) => {
+            stats.colors[color] = (stats.colors[color] || 0) + deckCard.quantity
+          })
+        }
+      }
+    })
+    
+    return stats
+  }, [deck?.cards])
+  
+  // Filtrar cartas do deck
+  const filteredCards = useMemo(() => {
+    let filtered = deck?.cards || []
+    if (filterCategory !== 'all') {
+      filtered = filtered.filter((card: any) => card.category === filterCategory)
+    }
+    if (searchTerm.trim()) {
+      filtered = filtered.filter((card: any) => {
+        const cardData = card.card || card.cardData
+        return cardData && cardData.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      })
+    }
+    return filtered
+  }, [deck?.cards, filterCategory, searchTerm])
+  
+  // Funções auxiliares para EnhancedCardDisplay
+  const getCardData = (deckCard: any) => {
+    return deckCard.card || deckCard.cardData || deckCard;
+  };
+
+  const getCardId = (deckCard: any) => {
+    const cardData = getCardData(deckCard);
+    return cardData?.id || deckCard.id;
+  };
+
+  const getCardName = (deckCard: any) => {
+    const cardData = getCardData(deckCard);
+    return cardData?.name || 'Unknown Card';
+  };
+
+  const getCardImageUrl = (deckCard: any, size: 'small' | 'normal' | 'large' = 'normal') => {
+    const cardData = getCardData(deckCard);
+    return getImageUrl(cardData, size);
+  };
+  
+  if (!deck) {
+    return <div className="p-6">Deck não encontrado</div>
+  }
+  
+  // Agrupar cartas por categoria
+  const cardsByCategory = {
+    mainboard: filteredCards.filter(card => card.category === 'mainboard'),
+    sideboard: filteredCards.filter(card => card.category === 'sideboard'),
+    commander: filteredCards.filter(card => card.category === 'commander')
+  };
+  
+  // Renderizar seções separadas para cada categoria
+  const renderCategorySection = (title: string, categoryCards: any[], categoryClass: string) => {
+    if (categoryCards.length === 0) return null;
+    
+    return (
+      <div className="mb-6">
+        <div className={`text-sm font-medium mb-2 pb-1 border-b ${categoryClass}`}>
+          {title} ({categoryCards.reduce((sum, card) => sum + card.quantity, 0)} cartas)
         </div>
         
-        <div className="quantum-header-right">
-          <Button
-            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-            variant="outline"
-            className="quantum-button-secondary"
-          >
-            {viewMode === 'grid' ? <List className="w-4 h-4 mr-2" /> : <Grid3X3 className="w-4 h-4 mr-2" />}
-            {viewMode === 'grid' ? 'Lista' : 'Grid'}
-          </Button>
-          
-          {/* Botão de teste temporário */}
-          <Button
-            onClick={() => {
-              console.log('🧪 Teste: Adicionando carta de teste...');
-              const testCard = {
-                id: 'test-card-1',
-                name: 'Lightning Bolt',
-                type_line: 'Instant',
-                set_name: 'Core Set 2021',
-                rarity: 'common',
-                cmc: 1
-              };
-              handleAddCard(testCard, 'mainboard', 1);
-            }}
-            variant="outline"
-            className="quantum-button-secondary"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Teste
-          </Button>
-          
-          <Button
-            onClick={() => setShowDeckViewer(true)}
-            variant="outline"
-            className="quantum-button-secondary"
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Visualizar
-          </Button>
-          
-          <Button
-            onClick={handleSaveDeck}
-            className="quantum-button-primary"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Salvar Deck
-          </Button>
-        </div>
-      </div>
-
-      {/* Conteúdo Principal */}
-      <div className="quantum-content">
-        <Tabs defaultValue="search" className="w-full">
-          <TabsList className="quantum-tabs">
-            <TabsTrigger value="search">Buscar Cartas</TabsTrigger>
-            <TabsTrigger value="collection">Minha Coleção</TabsTrigger>
-            <TabsTrigger value="deck">Deck Atual</TabsTrigger>
-            <TabsTrigger value="stats">Estatísticas</TabsTrigger>
-          </TabsList>
-
-          {/* Aba de Busca de Cartas */}
-          <TabsContent value="search" className="quantum-tab-content">
-            <div className="quantum-search-section">
-              <div className="quantum-search-controls">
-                <div className="quantum-search-input">
-                  <Search className="w-4 h-4 text-slate-400" />
-                  <Input
-                    placeholder="Buscar cartas..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      handleSearchWithDebounce(e.target.value);
-                    }}
-                    className="quantum-input"
-                  />
-                </div>
-                
-                <div className="quantum-filter-controls">
-                  <Select value={raridade} onValueChange={setRaridade}>
-                    <SelectTrigger className="quantum-select">
-                      <SelectValue placeholder="Raridade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas as Raridades</SelectItem>
-                      <SelectItem value="common">Comum</SelectItem>
-                      <SelectItem value="uncommon">Incomum</SelectItem>
-                      <SelectItem value="rare">Rara</SelectItem>
-                      <SelectItem value="mythic">Mítica</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select value={tipo} onValueChange={setTipo}>
-                    <SelectTrigger className="quantum-select">
-                      <SelectValue placeholder="Tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos os Tipos</SelectItem>
-                      <SelectItem value="creature">Criatura</SelectItem>
-                      <SelectItem value="instant">Instantâneo</SelectItem>
-                      <SelectItem value="sorcery">Feitiço</SelectItem>
-                      <SelectItem value="enchantment">Encantamento</SelectItem>
-                      <SelectItem value="artifact">Artefato</SelectItem>
-                      <SelectItem value="planeswalker">Planeswalker</SelectItem>
-                      <SelectItem value="land">Terreno</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Resultados da Busca */}
-              <div className="quantum-search-results">
-                {isSearching ? (
-                  <div className="quantum-loading-state">
-                    <Loader2 className="w-8 h-8 animate-spin" />
-                    <span>Buscando cartas...</span>
-                  </div>
-                ) : searchError ? (
-                  <div className="quantum-error-state">
-                    <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
-                    <h3 className="text-xl font-medium text-white mb-2">Erro na busca</h3>
-                    <p className="text-slate-400 mb-4">{searchError}</p>
-                    <Button
-                      onClick={() => handleSearch(searchTerm)}
-                      className="quantum-button-primary"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Tentar Novamente
-                    </Button>
-                  </div>
-                ) : searchResults.length > 0 ? (
-                                      <div className={`quantum-cards-grid ${viewMode === 'list' ? 'quantum-cards-list' : ''}`}>
-                      {searchResults.filter(card => card && card.id).map((card) => (
-                      <Card key={card?.id || 'unknown'} className="quantum-card quantum-card-search">
-                        <CardContent className="quantum-card-content">
-                          <div className="quantum-card-image">
-                            {getCardImage(card) && (
-                              <Image
-                                src={getCardImage(card)}
-                                alt={card?.name || 'Card'}
-                                width={120}
-                                height={168}
-                                className="rounded-lg border border-slate-600"
-                              />
-                            )}
-                          </div>
-                          
-                          <div className="quantum-card-info">
-                            <h4 className="quantum-card-title">{card?.name || 'Unknown Card'}</h4>
-                            <p className="quantum-card-set">{card.set_name}</p>
-                            <p className="quantum-card-type">{card.type_line}</p>
-                            
-                            <div className="quantum-card-stats">
-                              <Badge variant="secondary" className="quantum-badge">
-                                {card.rarity}
-                              </Badge>
-                              {isCardInDeck(card?.id || '') && (
-                                <Badge variant="secondary" className="quantum-badge-success">
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  No Deck
-                                </Badge>
-                              )}
-                            </div>
-                            
-                            <div className="quantum-card-actions">
-                              <Button
-                                onClick={() => handleAddCard(card, selectedCategory, 1)}
-                                size="sm"
-                                className="quantum-button-primary"
-                              >
-                                <Plus className="w-3 h-3 mr-1" />
-                                Adicionar
-                              </Button>
-                              
-                              <Button
-                                onClick={() => {
-                                  setSelectedCardForCollection(card);
-                                  setShowAddToCollection(card?.id || '');
-                                }}
-                                size="sm"
-                                variant="outline"
-                                className="quantum-button-secondary"
-                              >
-                                <BookOpen className="w-3 h-3 mr-1" />
-                                Coleção
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : searchTerm ? (
-                  <div className="quantum-empty-state">
-                    <Package className="w-16 h-16 text-slate-500 mb-4" />
-                    <h3 className="text-xl font-medium text-white mb-2">Nenhuma carta encontrada</h3>
-                    <p className="text-slate-400">Tente ajustar os termos de busca</p>
-                  </div>
-                ) : (
-                  <div className="quantum-empty-state">
-                    <Search className="w-16 h-16 text-slate-500 mb-4" />
-                    <h3 className="text-xl font-medium text-white mb-2">Busque por cartas</h3>
-                    <p className="text-slate-400">Digite o nome de uma carta para começar</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Aba da Coleção - Layout Melhorado */}
-          <TabsContent value="collection" className="quantum-tab-content">
-            <div className="quantum-collection-section">
-              <div className="quantum-collection-header">
-                <div className="quantum-header-info">
-                  <h3 className="quantum-section-title">
-                    <Library className="w-5 h-5 mr-2" />
-                    Minha Coleção
-                  </h3>
-                  <p className="quantum-section-subtitle">
-                    Adicione cartas da sua coleção ao deck
-                  </p>
-                </div>
-                
-                <div className="quantum-collection-stats">
-                  <Badge variant="secondary" className="quantum-badge">
-                    <BookOpen className="w-3 h-3 mr-1" />
-                    {(collections ?? []).length} coleções
-                  </Badge>
-                </div>
-              </div>
-
-              {(collections ?? []).length === 0 ? (
-                <div className="quantum-empty-state">
-                  <Library className="w-16 h-16 text-slate-500 mb-4" />
-                  <h3 className="text-xl font-medium text-white mb-2">Nenhuma coleção encontrada</h3>
-                  <p className="text-slate-400">Crie uma coleção para começar</p>
-                </div>
-              ) : (
-                <div className="quantum-collections-grid">
-                  {(collections ?? []).map((collection) => (
-                    <Card key={collection.id} className="quantum-card quantum-collection-card">
-                      <CardHeader className="quantum-card-header">
-                        <div className="quantum-collection-header-info">
-                          <div className="quantum-collection-title">
-                            <h4 className="font-semibold text-white">{collection.name}</h4>
-                            <div className="quantum-collection-badges">
-                              <Badge variant="secondary" className="quantum-badge">
-                                {(collection.cards ?? []).length} cartas
-                              </Badge>
-                              {(collection.cards ?? []).length > 0 && (
-                                <Badge variant="outline" className="quantum-badge-info">
-                                  <Star className="w-3 h-3 mr-1" />
-                                  Ativa
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="quantum-card-content">
-                        {(collection.cards ?? []).length === 0 ? (
-                          <div className="quantum-collection-empty">
-                            <Package className="w-8 h-8 text-slate-500 mb-2" />
-                            <p className="text-sm text-slate-400">Coleção vazia</p>
-                          </div>
-                        ) : (
-                          <div className="quantum-collection-cards">
-                            {(collection.cards ?? []).slice(0, 6).filter(collectionCard => collectionCard && collectionCard.card).map((collectionCard: any) => {
-                              const card = collectionCard.card;
-                              const inDeck = isCardInDeck(card?.id || '');
-                              const deckQuantity = getCardQuantityInDeck(card?.id || '');
-                              
-                              return (
-                                <div key={card?.id || 'unknown'} className="quantum-collection-card-item">
-                                  <div className="quantum-card-image-small">
-                                    {getCardImage(card, 'small') && (
-                                      <Image
-                                        src={getCardImage(card, 'small')}
-                                        alt={card?.name || 'Card'}
-                                        width={60}
-                                        height={84}
-                                        className="rounded border border-slate-600 hover:border-cyan-400 transition-colors"
-                                      />
-                                    )}
-                                  </div>
-                                  
-                                  <div className="quantum-card-info-small">
-                                    <h5 className="quantum-card-title-small">{card?.name || 'Unknown Card'}</h5>
-                                    <div className="quantum-card-quantities">
-                                      <span className="quantum-quantity-collection">
-                                        {collectionCard.quantity}x coleção
-                                      </span>
-                                      {inDeck && (
-                                        <span className="quantum-quantity-deck">
-                                          {deckQuantity}x deck
-                                        </span>
-                                      )}
-                                    </div>
-                                    
-                                    <div className="quantum-card-actions-small">
-                                      <Button
-                                        onClick={() => handleAddCard(card, selectedCategory, 1)}
-                                        size="sm"
-                                        className="quantum-button-primary"
-                                        title="Adicionar ao deck"
-                                      >
-                                        <Plus className="w-3 h-3" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {categoryCards.map((deckCard) => {
+              const cardData = getCardData(deckCard);
+              const cardId = getCardId(deckCard);
+              const cardName = getCardName(deckCard);
+              const imageUrl = getCardImageUrl(deckCard);
+              
+              return (
+                <div key={`${cardId}-${deckCard.category}`} className="relative group">
+                  <div className="aspect-[63/88] bg-gray-800/80 rounded-md overflow-hidden shadow-md">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={cardName}
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => handleCardClick(cardData)}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-2">
+                        {cardName}
+                      </div>
+                    )}
+                    
+                    <div className="absolute top-1 left-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-md">
+                      {deckCard.quantity}
+                    </div>
+                    
+                    {isEditing && (
+                      <div className="absolute top-1 right-1 bg-black/70 rounded p-1 flex gap-1">
+                        {deckCard.category !== 'mainboard' && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveCardWithQuantity(cardId, deckCard.category, 'mainboard', cardName, deckCard.quantity);
+                            }}
+                            className="w-6 h-6 rounded bg-green-600/70 hover:bg-green-500 text-white flex items-center justify-center text-xs"
+                            title="Mover para Main Deck"
+                          >
+                            M
+                          </button>
                         )}
-                        
-                        {(collection.cards ?? []).length > 6 && (
-                          <div className="quantum-collection-more">
-                            <span className="text-sm text-slate-400">
-                              +{(collection.cards ?? []).length - 6} mais cartas
-                            </span>
-                          </div>
+                        {deckCard.category !== 'sideboard' && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveCardWithQuantity(cardId, deckCard.category, 'sideboard', cardName, deckCard.quantity);
+                            }}
+                            className="w-6 h-6 rounded bg-purple-600/70 hover:bg-purple-500 text-white flex items-center justify-center text-xs"
+                            title="Mover para Sideboard"
+                          >
+                            S
+                          </button>
                         )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Aba do Deck Atual */}
-          <TabsContent value="deck" className="quantum-tab-content">
-            <div className="quantum-deck-section">
-              <div className="quantum-deck-header">
-                <h3 className="quantum-section-title">
-                  <Target className="w-5 h-5 mr-2" />
-                  Deck Atual
-                </h3>
-                <div className="quantum-deck-stats">
-                  <Badge variant="secondary" className="quantum-badge">
-                    {safeDeckCards(currentDeck).reduce((sum: number, c: any) => sum + c.quantity, 0)} cartas
-                  </Badge>
-                </div>
-              </div>
-
-              {safeDeckCards(currentDeck).length === 0 ? (
-                <div className="quantum-empty-state">
-                  <Target className="w-16 h-16 text-slate-500 mb-4" />
-                  <h3 className="text-xl font-medium text-white mb-2">Deck vazio</h3>
-                  <p className="text-slate-400">Adicione cartas para começar a construir seu deck</p>
-                </div>
-              ) : (
-                <div className="quantum-deck-cards">
-                  {['mainboard', 'sideboard', 'commander'].map((category) => {
-                    const categoryCards = safeDeckCards(currentDeck).filter((c: any) => c.category === category);
-                    if (categoryCards.length === 0) return null;
-
-                    return (
-                      <div key={category} className="quantum-deck-category">
-                        <h4 className="quantum-category-title">
-                          {category === 'mainboard' ? 'Deck Principal' :
-                           category === 'sideboard' ? 'Sideboard' : 'Commander'}
-                        </h4>
-                        
-                        <div className="quantum-category-cards">
-                          {categoryCards.map((deckCard: any) => {
-                            // Tentar diferentes estruturas para obter a carta
-                            let card = deckCard.cardData || deckCard.card;
-                            
-                            // Verificar se card é válido
-                            if (!card) {
-                              console.warn('Card é undefined no deckCard:', deckCard);
-                              return null;
-                            }
-                            
-                            return (
-                              <div key={`${card?.id || 'unknown'}-${category}`} className="quantum-deck-card-item">
-                                <div className="quantum-card-image-small">
-                                  {getCardImage(card, 'small') && (
-                                    <Image
-                                      src={getCardImage(card, 'small')}
-                                      alt={card?.name || 'Card'}
-                                      width={60}
-                                      height={84}
-                                      className="rounded border border-slate-600"
-                                    />
-                                  )}
-                                </div>
-                                
-                                <div className="quantum-card-info-small">
-                                  <h5 className="quantum-card-title-small">{card?.name || 'Unknown Card'}</h5>
-                                  <div className="quantum-card-quantities">
-                                    <span className="quantum-quantity-deck">
-                                      {deckCard.quantity}x
-                                    </span>
-                                  </div>
-                                  
-                                  <div className="quantum-card-actions-small">
-                                    <Button
-                                      onClick={() => handleUpdateQuantity(card?.id || '', deckCard.quantity + 1, category)}
-                                      size="sm"
-                                      variant="outline"
-                                      className="quantum-button-secondary"
-                                    >
-                                      <Plus className="w-3 h-3" />
-                                    </Button>
-                                    
-                                    <Button
-                                      onClick={() => handleUpdateQuantity(card?.id || '', Math.max(0, deckCard.quantity - 1), category)}
-                                      size="sm"
-                                      variant="outline"
-                                      className="quantum-button-secondary"
-                                      disabled={deckCard.quantity <= 1}
-                                    >
-                                      <Minus className="w-3 h-3" />
-                                    </Button>
-                                    
-                                    <Button
-                                      onClick={() => handleRemoveCard(card?.id || '', category)}
-                                      size="sm"
-                                      variant="outline"
-                                      className="quantum-button-danger"
-                                    >
-                                      <X className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                        {deckCard.category !== 'commander' && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveCardWithQuantity(cardId, deckCard.category, 'commander', cardName, deckCard.quantity);
+                            }}
+                            className="w-6 h-6 rounded bg-yellow-600/70 hover:bg-yellow-500 text-white flex items-center justify-center text-xs"
+                            title="Mover para Commander"
+                          >
+                            C
+                          </button>
+                        )}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveCard(cardId, deckCard.category);
+                          }}
+                          className="w-6 h-6 rounded bg-red-600/70 hover:bg-red-500 text-white flex items-center justify-center text-xs"
+                          title="Remover carta"
+                        >
+                          ×
+                        </button>
                       </div>
-                    );
-                  })}
+                    )}
+                    
+
+                  </div>
                 </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Aba de Estatísticas */}
-          <TabsContent value="stats" className="quantum-tab-content">
-            <div className="quantum-stats-section">
-              <div className="quantum-stats-header">
-                <h3 className="quantum-section-title">
-                  <BarChart3 className="w-5 h-5 mr-2" />
-                  Estatísticas do Deck
-                </h3>
-              </div>
-
-              {deckStats ? (
-                <div className="quantum-stats-grid">
-                  <Card className="quantum-card quantum-stats-card">
-                    <CardHeader>
-                      <CardTitle className="quantum-stats-title">
-                        <Target className="w-4 h-4 mr-2" />
-                        Resumo
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="quantum-stats-summary">
-                        <div className="quantum-stat-item">
-                          <span className="quantum-stat-label">Total de Cartas:</span>
-                          <span className="quantum-stat-value">{deckStats.total}</span>
-                        </div>
-                        <div className="quantum-stat-item">
-                          <span className="quantum-stat-label">Deck Principal:</span>
-                          <span className="quantum-stat-value">{deckStats.mainboard}</span>
-                        </div>
-                        <div className="quantum-stat-item">
-                          <span className="quantum-stat-label">Sideboard:</span>
-                          <span className="quantum-stat-value">{deckStats.sideboard}</span>
-                        </div>
-                        <div className="quantum-stat-item">
-                          <span className="quantum-stat-label">Commander:</span>
-                          <span className="quantum-stat-value">{deckStats.commander}</span>
-                        </div>
-                        <div className="quantum-stat-item">
-                          <span className="quantum-stat-label">Cartas Únicas:</span>
-                          <span className="quantum-stat-value">{deckStats.unique}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="quantum-card quantum-stats-card">
-                    <CardHeader>
-                      <CardTitle className="quantum-stats-title">
-                        <PieChart className="w-4 h-4 mr-2" />
-                        Curva de Mana
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="quantum-mana-curve">
-                        {Object.entries(deckStats.manaCurve).map(([cmc, count]) => (
-                          <div key={cmc} className="quantum-mana-bar">
-                            <span className="quantum-mana-cmc">{cmc}</span>
-                            <div className="quantum-mana-bar-container">
-                              <div 
-                                className="quantum-mana-bar-fill"
-                                style={{ width: `${(count / Math.max(...Object.values(deckStats.manaCurve))) * 100}%` }}
-                              />
-                            </div>
-                            <span className="quantum-mana-count">{count}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : (
-                <div className="quantum-empty-state">
-                  <BarChart3 className="w-16 h-16 text-slate-500 mb-4" />
-                  <h3 className="text-xl font-medium text-white mb-2">Sem estatísticas</h3>
-                  <p className="text-slate-400">Adicione cartas ao deck para ver as estatísticas</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* Modal de Adicionar à Coleção */}
-      <Dialog open={!!showAddToCollection} onOpenChange={() => setShowAddToCollection(null)}>
-        <DialogContent className="quantum-modal">
-          <DialogHeader>
-            <DialogTitle className="quantum-modal-title">
-              <BookOpen className="w-5 h-5 text-cyan-400 mr-2" />
-              Adicionar à Coleção
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="quantum-modal-content">
-            <p className="text-slate-300 mb-4">
-              Selecione uma coleção para adicionar a carta "{selectedCardForCollection?.name}"
-            </p>
-            
-            <div className="quantum-collections-list">
-              {(collections ?? []).map((collection) => (
-                <div
-                  key={collection.id}
-                  className={`quantum-collection-item ${
-                    isCardInCollection(selectedCardForCollection?.id, collection.id) 
-                      ? 'quantum-collection-item-has-card' 
-                      : ''
-                  }`}
+              );
+            })}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {categoryCards.map((deckCard) => {
+              const cardData = getCardData(deckCard);
+              const cardId = getCardId(deckCard);
+              const cardName = getCardName(deckCard);
+              const imageUrl = getCardImageUrl(deckCard, 'normal');
+              
+              return (
+                <div 
+                  key={`${cardId}-${deckCard.category}`} 
+                  className="flex gap-3 p-3 bg-gray-800/40 rounded border border-gray-700 hover:bg-gray-700/40 transition-colors group"
                 >
-                  <div className="quantum-collection-info">
-                    <h4 className="font-medium text-white">{collection.name}</h4>
-                    <p className="text-sm text-slate-400">
-                      {(collection.cards ?? []).length} cartas
-                      {isCardInCollection(selectedCardForCollection?.id, collection.id) && (
-                        <span className="text-green-400 ml-2">
-                          ({getCardQuantityInCollection(selectedCardForCollection?.id, collection.id)}x)
-                        </span>
-                      )}
+                  <div className="w-12 h-16 bg-gray-800 rounded overflow-hidden flex-shrink-0">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={cardName}
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => handleCardClick(cardData)}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-1">
+                        {cardName}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-sm truncate">{cardName}</h4>
+                      <span className="text-xs text-gray-500 flex-shrink-0">
+                        {cardData.set_name} ({cardData.set_code?.toUpperCase()})
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 truncate">
+                      {cardData.type_line}
                     </p>
                   </div>
                   
-                  <div className="quantum-collection-actions">
-                    {isCardInCollection(selectedCardForCollection?.id, collection.id) ? (
-                      <Badge variant="secondary" className="quantum-badge-success">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Já possui
-                      </Badge>
-                    ) : (
-                      <Button
-                        onClick={() => handleAddCardToCollection(selectedCardForCollection, collection.id)}
-                        size="sm"
-                        className="quantum-button-primary"
-                      >
-                        <Plus className="w-3 h-3 mr-1" />
-                        Adicionar
-                      </Button>
+                  <div className="flex items-center gap-2">
+                    {isEditing && (
+                      <>
+                        <button
+                          onClick={() => handleUpdateQuantity(cardId, deckCard.category, Math.max(0, deckCard.quantity - 1))}
+                          className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 text-white flex items-center justify-center text-xs"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center text-sm">{deckCard.quantity}</span>
+                        <button
+                          onClick={() => handleUpdateQuantity(cardId, deckCard.category, deckCard.quantity + 1)}
+                          className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 text-white flex items-center justify-center text-xs"
+                        >
+                          +
+                        </button>
+                      </>
+                    )}
+                    {!isEditing && (
+                      <Badge variant="secondary">{deckCard.quantity}x</Badge>
                     )}
                   </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  return (
+    <div className="quantum-card min-h-[calc(100vh-80px)] p-0 m-0">
+      {/* Header compacto */}
+      <div className="sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-cyan-500/30 shadow-lg">
+        <div className="flex items-center justify-between gap-2 p-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-md font-bold text-cyan-400 truncate">{deck.name}</h2>
+            <span className="quantum-badge primary text-xs">{deck.format}</span>
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <button className="quantum-btn compact" onClick={() => setIsEditing(!isEditing)}>
+              {isEditing ? <Eye className="w-3.5 h-3.5" /> : <Edit3 className="w-3.5 h-3.5" />}
+            </button>
+            <button className="quantum-btn compact" onClick={() => setShowSearchModal(true)}>
+              <Search className="w-3.5 h-3.5" />
+            </button>
+            <button className="quantum-btn compact" onClick={() => setViewMode(viewMode === 'grid' ? 'spoiler' : 'grid')}>
+              {viewMode === 'grid' ? <List className="w-3.5 h-3.5" /> : <Grid3X3 className="w-3.5 h-3.5" />}
+            </button>
+            <button className="quantum-btn compact" onClick={() => setShowEditModal(true)}>
+              <Settings className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+        
+        {/* Filtros compactos */}
+        <div className="flex flex-wrap items-center gap-1 mx-2 mb-2">
+          <div className="relative flex-1 min-w-[180px]">
+            <Search className="absolute left-2 top-1.5 w-3.5 h-3.5 text-gray-400" />
+            <input 
+              type="text" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Filtrar cartas..." 
+              className="quantum-input pl-8 h-7 py-0 text-sm"
+            />
+          </div>
+          
+          <div className="flex gap-1">
+            <button 
+              onClick={() => setFilterCategory('all')}
+              className={`quantum-btn compact ${filterCategory === 'all' ? 'primary' : ''}`}
+            >
+              Todas
+            </button>
+            <button 
+              onClick={() => setFilterCategory('mainboard')}
+              className={`quantum-btn compact ${filterCategory === 'mainboard' ? 'primary' : ''}`}
+            >
+              Main ({cardsByCategory.mainboard.reduce((sum, card) => sum + card.quantity, 0)})
+            </button>
+            {cardsByCategory.sideboard.length > 0 && (
+              <button 
+                onClick={() => setFilterCategory('sideboard')}
+                className={`quantum-btn compact ${filterCategory === 'sideboard' ? 'primary' : ''}`}
+              >
+                Side ({cardsByCategory.sideboard.reduce((sum, card) => sum + card.quantity, 0)})
+              </button>
+            )}
+            {cardsByCategory.commander.length > 0 && (
+              <button 
+                onClick={() => setFilterCategory('commander')}
+                className={`quantum-btn compact ${filterCategory === 'commander' ? 'primary' : ''}`}
+              >
+                Cmd ({cardsByCategory.commander.reduce((sum, card) => sum + card.quantity, 0)})
+              </button>
+            )}
+          </div>
+        </div>
+        
+
+      </div>
+      
+      {/* Layout reorganizado - 2 colunas */}
+      <div className="grid grid-cols-12 gap-4 p-2">
+        {/* Coluna principal - Visualização do Deck */}
+        <div className="col-span-12 sm:col-span-8" style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto', position: 'relative' }}>
+          <div className="quantum-card-dense mb-4">
+            <div className="flex justify-between items-center border-b border-cyan-500/20 p-2">
+              <div>
+                <span className="text-sm font-semibold text-cyan-400">Visualização do Deck</span>
+                <div className="text-xs text-gray-400 mt-1">
+                  <span className="text-cyan-400">{filteredCards.length}</span> cartas únicas • <span className="text-cyan-400">{deckStats.totalCards}</span> total
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded-md">Main: {cardsByCategory.mainboard.reduce((sum, card) => sum + card.quantity, 0)}</div>
+                {cardsByCategory.sideboard.length > 0 && (
+                  <div className="text-xs bg-purple-600/20 text-purple-400 px-2 py-1 rounded-md">Side: {cardsByCategory.sideboard.reduce((sum, card) => sum + card.quantity, 0)}</div>
+                )}
+                {cardsByCategory.commander.length > 0 && (
+                  <div className="text-xs bg-yellow-600/20 text-yellow-400 px-2 py-1 rounded-md">Cmd: {cardsByCategory.commander.reduce((sum, card) => sum + card.quantity, 0)}</div>
+                )}
+              </div>
+            </div>
+            
+            {/* Renderizar cartas usando EnhancedCardDisplay */}
+            {filteredCards.length === 0 ? (
+              <div className="text-center py-12">
+                <Package className="w-12 h-12 mx-auto mb-3 text-gray-500 opacity-70" />
+                <p className="text-gray-400 text-sm">Nenhuma carta para exibir</p>
+              </div>
+            ) : (
+              <div className="p-2">
+                {renderCategorySection("Main Deck", cardsByCategory.mainboard, "text-green-400 border-green-500/30")}
+                {renderCategorySection("Sideboard", cardsByCategory.sideboard, "text-purple-400 border-purple-500/30")}
+                {renderCategorySection("Commander", cardsByCategory.commander, "text-yellow-400 border-yellow-500/30")}
+              </div>
+            )}
+          </div>
+          
+
+        </div>
+        
+        {/* Coluna direita - Estatísticas */}
+        <div className="col-span-12 sm:col-span-4 space-y-4" style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+          <div className="quantum-card-dense">
+            <div className="flex justify-between items-center border-b border-cyan-500/20 p-1">
+              <span className="text-xs font-semibold text-cyan-400">Curva de Mana</span>
+            </div>
+            <div className="p-2 space-y-1">
+              {Object.entries(deckStats.manaCurve).map(([cmc, count]) => (
+                <div key={cmc} className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400 w-4">{cmc}</span>
+                  <div className="flex-1 bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-cyan-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(count / Math.max(...Object.values(deckStats.manaCurve), 1)) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-300 w-4">{count}</span>
                 </div>
               ))}
             </div>
           </div>
           
-          <div className="quantum-modal-footer">
-            <Button
-              onClick={() => setShowAddToCollection(null)}
-              variant="outline"
-              className="quantum-button-secondary"
-            >
-              Fechar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal de Confirmação de Deletar */}
-      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <DialogContent className="quantum-modal">
-          <DialogHeader>
-            <DialogTitle className="quantum-modal-title">
-              <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
-              Confirmar Exclusão
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="quantum-modal-content">
-            <p className="text-slate-300 mb-4">
-              Tem certeza que deseja deletar o deck "{currentDeck.name}"? Esta ação não pode ser desfeita.
-            </p>
+          <div className="quantum-card-dense">
+            <div className="flex justify-between items-center border-b border-cyan-500/20 p-1">
+              <span className="text-xs font-semibold text-cyan-400">Cores</span>
+            </div>
+            <div className="p-2 space-y-1">
+              {Object.entries(deckStats.colors).map(([color, count]) => (
+                <div key={color} className="flex justify-between items-center">
+                  <span className="text-xs text-gray-300">{color}</span>
+                  <span className="text-xs text-cyan-400 font-medium">{count}</span>
+                </div>
+              ))}
+            </div>
           </div>
           
-          <div className="quantum-modal-footer">
-            <Button
-              onClick={() => setShowDeleteConfirm(false)}
-              variant="outline"
-              className="quantum-button-secondary"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleDeleteDeck}
-              className="quantum-button-danger"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Deletar Deck
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Notificação */}
-      {notification.visible && (
-        <div className={`quantum-notification quantum-notification-${notification.type}`}>
-          <div className="quantum-notification-content">
-            {notification.type === 'success' && <CheckCircle className="w-4 h-4" />}
-            {notification.type === 'error' && <AlertTriangle className="w-4 h-4" />}
-            {notification.type === 'info' && <Info className="w-4 h-4" />}
-            <span>{notification.message}</span>
-          </div>
+          {deck.description && (
+            <div className="quantum-card-dense">
+              <div className="flex justify-between items-center border-b border-cyan-500/20 p-1">
+                <span className="text-xs font-semibold text-cyan-400">Descrição</span>
+              </div>
+              <div className="p-2 text-xs text-gray-300">{deck.description}</div>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Botões de Ação */}
+      {(isEditing || hasUnsavedChanges) && (
+        <div className="fixed bottom-4 right-4 flex gap-2 z-50">
+          <button className="quantum-btn" onClick={() => {
+            setIsEditing(false)
+            setHasUnsavedChanges(false)
+          }}>
+            Cancelar
+          </button>
+          <button className="quantum-btn primary" onClick={handleSaveDeck}>
+            <Save className="w-4 h-4 mr-2" />
+            Salvar Deck
+          </button>
         </div>
       )}
-    </div>
-  );
-};
+      
+      {/* Modal de Edição do Deck */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="quantum-card">
+          <DialogHeader>
+            <DialogTitle className="quantum-card-title">Editar Informações do Deck</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="quantum-form-group">
+              <label className="quantum-label" htmlFor="name">Nome</label>
+              <input 
+                id="name"
+                type="text"
+                className="quantum-input"
+                value={editingDeck.name}
+                onChange={(e) => setEditingDeck({ ...editingDeck, name: e.target.value })}
+              />
+            </div>
+            
+            <div className="quantum-form-group">
+              <label className="quantum-label" htmlFor="format">Formato</label>
+              <input 
+                id="format"
+                type="text"
+                className="quantum-input"
+                value={editingDeck.format}
+                onChange={(e) => setEditingDeck({ ...editingDeck, format: e.target.value })}
+              />
+            </div>
+            
+            <div className="quantum-form-group">
+              <label className="quantum-label" htmlFor="description">Descrição</label>
+              <Textarea 
+                id="description"
+                className="quantum-textarea"
+                value={editingDeck.description}
+                onChange={(e) => setEditingDeck({ ...editingDeck, description: e.target.value })}
+              />
+            </div>
+            
+            <div className="flex justify-end gap-2 mt-4">
+              <Button className="quantum-btn" onClick={() => setShowEditModal(false)}>
+                Cancelar
+              </Button>
+              <Button className="quantum-btn primary" onClick={() => {
+                setDeck({ ...deck, ...editingDeck })
+                setShowEditModal(false)
+              }}>
+                Salvar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal de Confirmação de Exclusão */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="quantum-card">
+          <DialogHeader>
+            <DialogTitle className="quantum-card-title text-red-400">Excluir Deck</DialogTitle>
+          </DialogHeader>
+          <div>
+            <p className="text-sm text-gray-300 mb-4">
+              Tem certeza que deseja excluir o deck <strong>{deck.name}</strong>? 
+              Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button className="quantum-btn" onClick={() => setShowDeleteConfirm(false)}>
+                Cancelar
+              </Button>
+              <Button className="quantum-btn primary" style={{background: 'rgba(239, 68, 68, 0.2)', borderColor: '#ef4444'}} onClick={handleDeleteDeck}>
+                <Trash2 className="w-4 h-4" />
+                Excluir Permanentemente
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal de Busca de Cartas */}
+      <CardSearchModal
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onAddCard={handleAddCardToDeck}
+        currentCommander={currentCommander}
+        hasPartnerCommander={hasPartnerCommander}
+      />
 
-export default DeckBuilderEnhanced; 
+      {/* Modal de Mover Carta */}
+      <Dialog open={showMoveModal} onOpenChange={setShowMoveModal}>
+        <DialogContent className="quantum-card max-w-md">
+          <DialogHeader>
+            <DialogTitle className="quantum-card-title">Mover Carta</DialogTitle>
+          </DialogHeader>
+          {moveCardData && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-300 mb-2">
+                  Mover <strong className="text-cyan-400">{moveCardData.cardName}</strong>
+                </p>
+                <p className="text-xs text-gray-500">
+                  De: <span className="text-cyan-400">{moveCardData.fromCategory === 'mainboard' ? 'Main Deck' : moveCardData.fromCategory === 'sideboard' ? 'Sideboard' : 'Commander'}</span>
+                  <br />
+                  Para: <span className="text-cyan-400">{moveCardData.toCategory === 'mainboard' ? 'Main Deck' : moveCardData.toCategory === 'sideboard' ? 'Sideboard' : 'Commander'}</span>
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <label className="quantum-label">Quantidade a mover:</label>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      const newQuantity = Math.max(1, (moveCardData.currentQuantity || 1) - 1)
+                      setMoveCardData({ ...moveCardData, currentQuantity: newQuantity })
+                    }}
+                    className="w-8 h-8 rounded bg-gray-600 hover:bg-gray-500 text-white flex items-center justify-center"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min="1"
+                    max={moveCardData.currentQuantity}
+                    value={moveCardData.currentQuantity}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 1
+                      const clampedValue = Math.max(1, Math.min(value, moveCardData.currentQuantity))
+                      setMoveCardData({ ...moveCardData, currentQuantity: clampedValue })
+                    }}
+                    className="quantum-input text-center w-16"
+                  />
+                  <button
+                    onClick={() => {
+                      const newQuantity = Math.min(moveCardData.currentQuantity, moveCardData.currentQuantity + 1)
+                      setMoveCardData({ ...moveCardData, currentQuantity: newQuantity })
+                    }}
+                    className="w-8 h-8 rounded bg-gray-600 hover:bg-gray-500 text-white flex items-center justify-center"
+                  >
+                    +
+                  </button>
+                  <span className="text-sm text-gray-400">
+                    de {moveCardData.currentQuantity} total
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-2 pt-4">
+                <Button 
+                  className="quantum-btn" 
+                  onClick={() => {
+                    setShowMoveModal(false)
+                    setMoveCardData(null)
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  className="quantum-btn primary" 
+                  onClick={() => executeMoveCard(moveCardData.currentQuantity)}
+                >
+                  Mover {moveCardData.currentQuantity} {moveCardData.currentQuantity === 1 ? 'carta' : 'cartas'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+} 

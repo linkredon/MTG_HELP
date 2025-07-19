@@ -48,6 +48,7 @@ import '../styles/dropdown-fixes-enhanced.css'
 import '../styles/deck-importer-enhanced.css'
 import '../styles/modal-fix-enhanced.css'
 import '../styles/quantum-interface.css'
+import '../styles/deck-background-selector.css'
 import DeckBuilderEnhanced from './DeckBuilder-enhanced'
 
 export default function ConstrutorDecksEnhanced() {
@@ -490,6 +491,7 @@ export default function ConstrutorDecksEnhanced() {
                       variant="ghost"
                       size="sm"
                       className="quantum-button-icon"
+                      title="Visualizar Deck"
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
@@ -501,14 +503,25 @@ export default function ConstrutorDecksEnhanced() {
                       variant="ghost"
                       size="sm"
                       className="quantum-button-icon"
+                      title="Editar Deck"
                     >
                       <Edit3 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={() => setShowCardSelector(deck.id)}
+                      variant="ghost"
+                      size="sm"
+                      className="quantum-button-icon"
+                      title="Definir Imagem de Fundo"
+                    >
+                      <Image className="w-4 h-4" />
                     </Button>
                     <Button
                       onClick={() => handleDuplicateDeck(deck.id)}
                       variant="ghost"
                       size="sm"
                       className="quantum-button-icon"
+                      title="Duplicar Deck"
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
@@ -517,6 +530,7 @@ export default function ConstrutorDecksEnhanced() {
                       variant="ghost"
                       size="sm"
                       className="quantum-button-icon text-red-400 hover:text-red-300"
+                      title="Excluir Deck"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -823,6 +837,103 @@ export default function ConstrutorDecksEnhanced() {
             >
               Fechar
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Seleção de Carta de Fundo */}
+      <Dialog open={!!showCardSelector} onOpenChange={() => setShowCardSelector(null)}>
+        <DialogContent className="quantum-modal max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="quantum-modal-title">
+              <Image className="w-5 h-5 text-cyan-400 mr-2" />
+              Selecionar Carta de Fundo
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="quantum-modal-content">
+            <p className="text-slate-300 mb-4">
+              Escolha uma carta do deck para usar como imagem de fundo. Esta carta será exibida como fundo quando visualizar o deck.
+            </p>
+            
+            {showCardSelector && (() => {
+              const deck = decks.find(d => d.id === showCardSelector);
+              if (!deck) return <p className="text-red-400">Deck não encontrado</p>;
+              
+              return (
+                <div className="space-y-4">
+                  <div className="quantum-card-grid">
+                    {deck.cards.map((deckCard, index) => {
+                      const cardData = deckCard.card || deckCard.cardData;
+                      if (!cardData) return null;
+                      
+                      const isSelected = backgroundCards[deck.id] === index;
+                      
+                      return (
+                        <div
+                          key={`${cardData.id}-${index}`}
+                          className={`quantum-card-item ${isSelected ? 'quantum-card-selected' : ''}`}
+                          onClick={() => setBackgroundCards({
+                            ...backgroundCards,
+                            [deck.id]: isSelected ? undefined : index
+                          })}
+                        >
+                          <div className="quantum-card-image">
+                            <img
+                              src={getImageUrl(cardData, 'normal')}
+                              alt={cardData.name}
+                              className="w-full h-full object-cover rounded"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const fallback = e.currentTarget.nextElementSibling;
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                            />
+                            <div className="quantum-card-fallback hidden w-full h-full bg-gray-700 rounded flex items-center justify-center">
+                              <div className="text-center text-xs text-gray-400">
+                                <div>Imagem não disponível</div>
+                                <div>{cardData.name}</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="quantum-card-info">
+                            <h4 className="text-sm font-medium text-white truncate">{cardData.name}</h4>
+                            <p className="text-xs text-slate-400">{deckCard.quantity}x</p>
+                          </div>
+                          {isSelected && (
+                            <div className="quantum-card-selected-indicator">
+                              <CheckCircle className="w-4 h-4 text-cyan-400" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="quantum-card-actions-footer">
+                    <Button
+                      onClick={() => {
+                        setBackgroundCards({
+                          ...backgroundCards,
+                          [deck.id]: undefined
+                        });
+                      }}
+                      variant="outline"
+                      className="quantum-button-secondary"
+                    >
+                      Remover Fundo
+                    </Button>
+                    <Button
+                      onClick={() => setShowCardSelector(null)}
+                      className="quantum-button-primary"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Confirmar Seleção
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </DialogContent>
       </Dialog>

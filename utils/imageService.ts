@@ -83,6 +83,31 @@ export const getPrioritizedImages = (card: any): any => {
 };
 
 /**
+ * Função de fallback para buscar imagem da carta diretamente da API do Scryfall
+ * 
+ * @param cardName Nome da carta
+ * @param size Tamanho da imagem
+ * @returns URL da imagem
+ */
+const getScryfallImageUrl = (cardName: string, size: 'small' | 'normal' | 'large' = 'normal'): string => {
+  try {
+    if (!cardName || cardName.trim() === '') {
+      return '';
+    }
+    
+    const encodedName = encodeURIComponent(cardName.trim());
+    const version = size === 'small' ? 'small' : size === 'large' ? 'large' : 'normal';
+    
+    // Usar a API de imagens direta do Scryfall
+    const url = `https://api.scryfall.com/cards/named?exact=${encodedName}&format=image&version=${version}`;
+    
+    return url;
+  } catch (e) {
+    return '';
+  }
+};
+
+/**
  * Obtém a URL da imagem apropriada para o tamanho requisitado,
  * priorizando imagens em português
  * 
@@ -92,17 +117,56 @@ export const getPrioritizedImages = (card: any): any => {
  */
 export const getImageUrl = (card: any, size: 'small' | 'normal' | 'large' | 'png' | 'art_crop' | 'border_crop' = 'normal'): string => {
   try {
-    const images = getPrioritizedImages(card);
-    
-    if (!images) return '';
-    
-    if (images.isDoubleFaced) {
-      return images.front?.[size] || images.front?.normal || '';
+    // Validação básica
+    if (!card) {
+      return '';
     }
     
-    return images[size] || images.normal || '';
+    // Se a carta tem image_uris direto, use
+    if (card.image_uris && card.image_uris[size]) {
+      return card.image_uris[size];
+    }
+    
+    // Se tem image_uris mas não tem o tamanho específico, use normal
+    if (card.image_uris && card.image_uris.normal) {
+      return card.image_uris.normal;
+    }
+    
+    // Se tem image_url direto, use
+    if (card.image_url) {
+      return card.image_url;
+    }
+    
+    // Se tem card_faces (carta dupla face)
+    if (card.card_faces && card.card_faces[0] && card.card_faces[0].image_uris) {
+      const frontImage = card.card_faces[0].image_uris[size] || card.card_faces[0].image_uris.normal;
+      if (frontImage) {
+        return frontImage;
+      }
+    }
+    
+    // Se tem prints_search_uri, tentar buscar a primeira impressão
+    if (card.prints_search_uri && card.name) {
+      // Para cartas com prints_search_uri, usar a API do Scryfall
+      return getScryfallImageUrl(card.name, size);
+    }
+    
+    // Fallback: gerar URL do Scryfall baseada no nome
+    if (card.name) {
+      return getScryfallImageUrl(card.name, size);
+    }
+    
+    return '';
   } catch (e) {
-    console.error('Erro ao obter URL da imagem:', e);
+    // Fallback em caso de erro
+    if (card?.name) {
+      const fallbackUrl = getScryfallImageUrl(card.name, size);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 [imageService] Usando fallback URL após erro:', fallbackUrl);
+      }
+      return fallbackUrl;
+    }
+    
     return '';
   }
 };
