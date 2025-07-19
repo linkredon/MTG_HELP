@@ -33,6 +33,19 @@ export default function SimpleAuthCheck({ children }: SimpleAuthCheckProps) {
         isLoading
       });
 
+      // CORREÇÃO: Se está autenticado e tem usuário, permitir acesso IMEDIATAMENTE
+      if (isAuthenticated && user) {
+        console.log('SimpleAuthCheck: Usuário autenticado, permitindo acesso');
+        setAuthCheckComplete(true);
+        return;
+      }
+
+      // Se há cookies de autenticação mas ainda não está autenticado, aguardar
+      if (hasAuthCookies && !isAuthenticated && isLoading) {
+        console.log('SimpleAuthCheck: Cookies detectados, aguardando autenticação...');
+        return;
+      }
+
       // Se não há cookies de autenticação e não está autenticado, redirecionar
       if (!hasAuthCookies && !isAuthenticated && !isLoading) {
         console.log('SimpleAuthCheck: Nenhuma autenticação detectada, redirecionando para login');
@@ -40,23 +53,23 @@ export default function SimpleAuthCheck({ children }: SimpleAuthCheckProps) {
         return;
       }
 
-      // Se está autenticado e tem usuário, permitir acesso
-      if (isAuthenticated && user) {
-        console.log('SimpleAuthCheck: Usuário autenticado, permitindo acesso');
-        setAuthCheckComplete(true);
-        return;
-      }
-
-      // Se ainda está carregando, aguardar
+      // Se ainda está carregando, aguardar mais um pouco
       if (isLoading) {
         console.log('SimpleAuthCheck: Ainda carregando, aguardando...');
         return;
       }
 
-      // Se chegou até aqui, não está autenticado
-      console.log('SimpleAuthCheck: Não autenticado, redirecionando para login');
-      setShouldRedirect(true);
-    }, 3000); // Aguardar 3 segundos
+      // Se chegou até aqui e não está autenticado, redirecionar
+      if (!isAuthenticated) {
+        console.log('SimpleAuthCheck: Não autenticado, redirecionando para login');
+        setShouldRedirect(true);
+        return;
+      }
+
+      // Se chegou até aqui, deve estar autenticado
+      console.log('SimpleAuthCheck: Autenticação verificada, permitindo acesso');
+      setAuthCheckComplete(true);
+    }, 2000); // Reduzir para 2 segundos
 
     return () => clearTimeout(timer);
   }, [isAuthenticated, user, isLoading]);
@@ -75,6 +88,9 @@ export default function SimpleAuthCheck({ children }: SimpleAuthCheckProps) {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
           <p className="text-cyan-400 text-lg">Verificando autenticação...</p>
+          <p className="text-gray-400 text-sm mt-2">
+            {isAuthenticated ? 'Usuário autenticado' : 'Aguardando autenticação...'}
+          </p>
         </div>
       </div>
     );

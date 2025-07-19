@@ -80,6 +80,28 @@ export default function LoginClientPage() {
     }
   }, [isAuthenticated, user, mode, hasRedirected]);
 
+  // Função para redirecionamento manual
+  const handleManualRedirect = () => {
+    console.log('🔄 Redirecionamento manual para página inicial...');
+    window.location.replace('/');
+  };
+
+  // Função para redirecionamento alternativo
+  const handleAlternativeRedirect = () => {
+    console.log('🔄 Tentando redirecionamento alternativo...');
+    // Tentar diferentes métodos de redirecionamento
+    try {
+      // Método 1: window.location.href
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Erro no redirecionamento alternativo:', error);
+      // Método 2: router.push (se disponível)
+      if (typeof router !== 'undefined') {
+        router.push('/');
+      }
+    }
+  };
+
   // Salvar info de verificação no localStorage ao entrar no modo 'verify'
   useEffect(() => {
     if (mode === 'verify' && verificationInfo) {
@@ -405,20 +427,14 @@ export default function LoginClientPage() {
           <div className="space-y-2">
             <button
               type="button"
-              onClick={() => {
-                console.log('Redirecionamento manual para página inicial...');
-                window.location.href = '/';
-              }}
+              onClick={handleManualRedirect}
               className="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
             >
               Ir para página inicial
             </button>
             <button
               type="button"
-              onClick={() => {
-                console.log('Tentando redirecionamento via router...');
-                router.push('/');
-              }}
+              onClick={handleAlternativeRedirect}
               className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
             >
               Tentar redirecionamento alternativo
