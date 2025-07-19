@@ -123,6 +123,17 @@ export async function middleware(request: NextRequest) {
     return response;
   }
   
+  // Verificar se há um fluxo de autenticação em andamento (cookies de autenticação)
+  const hasAuthFlow = request.cookies.has('amplify.auth.tokens') || 
+                     request.cookies.has('amplify-signin-with-hostedUI') ||
+                     request.cookies.has('mtg_user_authenticated');
+  
+  // Se há um fluxo de autenticação em andamento, permitir acesso temporariamente
+  if (hasAuthFlow) {
+    console.log(`[Middleware] Fluxo de autenticação detectado, permitindo acesso temporário a: ${request.nextUrl.pathname}`);
+    return response;
+  }
+  
   // Se não tiver nenhum indício de autenticação, redirecionar para login
   if (!isPotentiallyAuthenticated) {
     console.log(`[Middleware] Redirecionando usuário não autenticado de ${request.nextUrl.pathname} para /login`);

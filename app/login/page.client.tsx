@@ -9,6 +9,7 @@ import { printAuthDiagnostic } from '@/lib/authDiagnostic';
 import AuthDebugger from '@/components/AuthDebugger';
 import AuthTroubleshooter from '@/components/AuthTroubleshooter';
 import IamPermissionFixer from '@/components/IamPermissionFixer';
+import DynamoDbDiagnostic from '@/components/DynamoDbDiagnostic';
 import { loginWithAmplify } from '@/lib/auth-amplify';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,13 +58,19 @@ export default function LoginClientPage() {
   // Verificar se o usuário já está autenticado
   useEffect(() => {
     console.log('useEffect - isAuthenticated:', isAuthenticated, 'user:', user);
+    
+    // Só redirecionar se estiver no modo login e realmente autenticado
     if (isAuthenticated && user && mode === 'login') {
       console.log('Usuário já autenticado, redirecionando para a página inicial');
-      // Redirecionamento único e direto
-      setTimeout(() => {
+      
+      // Usar um timeout mais longo para garantir que tudo esteja estável
+      const redirectTimer = setTimeout(() => {
         console.log('Executando redirecionamento para /');
-        window.location.href = '/';
-      }, 100);
+        // Usar replace em vez de href para evitar problemas de histórico
+        window.location.replace('/');
+      }, 2000); // Aumentar para 2 segundos
+      
+      return () => clearTimeout(redirectTimer);
     }
   }, [isAuthenticated, user, mode]);
 
@@ -107,15 +114,22 @@ export default function LoginClientPage() {
         await fetch('/api/set-auth-cookie', { method: 'POST' });
 
         // Setar cookie diretamente via JS para garantir que o middleware reconheça
-        document.cookie = "mtg_user_authenticated=true; path=/";
+        document.cookie = "mtg_user_authenticated=true; path=/; max-age=3600";
 
         setSuccess('Login realizado com sucesso! Redirecionando...');
+        
+        // Aguardar um pouco para garantir que o contexto seja atualizado
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Atualizar o contexto de autenticação
         await refreshUser();
-        // Forçar redirecionamento após login
-        setTimeout(() => {
-          console.log('Forçando redirecionamento para página inicial...');
-          window.location.href = '/';
-        }, 500);
+        
+        // Aguardar mais um pouco para garantir que tudo esteja sincronizado
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Forçar redirecionamento após login com replace
+        console.log('Forçando redirecionamento para página inicial...');
+        window.location.replace('/');
       } else {
         setError(result.message || 'Falha na autenticação');
       }
@@ -230,6 +244,35 @@ export default function LoginClientPage() {
     const url = `https://${domain}/oauth2/authorize?identity_provider=Google&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&client_id=${clientId}&scope=${scope}`;
     window.location.href = url;
   };
+
+  // Handler para limpar cookies de autenticação
+  const handleClearAuthCookies = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
+      
+      // Limpar cookies via API
+      await fetch('/api/clear-auth-cookies', { method: 'POST' });
+      
+      // Limpar cookies diretamente no navegador
+      document.cookie = "mtg_user_authenticated=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "amplify.auth.tokens=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "amplify-signin-with-hostedUI=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "mtg_auth_in_progress=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      
+      setSuccess('Cookies de autenticação limpos com sucesso! Tente fazer login novamente.');
+      
+      // Recarregar a página após um breve delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      setError('Erro ao limpar cookies de autenticação');
+    } finally {
+      setLoading(false);
+    }
+  };
   
   // Componente de login
   const renderLoginForm = () => (
@@ -315,6 +358,19 @@ export default function LoginClientPage() {
           Já tem um código? Inserir código de verificação
         </button>
       </div>
+      
+      {/* Botão para limpar cookies de autenticação */}
+      <div className="text-center mt-4">
+        <button
+          type="button"
+          onClick={handleClearAuthCookies}
+          disabled={loading}
+          className="text-red-400 hover:text-red-300 text-xs underline"
+        >
+          {loading ? 'Limpando...' : 'Limpar cookies de autenticação'}
+        </button>
+      </div>
+      
       {/* Botão manual para ir para home após login */}
       {isAuthenticated && user && (
         <div className="mt-4 p-4 bg-green-100 border border-green-300 rounded-lg">
@@ -611,6 +667,7 @@ export default function LoginClientPage() {
               <AuthDebugger />
               <AuthTroubleshooter />
               <IamPermissionFixer />
+              <DynamoDbDiagnostic />
             </div>
           </div>
         )}

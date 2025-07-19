@@ -101,10 +101,13 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
           console.log('[AmplifyAuthProvider] setUser(null) - motivo: token inválido');
           return;
         }
+        
         // Extrair informações do usuário do token JWT
         const idTokenPayload = JSON.parse(atob(idToken.split('.')[1]));
+        
         // Se temos uma sessão válida, agora podemos obter o usuário atual
         currentUser = await getCurrentUser();
+        
         const userInfo: AmplifyUser = {
           id: (currentUser?.attributes?.sub || idTokenPayload.sub || ''),
           email: (idTokenPayload.email as string) || '',
@@ -114,33 +117,25 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
           collectionsCount: 0,
           totalCards: 0
         };
-        setUser(userInfo);
-        setIsAuthenticated(true);
-        console.log('[AmplifyAuthProvider] setUser(userInfo) - usuário autenticado:', userInfo);
+        
+        // Verificar se o usuário tem informações válidas antes de definir como autenticado
+        if (userInfo.id && userInfo.email) {
+          setUser(userInfo);
+          setIsAuthenticated(true);
+          console.log('[AmplifyAuthProvider] setUser(userInfo) - usuário autenticado:', userInfo);
+        } else {
+          console.log('Usuário não possui informações válidas, definindo como não autenticado');
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       } catch (authError) {
         console.log('Erro ao verificar autenticação:', authError);
         setUser(null);
         setIsAuthenticated(false);
-        setIsLoading(false);
         console.log('[AmplifyAuthProvider] setUser(null) - motivo: erro na autenticação', authError);
-        return;
+      } finally {
+        setIsLoading(false);
       }
-      
-
-      // Extrair informações do usuário do token JWT
-      // const userInfo: AmplifyUser = {
-      //   id: currentUser.attributes.sub,
-      //   email: (idTokenPayload.email as string) || '',
-      //   name: (idTokenPayload.name as string) || ((idTokenPayload.email as string)?.split('@')[0]) || '',
-      //   avatar: (idTokenPayload.picture as string) || undefined,
-      //   image: (idTokenPayload.picture as string) || undefined,
-      //   // Valores padrão para compatibilidade
-      //   collectionsCount: 0,
-      //   totalCards: 0
-      // };
-      
-      // setUser(userInfo);
-      // setIsAuthenticated(true);
     } catch (error) {
       console.error('Erro ao buscar sessão:', error);
       // Se ocorrer um erro específico do Auth UserPool, tentar reconfigurar
@@ -155,7 +150,6 @@ export function AmplifyAuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setIsAuthenticated(false);
       console.log('[AmplifyAuthProvider] setUser(null) - motivo: erro ao buscar sessão', error);
-    } finally {
       setIsLoading(false);
     }
   };

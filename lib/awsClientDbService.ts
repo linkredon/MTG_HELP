@@ -208,44 +208,38 @@ export const clientDbService = {
     try {
       const dynamoDb = await getOrCreateClientSideDbClient();
       
-      // Primeiro tentar com o índice
-      const params = {
+      console.log(`🔍 Buscando itens para userId: ${userId} na tabela: ${tableName}`);
+      
+      // Usar scan com filtro diretamente, sem depender de índices
+      const scanParams = {
         TableName: tableName,
-        IndexName: 'UserIdIndex',
-        KeyConditionExpression: 'userId = :userId',
+        FilterExpression: 'userId = :userId',
         ExpressionAttributeValues: {
           ':userId': userId
         }
       };
       
-      try {
-        // Garantir que o comando é uma instância do SDK antes de enviar
-        const queryCmd = new QueryCommand(params);
-        if (!(queryCmd instanceof QueryCommand)) {
-          console.error('Comando passado para send não é uma instância de QueryCommand:', queryCmd);
-        }
-        const result = await dynamoDb.send(queryCmd);
-        return { success: true, data: result.Items || [] };
-      } catch (indexError: any) {
-        // Se o índice não existir, usar scan com filtro (silenciosamente)
-        const scanParams = {
-          TableName: tableName,
-          FilterExpression: 'userId = :userId',
-          ExpressionAttributeValues: {
-            ':userId': userId
-          }
-        };
-        
-        // Garantir que o comando é uma instância do SDK antes de enviar
-        const scanCmd = new ScanCommand(scanParams);
-        if (!(scanCmd instanceof ScanCommand)) {
-          console.error('Comando passado para send não é uma instância de ScanCommand:', scanCmd);
-        }
-        const scanResult = await dynamoDb.send(scanCmd);
-        return { success: true, data: scanResult.Items || [] };
+      console.log('📋 Parâmetros do scan:', JSON.stringify(scanParams, null, 2));
+      
+      // Garantir que o comando é uma instância do SDK antes de enviar
+      const scanCmd = new ScanCommand(scanParams);
+      if (!(scanCmd instanceof ScanCommand)) {
+        console.error('Comando passado para send não é uma instância de ScanCommand:', scanCmd);
       }
+      
+      const scanResult = await dynamoDb.send(scanCmd);
+      console.log(`✅ Scan concluído. Itens encontrados: ${scanResult.Items?.length || 0}`);
+      
+      return { success: true, data: scanResult.Items || [] };
     } catch (error) {
-      console.error(`[Cliente] Error querying items from ${tableName}:`, error);
+      console.error(`❌ [Cliente] Error querying items from ${tableName}:`, error);
+      
+      // Se for erro de permissão, retornar array vazio em vez de falhar
+      if (error?.name === 'AccessDeniedException' || error?.name === 'ValidationException') {
+        console.warn(`⚠️ Erro de permissão/validação para tabela ${tableName}. Retornando array vazio.`);
+        return { success: true, data: [], warning: 'Permissões limitadas para esta operação' };
+      }
+      
       return { success: false, error };
     }
   },

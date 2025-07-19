@@ -100,6 +100,16 @@ class UniversalDbService implements DbServiceInterface {
       } catch (error) {
         console.error(`❌ Erro na tentativa ${attempt + 1}:`, error);
         lastError = error;
+        
+        // Se for erro de permissão, não tentar novamente
+        if (error?.name === 'AccessDeniedException' || error?.name === 'ValidationException') {
+          console.warn(`⚠️ Erro de permissão detectado. Retornando array vazio.`);
+          return { 
+            success: true, 
+            data: [],
+            warning: 'Permissões limitadas para esta operação'
+          };
+        }
       }
       
       // Aguardar antes de tentar novamente (backoff exponencial)
@@ -109,8 +119,8 @@ class UniversalDbService implements DbServiceInterface {
       attempt++;
     }
     
-    // Se chegamos aqui, todas as tentativas com o cliente falharam
-    console.warn(`❌ Todas as ${MAX_DB_RETRIES} tentativas falharam. Resultado vazio.`);
+    // Se chegamos aqui, todas as tentativas falharam
+    console.warn(`❌ Todas as ${MAX_DB_RETRIES} tentativas falharam. Retornando array vazio.`);
     
     // Retornar um resultado vazio em vez de falhar completamente
     return { 

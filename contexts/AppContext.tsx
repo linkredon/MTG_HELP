@@ -115,7 +115,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           setDecks([]);
           setFavorites([]);
         }
-      }, 10000); // 10 segundos de timeout
+      }, 15000); // Aumentar para 15 segundos
       
       // Carregar dados do DynamoDB
       if (isMounted) {

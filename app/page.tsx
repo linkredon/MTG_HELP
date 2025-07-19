@@ -105,22 +105,8 @@ function HomeContent() {
   const { user: authUser, isAuthenticated, isLoading: authLoading, isInitialized } = useAmplifyAuth()
   const [activeTab, setActiveTab] = useState('painel')
   const [allCards, setAllCards] = useState<MTGCard[]>([])
-  const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   
-  // Adicionar um efeito para garantir que estamos no lado do cliente
-  useEffect(() => {
-    // Código a ser executado apenas no lado do cliente
-    console.log('HomeContent montado no lado do cliente')
-    setIsClient(true)
-    // Redirecionar para login apenas se não autenticado, não carregando, inicializado e não estiver já na página de login
-    if (!isAuthenticated && !authLoading && isInitialized && typeof window !== 'undefined' && window.location.pathname !== '/login') {
-      console.log('HomeContent: Usuário não autenticado, redirecionando para login')
-      router.replace('/login')
-      return;
-    }
-  }, [isAuthenticated, authLoading, isInitialized, router])
-
   // Usar o contexto global para coleção
   const { currentCollection, exportCollectionToCSV } = useAppContext()
   
@@ -224,6 +210,7 @@ function HomeContent() {
 
 // Importar o wrapper para fornecer o SessionProvider localmente
 import HomeContentWrapper from '@/components/HomeContentWrapper'
+import SimpleAuthCheck from '@/components/SimpleAuthCheck'
 
 // Carregamento dinâmico dos componentes
 const LoadingScreen = nextDynamic(() => import('@/components/LoadingScreen'), { ssr: false });
@@ -239,7 +226,9 @@ export default function Home() {
       {/* <LoadingScreen /> */}
       {/* <AppInitializer /> */}
       <HomeContentWrapper>
-        <HomeContent />
+        <SimpleAuthCheck>
+          <HomeContent />
+        </SimpleAuthCheck>
       </HomeContentWrapper>
     </Suspense>
   );
