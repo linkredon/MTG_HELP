@@ -19,7 +19,9 @@ const publicRoutes = [
   '/scripts', // Permitir acesso a scripts estáticos
   '/images', // Permitir acesso a imagens estáticas
   '/fonts', // Permitir acesso a fontes
-  '/styles' // Permitir acesso a estilos CSS
+  '/styles', // Permitir acesso a estilos CSS
+  '/api/set-auth-cookie', // Permitir acesso à API de set-auth-cookie
+  '/api/clear-auth-cookies' // Permitir acesso à API de clear-auth-cookies
   // '/': Removida a página inicial das rotas públicas, agora requer autenticação
 ];
 
@@ -131,6 +133,13 @@ export async function middleware(request: NextRequest) {
   // Se há um fluxo de autenticação em andamento, permitir acesso temporariamente
   if (hasAuthFlow) {
     console.log(`[Middleware] Fluxo de autenticação detectado, permitindo acesso temporário a: ${request.nextUrl.pathname}`);
+    return response;
+  }
+  
+  // CORREÇÃO DO LOOP: Verificar se já estamos sendo redirecionado para login
+  const isRedirectingToLogin = request.nextUrl.pathname === '/login';
+  if (isRedirectingToLogin) {
+    console.log(`[Middleware] Já estamos na página de login, permitindo acesso`);
     return response;
   }
   

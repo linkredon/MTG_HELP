@@ -41,6 +41,7 @@ export default function LoginClientPage() {
   const [success, setSuccess] = useState('');
   const [verificationInfo, setVerificationInfo] = useState<{email: string; name: string} | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
   
   // Campos do formulário
   const [email, setEmail] = useState('');
@@ -55,24 +56,29 @@ export default function LoginClientPage() {
     setIsClient(true);
   }, []);
   
-  // Verificar se o usuário já está autenticado
+  // Verificar se o usuário já está autenticado - CORREÇÃO DO LOOP
   useEffect(() => {
-    console.log('useEffect - isAuthenticated:', isAuthenticated, 'user:', user);
+    console.log('useEffect - isAuthenticated:', isAuthenticated, 'user:', user, 'hasRedirected:', hasRedirected);
     
-    // Só redirecionar se estiver no modo login e realmente autenticado
-    if (isAuthenticated && user && mode === 'login') {
-      console.log('Usuário já autenticado, redirecionando para a página inicial');
+    // Só redirecionar se estiver no modo login, realmente autenticado e ainda não redirecionou
+    if (isAuthenticated && user && mode === 'login' && !hasRedirected) {
+      console.log('Usuário já autenticado, preparando redirecionamento...');
+      setHasRedirected(true);
       
       // Usar um timeout mais longo para garantir que tudo esteja estável
       const redirectTimer = setTimeout(() => {
         console.log('Executando redirecionamento para /');
-        // Usar replace em vez de href para evitar problemas de histórico
-        window.location.replace('/');
-      }, 3000); // Aumentar para 3 segundos
+        
+        // Verificar se ainda estamos na página de login antes de redirecionar
+        if (window.location.pathname === '/login') {
+          // Usar replace em vez de href para evitar problemas de histórico
+          window.location.replace('/');
+        }
+      }, 2000); // Reduzir para 2 segundos
       
       return () => clearTimeout(redirectTimer);
     }
-  }, [isAuthenticated, user, mode]);
+  }, [isAuthenticated, user, mode, hasRedirected]);
 
   // Salvar info de verificação no localStorage ao entrar no modo 'verify'
   useEffect(() => {
@@ -119,13 +125,13 @@ export default function LoginClientPage() {
         setSuccess('Login realizado com sucesso! Redirecionando...');
         
         // Aguardar um pouco para garantir que o contexto seja atualizado
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Atualizar o contexto de autenticação
         await refreshUser();
         
         // Aguardar mais um pouco para garantir que tudo esteja sincronizado
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Forçar redirecionamento após login com replace
         console.log('Forçando redirecionamento para página inicial...');
@@ -252,23 +258,38 @@ export default function LoginClientPage() {
       setError('');
       setSuccess('');
       
+      console.log('🧹 Limpando cookies de autenticação...');
+      
       // Limpar cookies via API
-      await fetch('/api/clear-auth-cookies', { method: 'POST' });
+      const response = await fetch('/api/clear-auth-cookies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
-      // Limpar cookies diretamente no navegador
-      document.cookie = "mtg_user_authenticated=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      document.cookie = "amplify.auth.tokens=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      document.cookie = "amplify-signin-with-hostedUI=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      document.cookie = "mtg_auth_in_progress=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      
-      setSuccess('Cookies de autenticação limpos com sucesso! Tente fazer login novamente.');
-      
-      // Recarregar a página após um breve delay
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Cookies limpos:', result);
+        
+        // Limpar cookies também no lado do cliente
+        document.cookie = "mtg_user_authenticated=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        document.cookie = "amplify.auth.tokens=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        document.cookie = "amplify-signin-with-hostedUI=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        document.cookie = "mtg_auth_in_progress=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        
+        setSuccess('Cookies de autenticação limpos! Página será recarregada...');
+        
+        // Recarregar a página após um breve delay
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        setError('Erro ao limpar cookies');
+      }
     } catch (error) {
-      setError('Erro ao limpar cookies de autenticação');
+      console.error('Erro ao limpar cookies:', error);
+      setError('Erro ao limpar cookies');
     } finally {
       setLoading(false);
     }
@@ -668,6 +689,29 @@ export default function LoginClientPage() {
               <AuthTroubleshooter />
               <IamPermissionFixer />
               <DynamoDbDiagnostic />
+              
+              {/* Botão para limpar cookies */}
+              <div className="pt-2 border-t border-gray-700">
+                <Button
+                  onClick={handleClearAuthCookies}
+                  disabled={loading}
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Limpando...
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Limpar Cookies de Auth
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         )}
