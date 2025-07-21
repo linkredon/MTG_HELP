@@ -137,14 +137,38 @@ export async function getUserById(id: string) {
 export async function loginWithAmplify(credentials: { email: string, password: string }) {
   try {
     console.log('loginWithAmplify: credentials recebidos:', credentials);
+    
+    // Verificar se já há um usuário autenticado
+    try {
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        console.log('loginWithAmplify: Usuário já autenticado:', currentUser.username);
+        const userAttributes = currentUser.attributes || {};
+        
+        const user = {
+          id: userAttributes.sub || currentUser.username,
+          name: userAttributes.name || userAttributes.email || currentUser.username,
+          email: userAttributes.email || currentUser.username,
+          role: 'user'
+        };
+        
+        return { success: true, user, alreadyAuthenticated: true };
+      }
+    } catch (notAuthenticatedError) {
+      // Usuário não está autenticado, continuar com o login
+      console.log('loginWithAmplify: Usuário não autenticado, prosseguindo com login');
+    }
+    
     const username = credentials.email?.trim();
     console.log('loginWithAmplify: username final:', username, 'password:', credentials.password);
     if (!username) {
       throw new Error('O campo de e-mail está vazio no momento do login!');
     }
+    
     // Alteração: passar objeto { username, password }
     const signInResult = await signIn({ username, password: credentials.password });
     console.log('loginWithAmplify: signInResult:', signInResult);
+    
     // Proteger acesso aos campos
     const userAttributes = signInResult?.attributes || {};
     const user = {
@@ -155,36 +179,34 @@ export async function loginWithAmplify(credentials: { email: string, password: s
     };
     
     if (signInResult) {
-      // Obter informações do usuário
-      try {
-        // const userAttributes = signInResult.attributes || {}; // This line is now redundant
-        
-        // const user = {
-        //   id: signInResult.attributes.sub || signInResult.username,
-        //   name: userAttributes.name || userAttributes.email || signInResult.username,
-        //   email: userAttributes.email || signInResult.username,
-        //   role: 'user', // Papel padrão, pode ser atualizado com informações do DynamoDB
-        //   avatar: null
-        // };
-        
-        return { success: true, user };
-      } catch (attrError) {
-        console.error('Erro ao obter atributos do usuário:', attrError);
-        // Mesmo com erro, podemos retornar um usuário básico
-        return { 
-          success: true, 
-          user: { 
-            id: signInResult.username, 
-            name: signInResult.username,
-            email: signInResult.username 
-          } 
-        };
-      }
+      return { success: true, user };
     } else {
       return { success: false, message: 'Falha na autenticação' };
     }
   } catch (error: any) {
     console.error('Erro no login:', error);
+    
+    // Verificar se é o erro de usuário já autenticado
+    if (error.name === 'UserAlreadyAuthenticatedException') {
+      console.log('loginWithAmplify: Usuário já autenticado detectado');
+      try {
+        const currentUser = await getCurrentUser();
+        const userAttributes = currentUser.attributes || {};
+        
+        const user = {
+          id: userAttributes.sub || currentUser.username,
+          name: userAttributes.name || userAttributes.email || currentUser.username,
+          email: userAttributes.email || currentUser.username,
+          role: 'user'
+        };
+        
+        return { success: true, user, alreadyAuthenticated: true };
+      } catch (getUserError) {
+        console.error('Erro ao obter usuário já autenticado:', getUserError);
+        return { success: false, message: 'Erro ao obter usuário autenticado' };
+      }
+    }
+    
     return { success: false, message: error.message || 'Falha na autenticação' };
   }
 }

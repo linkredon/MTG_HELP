@@ -1,0 +1,41 @@
+/* Estilos para o importador de deck */
+
+.quantum-btn {
+  @apply px-3 py-2 rounded-md flex items-center gap-2 transition-colors;
+  background-color: rgba(8, 145, 178, 0.2);
+  border: 1px solid rgba(8, 145, 178, 0.3);
+  color: rgba(103, 232, 249, 1);
+}
+
+.quantum-btn:hover {
+  background-color: rgba(8, 145, 178, 0.3);
+  border-color: rgba(8, 145, 178, 0.5);
+}
+
+.quantum-btn.compact {
+  @apply px-2 py-1 text-sm;
+}
+
+/* Correções para o modal */
+.dialog-content {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999 !important;
+}
+
+/* Garantir que o overlay não bloqueie a interação com o modal */
+[data-state="open"].dialog-overlay {
+  pointer-events: none !important;
+}
+
+/* Garantir que o conteúdo do modal tenha interação */
+[role="dialog"] {
+  pointer-events: auto !important;
+}
+
+/* Ajustes para o dropdown dentro do modal */
+.mtg-dropdown {
+  z-index: 10000 !important;
+}

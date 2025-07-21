@@ -771,3 +771,535 @@
     break-inside: avoid;
   }
 }
+
+/* --- Responsividade global para todas as páginas --- */
+.container, .main-content, .quantum-content, .quantum-card, .quantum-form-group {
+  max-width: 100vw;
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.button-group, .quantum-tabs, .quantum-filters, .quantum-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+@media (max-width: 600px) {
+  .button-group, .quantum-tabs, .quantum-filters, .quantum-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .quantum-form-group, .quantum-card, .main-content {
+    padding: 0.75rem 0.5rem;
+  }
+  .quantum-card {
+    border-radius: 0.7rem;
+  }
+  .quantum-tabs {
+    border-radius: 0.7rem;
+    padding: 0.2rem;
+  }
+  .quantum-tab, .quantum-tab-content, .quantum-badge {
+    font-size: 0.97rem;
+  }
+  input, select, textarea {
+    width: 100%;
+    font-size: 1rem;
+  }
+}
+
+.quantum-tabs, .button-group, .quantum-filters {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #6366f1 #232b3e;
+}
+
+/* Responsividade para grupos de botões longos no mobile */
+@media (max-width: 900px) {
+  .quantum-tabs,
+  .button-group,
+  .quantum-filters,
+  .quantum-actions {
+    flex-wrap: wrap !important;
+    gap: 0.5rem 0.5rem;
+    justify-content: flex-start;
+  }
+  .quantum-tabs > *,
+  .button-group > *,
+  .quantum-filters > *,
+  .quantum-actions > * {
+    flex: 1 1 160px;
+    min-width: 120px;
+    max-width: 100%;
+  }
+}
+
+.quantum-tabs,
+.button-group,
+.quantum-filters,
+.quantum-actions {
+  overflow-x: visible !important;
+}
+
+/* Responsividade para bloco de botões em quantum-card-dense (Coleção e Decks) */
+@media (max-width: 700px) {
+  .quantum-card-dense .flex.flex-row.gap-2.justify-between,
+  .quantum-card-dense .deck-toolbar.flex.flex-row.gap-2.justify-between {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    align-items: stretch !important;
+  }
+  .quantum-card-dense .flex.flex-row.gap-2,
+  .quantum-card-dense .deck-toolbar.flex.flex-row.gap-2 {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: stretch !important;
+  }
+  .quantum-card-dense .quantum-btn.compact,
+  .quantum-card-dense .deck-toolbar .quantum-btn.compact {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Cards principais */
+  .quantum-card, .quantum-card-dense {
+    padding: 1rem 0.7rem !important;
+    border-radius: 1.1rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-bottom: 1.2rem !important;
+  }
+
+  /* Título e descrição do painel */
+  .quantum-card .text-4xl, .quantum-card .text-3xl, .quantum-card .text-2xl {
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+  }
+  .quantum-card .text-lg, .quantum-card .text-base {
+    font-size: 1rem !important;
+  }
+
+  /* Botões grandes (Importar Deck, Novo Deck) */
+  .quantum-card .flex.flex-row.gap-2,
+  .quantum-card .flex.flex-row.gap-4 {
+    flex-direction: column !important;
+    gap: 0.7rem !important;
+    align-items: stretch !important;
+  }
+  .quantum-card .quantum-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+    font-size: 1.08rem !important;
+  }
+
+  /* Inputs e selects */
+  .quantum-card input,
+  .quantum-card select,
+  .quantum-card textarea {
+    width: 100% !important;
+    font-size: 1rem !important;
+    margin-bottom: 0.7rem !important;
+  }
+
+  /* Filtros e grupos de ações */
+  .quantum-card .flex.flex-row.gap-2.justify-between,
+  .quantum-card .flex.flex-row.gap-2 {
+    flex-direction: column !important;
+    gap: 0.7rem !important;
+    align-items: stretch !important;
+  }
+  .quantum-card .quantum-btn.compact {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Cards de decks ocupam toda a largura */
+  .quantum-grid, .quantum-content {
+    grid-template-columns: 1fr !important;
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+  .quantum-card, .quantum-card-header, .quantum-card-content, .quantum-card-footer {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-left: 0.7rem !important;
+    padding-right: 0.7rem !important;
+  }
+  .quantum-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.7rem !important;
+  }
+  .quantum-card-title {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.3rem !important;
+  }
+  /* Ações dos decks em duas linhas */
+  .quantum-card-actions {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+  }
+  .quantum-card-actions > button {
+    min-width: 44px !important;
+    flex: 1 1 44% !important;
+    margin-bottom: 0.2rem !important;
+    font-size: 1.05rem !important;
+  }
+  /* Filtros e selects */
+  .quantum-filters, .quantum-filter-controls {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+  .quantum-filter-controls > * {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .quantum-search input {
+    width: 100% !important;
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .quantum-header {
+    gap: 0.5rem !important;
+    padding: 0.6rem 0.4rem 0.7rem 0.4rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  .quantum-header-left {
+    gap: 0.2rem !important;
+  }
+  .quantum-title {
+    font-size: 1.13rem !important;
+    gap: 0.4rem;
+    margin-bottom: 0.1rem !important;
+  }
+  .quantum-title svg {
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    margin-right: 0.3rem !important;
+  }
+  .quantum-subtitle {
+    font-size: 0.89rem !important;
+    margin-bottom: 0.1rem !important;
+  }
+  .quantum-header-right {
+    gap: 0.3rem !important;
+    margin-top: 0.2rem !important;
+  }
+  .quantum-header-right button {
+    font-size: 0.98rem !important;
+    margin-bottom: 0.1rem;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .quantum-card {
+    padding: 0.7rem 0.4rem !important;
+    border-radius: 0.8rem !important;
+    margin-bottom: 0.7rem !important;
+  }
+  .quantum-card-header {
+    padding: 0.7rem 0.4rem !important;
+    gap: 0.4rem !important;
+  }
+  .quantum-card-title {
+    gap: 0.2rem !important;
+  }
+  .quantum-card-title h3 {
+    font-size: 1.02rem !important;
+    margin-bottom: 0.1rem !important;
+  }
+  .quantum-badge {
+    font-size: 0.78rem !important;
+    padding: 0.15rem 0.7rem !important;
+  }
+  .quantum-card-actions {
+    gap: 0.25rem !important;
+  }
+  .quantum-card-actions > button {
+    min-width: 36px !important;
+    height: 2rem !important;
+    font-size: 0.93rem !important;
+    padding: 0.3rem 0.5rem !important;
+  }
+  .quantum-card-actions svg {
+    width: 1rem !important;
+    height: 1rem !important;
+    margin-right: 0.2rem !important;
+  }
+  .quantum-card-content, .p-6 {
+    padding: 0.7rem 0.4rem 0.4rem 0.4rem !important;
+  }
+  .quantum-card-stats {
+    gap: 0.3rem !important;
+    margin-bottom: 0.2rem !important;
+  }
+  .quantum-card-footer {
+    margin-top: 0.2rem !important;
+    padding-top: 0.2rem !important;
+  }
+  .text-sm, .quantum-card-content .text-sm {
+    font-size: 0.93rem !important;
+  }
+  .text-xs, .quantum-card-footer .text-xs {
+    font-size: 0.78rem !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .quantum-card-actions {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 0.18rem !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    scrollbar-width: thin;
+    scrollbar-color: #6366f1 #232b3e;
+  }
+  .quantum-card-actions > button {
+    min-width: 36px !important;
+    max-width: 44px !important;
+    width: 44px !important;
+    height: 2rem !important;
+    font-size: 0.93rem !important;
+    padding: 0.3rem 0.3rem !important;
+    justify-content: center !important;
+  }
+  .quantum-card-actions svg {
+    margin-right: 0 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Card principal e header sticky */
+  .quantum-card, .quantum-card-dense {
+    padding: 0.5rem 0.2rem !important;
+    border-radius: 0.7rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  .sticky.top-0 {
+    padding: 0.2rem 0.2rem !important;
+    min-height: unset !important;
+  }
+  .sticky.top-0 .flex.items-center.justify-between {
+    gap: 0.3rem !important;
+    padding: 0.2rem !important;
+  }
+  .quantum-header, .quantum-header-left, .quantum-header-right {
+    gap: 0.2rem !important;
+    padding: 0 !important;
+  }
+  .quantum-title, .text-md, .font-bold {
+    font-size: 1.01rem !important;
+    margin-bottom: 0 !important;
+  }
+  .quantum-badge, .text-xs {
+    font-size: 0.75rem !important;
+    padding: 0.1rem 0.5rem !important;
+  }
+  .quantum-btn, .quantum-btn.compact {
+    min-width: 32px !important;
+    height: 1.7rem !important;
+    font-size: 0.85rem !important;
+    padding: 0.2rem 0.3rem !important;
+  }
+  .quantum-btn svg, .quantum-card-actions svg, .lucide {
+    width: 0.95rem !important;
+    height: 0.95rem !important;
+    margin-right: 0.1rem !important;
+  }
+  /* Filtros e selects */
+  .flex.flex-wrap.items-center.gap-1.mx-2.mb-2,
+  .quantum-filter-controls, .quantum-filters {
+    gap: 0.2rem !important;
+    margin-bottom: 0.2rem !important;
+    padding: 0 !important;
+  }
+  .quantum-input, input[type='text'] {
+    height: 1.7rem !important;
+    font-size: 0.93rem !important;
+    padding: 0.1rem 0.5rem 0.1rem 1.7rem !important;
+  }
+  /* Grids de cartas */
+  .grid.grid-cols-3, .grid.grid-cols-4, .grid.grid-cols-5 {
+    gap: 0.18rem !important;
+  }
+  .aspect-[63/88] {
+    border-radius: 0.4rem !important;
+  }
+  .quantum-card-stats, .quantum-card-footer, .p-2, .mb-6, .mb-4 {
+    margin-bottom: 0.2rem !important;
+    padding: 0.2rem !important;
+    gap: 0.15rem !important;
+  }
+  .text-sm, .quantum-card-content .text-sm {
+    font-size: 0.89rem !important;
+  }
+  .text-xs, .quantum-card-footer .text-xs {
+    font-size: 0.72rem !important;
+  }
+}
+
+/* Modal de perfil - visual aprimorado */
+.dialog-content,
+[data-state="open"].dialog-content {
+  background: linear-gradient(135deg, #181f2e 80%, #232b3e 100%) !important;
+  border-radius: 1.1rem !important;
+  box-shadow: 0 8px 32px rgba(99,102,241,0.13), 0 1.5px 8px rgba(0,0,0,0.18) !important;
+  border: 1.5px solid #232b3e !important;
+  padding: 2rem 1.2rem 1.2rem 1.2rem !important;
+  color: #e0e7ef !important;
+  max-width: 95vw !important;
+}
+
+.dialog-content h2,
+.dialog-content .text-lg {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #a5b4fc !important;
+  text-align: center !important;
+  margin-bottom: 1.1rem !important;
+  letter-spacing: 0.01em;
+}
+
+.dialog-content label {
+  color: #a5b4fc !important;
+  font-size: 0.97rem !important;
+  margin-bottom: 0.2rem !important;
+}
+
+.dialog-content .quantum-input {
+  border-radius: 0.7rem !important;
+  background: #232b3e !important;
+  color: #fff !important;
+  border: 1.5px solid #6366f1 !important;
+  font-size: 1rem !important;
+  margin-bottom: 0.7rem !important;
+  padding: 0.5rem 0.9rem !important;
+  transition: border 0.18s;
+}
+.dialog-content .quantum-input:focus {
+  border-color: #a5b4fc !important;
+  box-shadow: 0 0 0 2px #6366f1;
+}
+
+.dialog-content .mobile-user-avatar {
+  display: block;
+  margin: 0.7rem auto 0.5rem auto;
+  border-radius: 50%;
+  border: 2.5px solid #6366f1;
+  box-shadow: 0 2px 12px rgba(99,102,241,0.13);
+  width: 72px !important;
+  height: 72px !important;
+  object-fit: cover;
+  background: #232b3e;
+}
+
+.dialog-content .quantum-btn.primary {
+  width: 100%;
+  margin-top: 1.1rem;
+  font-size: 1.08rem;
+  border-radius: 0.7rem;
+  background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.10);
+  padding: 0.7rem 0;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background 0.18s;
+}
+.dialog-content .quantum-btn.primary:hover {
+  background: linear-gradient(90deg, #818cf8 0%, #6366f1 100%);
+}
+
+.dialog-content .absolute.right-4.top-4 {
+  color: #a5b4fc !important;
+  background: none !important;
+  border-radius: 50% !important;
+  transition: background 0.18s;
+}
+.dialog-content .absolute.right-4.top-4:hover {
+  background: #232b3e !important;
+}
+
+@media (max-width: 700px) {
+  .user-header-flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.7rem !important;
+    margin-bottom: 1.2rem !important;
+    padding: 0.5rem 0.2rem !important;
+  }
+  .user-header-flex > a,
+  .user-header-flex > .w-32 {
+    width: 100% !important;
+    min-width: 0 !important;
+    display: flex;
+    justify-content: flex-start;
+  }
+  .user-header-flex > .w-32 {
+    display: none !important;
+  }
+  .user-header-flex button {
+    width: 100% !important;
+    font-size: 0.98rem !important;
+    padding: 0.5rem 0.7rem !important;
+    border-radius: 0.7rem !important;
+  }
+  .user-header-flex .text-center.flex-1 {
+    width: 100% !important;
+    text-align: center !important;
+    margin: 0.2rem 0 !important;
+  }
+  .user-header-flex h1 {
+    font-size: 1.25rem !important;
+    margin-bottom: 0.2rem !important;
+  }
+  .user-header-flex p {
+    font-size: 0.97rem !important;
+    color: #a5b4fc !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .user-tabs-flex {
+    display: flex;
+    flex-wrap: wrap !important;
+    gap: 0.4rem 0.4rem !important;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 0.2rem 0 !important;
+  }
+  .user-tabs-flex > * {
+    flex: 1 1 45%;
+    min-width: 120px;
+    max-width: 100%;
+    margin-bottom: 0.1rem;
+  }
+  .user-tabs-flex > :nth-child(4),
+  .user-tabs-flex > :nth-child(5) {
+    order: 2;
+  }
+}

@@ -1,0 +1,188 @@
+/* Estilos para a página de login */
+
+.loginContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 2rem;
+}
+
+.loginCard {
+  background-color: rgba(23, 25, 35, 0.9);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.loginCard:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  transform: translateY(-3px);
+}
+
+.loginLogo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.loginLogo img {
+  height: 80px;
+  width: auto;
+}
+
+.loginHeading {
+  color: #fff;
+  font-size: 1.75rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.loginSubtext {
+  color: #a0aec0;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.loginButton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.loginButtonGoogle {
+  background-color: #ffffff;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.loginButtonGoogle:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.loginButtonCognito {
+  background-color: #FF9900;
+  color: #fff;
+  border: none;
+}
+
+.loginButtonCognito:hover {
+  background-color: #e68a00;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.loginButtonDemo {
+  background-color: #4299e1;
+  color: #fff;
+  border: none;
+}
+
+.loginButtonDemo:hover {
+  background-color: #3182ce;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.loginButtonIcon {
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+.loginDivider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.loginDivider::before,
+.loginDivider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #4a5568;
+}
+
+.loginDividerText {
+  padding: 0 1rem;
+  color: #a0aec0;
+  font-size: 0.875rem;
+}
+
+.loginFooter {
+  margin-top: 2rem;
+  text-align: center;
+  color: #a0aec0;
+  font-size: 0.875rem;
+}
+
+.loginFooter a {
+  color: #63b3ed;
+  text-decoration: none;
+}
+
+.loginFooter a:hover {
+  text-decoration: underline;
+}
+
+/* Animação de pulsar para indicadores de carregamento */
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.loadingIndicator {
+  animation: pulse 1.5s infinite;
+}
+
+/* Estilos para notificações de erro */
+.loginError {
+  background-color: rgba(245, 101, 101, 0.1);
+  border-left: 4px solid #f56565;
+  color: #f56565;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+/* Estilos para notificações de sucesso */
+.loginSuccess {
+  background-color: rgba(72, 187, 120, 0.1);
+  border-left: 4px solid #48bb78;
+  color: #48bb78;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+/* Estilos responsivos */
+@media (max-width: 640px) {
+  .loginCard {
+    padding: 1.5rem;
+  }
+  
+  .loginHeading {
+    font-size: 1.5rem;
+  }
+}

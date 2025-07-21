@@ -1,0 +1,74 @@
+/* Correções específicas para os botões de filtro */
+
+/* Aumentar a especificidade e z-index dos botões de filtro */
+button.quantum-btn,
+button.quantum-btn.compact,
+button.quantum-btn.primary,
+button.quantum-btn.w-full,
+button[variant="outline"],
+button[size="sm"] {
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que os elementos de formulário sejam clicáveis */
+input,
+select,
+textarea,
+.quantum-field,
+.quantum-field-sm,
+.search-input {
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+/* Corrigir checkboxes e labels */
+input[type="checkbox"] {
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+label {
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+/* Corrigir botões de cores de mana */
+.flex.flex-wrap.gap-1 button {
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que os containers não bloqueiem eventos */
+.quantum-card-dense,
+.space-y-2,
+.space-y-4,
+.grid-cols-2,
+.flex-wrap {
+  position: relative !important;
+}
+
+/* Remover pointer-events de elementos decorativos */
+.card-glow::before,
+.card-glow::after,
+.card-glow-blue::before,
+.card-glow-purple::before,
+.card-glow-green::before,
+.card-glow-red::before,
+.card-glow-gold::before {
+  pointer-events: none !important;
+}
+
+/* Corrigir seletores */
+.SimpleSelect__control,
+.SimpleSelect__menu,
+.SimpleSelect__option {
+  position: relative !important;
+  z-index: 100 !important;
+  pointer-events: auto !important;
+}

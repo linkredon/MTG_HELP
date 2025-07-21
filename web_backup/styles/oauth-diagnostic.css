@@ -1,0 +1,268 @@
+/* Estilos para o componente GoogleOAuthDiagnostic */
+.oauth-diagnostic,
+.diagnostic-container {
+  background-color: #1e293b;
+  border-radius: 8px;
+  padding: 24px;
+  color: #f8fafc;
+  margin-bottom: 1.5rem;
+}
+
+.oauth-diagnostic h2,
+.diagnostic-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #f8fafc;
+}
+
+.oauth-diagnostic h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+  color: #f1f5f9;
+}
+
+.diagnostic-status,
+.diagnostic-section {
+  background-color: #0f172a;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+  margin-top: 1rem;
+}
+
+.diagnostic-status ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.diagnostic-status li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #334155;
+}
+
+.diagnostic-status li:last-child {
+  border-bottom: none;
+}
+
+.status-label,
+.diagnostic-label {
+  font-weight: 500;
+  color: #cbd5e1;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.status-indicator {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.status-indicator.success,
+.diagnostic-item-success {
+  background-color: #065f46;
+  color: #d1fae5;
+  border-left: 4px solid #48bb78;
+}
+
+.status-indicator.error,
+.diagnostic-item-error {
+  background-color: #7f1d1d;
+  color: #fee2e2;
+  border-left: 4px solid #f56565;
+}
+
+.diagnostic-item-warning {
+  background-color: rgba(237, 137, 54, 0.1);
+  border-left: 4px solid #ed8936;
+}
+
+.diagnostic-item-info {
+  background-color: rgba(66, 153, 225, 0.1);
+  border-left: 4px solid #4299e1;
+}
+
+.diagnostic-item {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.diagnostic-value {
+  font-family: monospace;
+  word-break: break-all;
+  background-color: #1e293b;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.875rem;
+}
+
+.diagnostic-toggle {
+  background: none;
+  border: none;
+  color: #60a5fa;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  margin-top: 0.5rem;
+}
+
+.diagnostic-toggle:hover {
+  color: #2b6cb0;
+}
+
+.diagnostic-logs {
+  background-color: #0f172a;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.logs-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 12px;
+  background-color: #1e293b;
+}
+
+.log-entry {
+  padding: 6px 0;
+  border-bottom: 1px solid #334155;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.diagnostic-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.diagnostic-button,
+.action-button {
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.diagnostic-button-primary,
+.action-button.check {
+  background-color: #0284c7;
+  color: white;
+  border: none;
+}
+
+.diagnostic-button-primary:hover,
+.action-button.check:hover {
+  background-color: #0369a1;
+}
+
+.diagnostic-button-secondary {
+  background-color: #e2e8f0;
+  color: #1a202c;
+  border: none;
+}
+
+.diagnostic-button-secondary:hover {
+  background-color: #cbd5e0;
+}
+
+.action-button.fix {
+  background-color: #ca8a04;
+  color: white;
+}
+
+.action-button.fix:hover {
+  background-color: #a16207;
+}
+
+.action-button:disabled,
+.diagnostic-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.action-button.success {
+  background-color: #10b981;
+}
+
+.action-button.error {
+  background-color: #ef4444;
+}
+
+.action-button.pending {
+  background-color: #6b7280;
+}
+
+.diagnostic-loading {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(66, 153, 225, 0.3);
+  border-radius: 50%;
+  border-top-color: #4299e1;
+  animation: diagnostic-spin 1s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes diagnostic-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.diagnostic-code {
+  background-color: #1e293b;
+  padding: 1rem;
+  border-radius: 4px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #cbd5e1;
+}
+
+.diagnostic-url {
+  word-break: break-all;
+  font-family: monospace;
+  background-color: #1e293b;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.manual-setup-link {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.manual-setup-link a {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+.manual-setup-link a:hover {
+  text-decoration: underline;
+}

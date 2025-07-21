@@ -1,0 +1,77 @@
+/* Ajustes de cores para combinar melhor com o padrão da página */
+
+/* Ajustar cores do painel de navegação para menos roxo */
+.compact-tabs-container {
+  background: linear-gradient(to bottom right, 
+    rgba(17, 24, 39, 0.95), /* gray-900 */
+    rgba(30, 58, 138, 0.1), /* blue-950 com baixa opacidade */
+    rgba(17, 24, 39, 0.95) /* gray-900 */
+  ) !important;
+}
+
+/* Ajustar cores dos botões de navegação ativos */
+.quantum-tab[data-state="active"] {
+  background: linear-gradient(135deg, 
+    rgba(37, 99, 235, 0.9), /* blue-600 */
+    rgba(79, 70, 229, 0.8) /* indigo-600 */
+  ) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important; /* blue-500 */
+}
+
+/* Ajustar brilho dos botões de navegação */
+.tab-glow {
+  background: radial-gradient(
+    circle at center,
+    rgba(59, 130, 246, 0.3), /* blue-500 */
+    rgba(99, 102, 241, 0.2), /* indigo-500 */
+    transparent
+  ) !important;
+}
+
+/* Ajustar cores do efeito de brilho ambiente */
+.nav-ambient-glow::before {
+  background: radial-gradient(
+    ellipse at top left,
+    rgba(59, 130, 246, 0.08), /* blue-500 */
+    rgba(99, 102, 241, 0.05), /* indigo-500 */
+    rgba(0, 0, 0, 0)
+  ) !important;
+  opacity: 0.5 !important;
+}
+
+.nav-ambient-glow::after {
+  background: radial-gradient(
+    ellipse at bottom right,
+    rgba(16, 185, 129, 0.05), /* emerald-500 */
+    rgba(59, 130, 246, 0.03), /* blue-500 */
+    rgba(0, 0, 0, 0)
+  ) !important;
+  opacity: 0.4 !important;
+}
+
+/* Ajustar cores dos botões de navegação */
+.quantum-tab {
+  background-color: rgba(31, 41, 55, 0.7) !important; /* gray-800 */
+  border-color: rgba(75, 85, 99, 0.3) !important; /* gray-600 */
+}
+
+.quantum-tab:hover {
+  background-color: rgba(55, 65, 81, 0.8) !important; /* gray-700 */
+  border-color: rgba(75, 85, 99, 0.5) !important; /* gray-600 */
+}
+
+/* Ajustar cores do indicador de tab */
+.tab-indicator-active {
+  background: linear-gradient(to right, 
+    rgba(37, 99, 235, 0.9), /* blue-600 */
+    rgba(79, 70, 229, 0.8) /* indigo-600 */
+  ) !important;
+}
+
+.tab-indicator-glow {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(59, 130, 246, 0.2), /* blue-500 */
+    rgba(0, 0, 0, 0)
+  ) !important;
+}

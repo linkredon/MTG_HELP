@@ -1,0 +1,15 @@
+.quantum-card-dense {
+  overflow: visible !important;
+}
+
+/* Estilos específicos para os filtros da coleção */
+.filtros-colecao {
+  position: relative;
+  z-index: 10;
+}
+
+/* Garantir que o dropdown apareça por cima de outros elementos */
+.simple-dropdown-content {
+  position: absolute !important;
+  z-index: 9999 !important;
+}

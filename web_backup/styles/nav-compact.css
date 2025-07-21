@@ -1,0 +1,76 @@
+/* Estilos para a navegação compacta */
+
+/* Ajustes para os botões de navegação */
+.quantum-tab {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.2), rgb(0 0 0 / 70%)) !important;
+  border-color: rgba(8, 145, 178, 0.2) !important;
+  padding: 0.5rem 0.75rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.quantum-tab:hover {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.4), rgb(0 0 0 / 75%)) !important;
+  border-color: rgba(8, 145, 178, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.quantum-tab[data-state="active"] {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.9), rgb(0 0 0 / 80%)) !important;
+  border-color: rgba(8, 145, 178, 0.5) !important;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.2) !important;
+}
+
+/* Ajustes para o indicador de tab ativo */
+.tab-indicator-active {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.9), rgb(0 0 0 / 80%)) !important;
+  height: 2px !important;
+  border-radius: 1px !important;
+}
+
+.tab-indicator-glow {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(8, 145, 178, 0.3),
+    rgba(0, 0, 0, 0)
+  ) !important;
+  height: 10px !important;
+  opacity: 0.6 !important;
+}
+
+/* Ajustes para o conteúdo dos botões */
+.tab-content {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+}
+
+.tab-icon {
+  color: rgba(8, 145, 178, 0.9) !important;
+}
+
+.quantum-tab[data-state="active"] .tab-icon,
+.quantum-tab[data-state="active"] .tab-label {
+  color: white !important;
+}
+
+/* Efeito de brilho que segue o mouse */
+.quantum-tab::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    rgba(8, 145, 178, 0.15) 0%,
+    rgba(6, 182, 212, 0.1) 25%,
+    rgba(0, 0, 0, 0) 50%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.quantum-tab:hover::after {
+  opacity: 1;
+}

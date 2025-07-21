@@ -1,0 +1,481 @@
+/* Estilos compactos globais para todo o sistema */
+
+/* Classes base para elementos compactos */
+.quantum-card {
+  background-image: linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  overflow: hidden;
+}
+
+.quantum-card-dense {
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  overflow: hidden;
+  font-size: 0.875rem;
+}
+
+.quantum-card-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.quantum-btn {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.25rem;
+  background-color: rgba(31, 41, 55, 0.9);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  color: rgb(209, 213, 219);
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  font-size: 0.875rem;
+}
+
+.quantum-btn.compact {
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.quantum-btn.primary {
+  background-color: rgba(8, 145, 178, 0.3);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: rgb(155, 236, 250);
+}
+
+.quantum-btn.primary:hover {
+  background-color: rgba(14, 116, 144, 0.3);
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+.quantum-btn.secondary {
+  background-color: rgba(126, 34, 206, 0.3);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: rgb(216, 180, 254);
+}
+
+.quantum-btn.secondary:hover {
+  background-color: rgba(107, 33, 168, 0.3);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.quantum-badge {
+  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem;
+  background-color: rgba(55, 65, 81, 0.5);
+  color: rgb(209, 213, 219);
+  border-radius: 0.125rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.quantum-badge.primary {
+  background-color: rgba(8, 145, 178, 0.4);
+  color: rgb(155, 236, 250);
+}
+
+.quantum-input {
+  background-color: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(55, 65, 81, 0.8);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  color: rgb(229, 231, 235);
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+.quantum-input:focus {
+  border-color: rgba(6, 182, 212, 0.4);
+  outline: none;
+}
+
+.quantum-select {
+  background-color: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(55, 65, 81, 0.8);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  color: rgb(229, 231, 235);
+  font-size: 0.875rem;
+  height: 2rem;
+}
+
+.quantum-select:focus {
+  border-color: rgba(6, 182, 212, 0.4);
+  outline: none;
+}
+
+.quantum-textarea {
+  background-color: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(55, 65, 81, 0.8);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  color: rgb(229, 231, 235);
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+.quantum-textarea:focus {
+  border-color: rgba(6, 182, 212, 0.4);
+  outline: none;
+}
+
+.quantum-form-group {
+  margin-bottom: 0.75rem;
+}
+
+.quantum-label {
+  display: block;
+  font-size: 0.875rem;
+  color: rgb(156, 163, 175);
+  margin-bottom: 0.25rem;
+}
+
+/* Layout compacto */
+.compact-layout {
+  padding: 0.5rem;
+}
+
+.compact-layout > * + * {
+  margin-top: 0.5rem;
+}
+
+.compact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .compact-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .compact-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .compact-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.compact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+  margin-bottom: 0.5rem;
+}
+
+.compact-tabs {
+  display: flex;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.compact-tabs > * + * {
+  margin-left: 0.25rem;
+}
+
+.compact-tab {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0.125rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.compact-tab:hover {
+  background-color: rgba(31, 41, 55, 0.5);
+  border-color: rgba(6, 182, 212, 0.2);
+}
+
+.compact-tab.active {
+  background-color: rgba(8, 145, 178, 0.2);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: rgb(155, 236, 250);
+}
+
+/* Elementos de visualização de cartas compactos */
+.compact-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.25rem;
+}
+
+@media (min-width: 480px) {
+  .compact-card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 640px) {
+  .compact-card-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .compact-card-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .compact-card-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .compact-card-grid {
+    grid-template-columns: repeat(10, 1fr);
+  }
+}
+
+.compact-card-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.compact-card-list > * + * {
+  margin-top: 0.25rem;
+}
+
+.compact-card-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.5);
+}
+
+.compact-card-list-item:hover {
+  background-color: rgba(31, 41, 55, 0.3);
+}
+
+.compact-card-details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .compact-card-details {
+    grid-template-columns: repeat(12, 1fr);
+  }
+}
+
+.compact-card-image {
+  grid-column: span 1;
+}
+
+@media (min-width: 640px) {
+  .compact-card-image {
+    grid-column: span 3;
+  }
+}
+
+.compact-card-info {
+  grid-column: span 1;
+}
+
+@media (min-width: 640px) {
+  .compact-card-info {
+    grid-column: span 9;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .compact-card-info > * + * {
+    margin-top: 0.5rem;
+  }
+}
+
+.hover-highlight {
+  transition: background-color 0.2s;
+}
+
+.hover-highlight:hover {
+  background-color: rgba(8, 145, 178, 0.1);
+}
+
+/* Estilos para modal compacto */
+.quantum-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/* Estilos para notificações */
+.quantum-notification {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  z-index: 50;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  max-width: 28rem;
+  opacity: 0;
+  transform: translateY(0.5rem);
+  animation: fadeIn 0.3s ease forwards;
+  transition-duration: 0.3s;
+}
+
+.quantum-notification.success {
+  background-color: rgba(22, 163, 74, 0.9);
+  color: white;
+}
+
+.quantum-notification.error {
+  background-color: rgba(220, 38, 38, 0.9);
+  color: white;
+}
+
+.quantum-notification.info {
+  background-color: rgba(37, 99, 235, 0.9);
+  color: white;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* Sistema de grid compacto */
+.quantum-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.quantum-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .quantum-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.quantum-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .quantum-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.quantum-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .quantum-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .quantum-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Layout principal */
+.compact-app {
+  min-height: 100vh;
+  background-image: linear-gradient(to bottom right, rgb(17, 24, 39), rgb(0, 0, 0), rgb(17, 24, 39));
+}
+
+.compact-main {
+  padding: 0.5rem;
+}
+
+/* Header compacto */
+.compact-header {
+  background-color: rgba(0, 0, 0, 0.6);
+  border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+/* Navegação compacta */
+.compact-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 2rem;
+  overflow-x: auto;
+}
+
+.compact-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0.125rem;
+  white-space: nowrap;
+  color: rgb(209, 213, 219);
+}
+
+.compact-nav-item:hover {
+  background-color: rgb(31, 41, 55);
+  color: white;
+}
+
+.compact-nav-item.active {
+  background-color: rgba(8, 145, 178, 0.2);
+  color: rgb(155, 236, 250);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+/* Fonte compacta para melhor legibilidade */
+.compact-font {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-size: 0.875rem;
+}

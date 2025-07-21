@@ -1,0 +1,25 @@
+/* Correção para o problema de dropdown sendo cortado */
+
+/* Garantir que os contêineres não cortem os dropdowns */
+.quantum-card-dense {
+  overflow: visible !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Quando o dropdown está aberto, aumentar o z-index do contêiner pai */
+.dropdown-container.dropdown-open {
+  z-index: 9999;
+}
+
+/* Garantir que o dropdown apareça por cima de outros elementos */
+.simple-dropdown-content {
+  position: absolute !important;
+  z-index: 9999 !important;
+}
+
+/* Garantir que o dropdown não seja afetado pelo padding ou margin do contêiner pai */
+.dropdown-container {
+  position: relative !important;
+  overflow: visible !important;
+}

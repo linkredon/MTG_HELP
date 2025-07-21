@@ -1,0 +1,29 @@
+/* Ajustes adicionais de espaçamento para as tabs */
+
+.quantum-tab {
+  white-space: nowrap;
+  padding: 0.5rem 0.75rem !important;
+}
+
+/* Ajustes para o espaçamento em diferentes tamanhos de tela */
+@media (max-width: 640px) {
+  .quantum-tab {
+    padding: 0.5rem 0.5rem !important;
+  }
+}
+
+@media (min-width: 641px) {
+  .tab-content {
+    gap: 0.5rem !important;
+  }
+}
+
+/* Ajustes para o container de tabs */
+.tab-list-container {
+  padding: 0.5rem !important;
+}
+
+/* Ajustes para o indicador de tab ativo */
+.tab-indicator-container {
+  margin-bottom: 0.25rem;
+}

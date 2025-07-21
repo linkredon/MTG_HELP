@@ -1,0 +1,72 @@
+/* Estilos para tornar as tabs mais responsivas */
+
+/* Ajustes para telas pequenas */
+@media (max-width: 640px) {
+  .mobile-tabs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .quantum-tab {
+    width: 100%;
+    padding: 0.5rem 0.25rem !important;
+    justify-content: center;
+  }
+  
+  .tab-content {
+    flex-direction: column !important;
+    gap: 0.25rem !important;
+  }
+  
+  .tab-icon {
+    margin-right: 0 !important;
+    margin-bottom: 0.25rem !important;
+  }
+}
+
+/* Ajustes para telas médias */
+@media (min-width: 641px) and (max-width: 768px) {
+  .mobile-tabs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .quantum-tab {
+    padding: 0.5rem !important;
+  }
+}
+
+/* Ajustes para telas grandes */
+@media (min-width: 769px) {
+  .mobile-tabs-grid {
+    justify-content: center;
+  }
+  
+  .quantum-tab {
+    min-width: 100px;
+  }
+}
+
+/* Ajustes gerais para os botões */
+.quantum-tab {
+  height: auto !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Ajustes para o container de tabs */
+.tab-list-container {
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.tab-list-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

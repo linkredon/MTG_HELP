@@ -7,10 +7,10 @@ const isServer = typeof window === 'undefined';
 // Configuração do cliente DynamoDB (lado do servidor)
 const createServerClient = () => {
   const client = new DynamoDBClient({
-    region: process.env.AWS_REGION || 'us-east-2',
+    region: process.env.AMZ_REGION || process.env.AWS_REGION || 'us-east-2',
     credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
+      accessKeyId: process.env.AMZ_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || '',
+      secretAccessKey: process.env.AMZ_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || ''
     }
   });
   return DynamoDBDocumentClient.from(client);
