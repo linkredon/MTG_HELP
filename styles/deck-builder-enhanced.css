@@ -357,7 +357,9 @@
 
 /* Tabs melhorados */
 .quantum-tabs {
-  @apply bg-slate-800/50 border border-slate-700 rounded-lg p-1;
+  @apply border rounded-lg p-1;
+  background-color: rgba(30, 41, 59, 0.5); /* bg-slate-800/50 */
+  border-color: #334155; /* border-slate-700 */
 }
 
 .quantum-tab-content {
