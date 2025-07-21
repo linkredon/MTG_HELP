@@ -5,7 +5,9 @@
 }
 
 .quantum-header {
-  @apply flex items-center justify-between mb-8 p-6 bg-slate-800/50 rounded-xl border border-slate-700/50 backdrop-blur-sm;
+  @apply flex items-center justify-between mb-8 p-6 rounded-xl border backdrop-blur-sm;
+  background-color: rgba(30, 41, 59, 0.5); /* bg-slate-800/50 */
+  border-color: rgba(51, 65, 85, 0.5); /* border-slate-700/50 */
 }
 
 .quantum-header-left {
@@ -25,7 +27,9 @@
 }
 
 .quantum-filters {
-  @apply flex flex-col lg:flex-row gap-4 mb-6 p-4 bg-slate-800/30 rounded-lg border border-slate-700/30;
+  @apply flex flex-col lg:flex-row gap-4 mb-6 p-4 rounded-lg border;
+  background-color: rgba(30, 41, 59, 0.3); /* bg-slate-800/30 */
+  border-color: rgba(51, 65, 85, 0.3); /* border-slate-700/30 */
 }
 
 .quantum-search {
@@ -37,7 +41,9 @@
 }
 
 .quantum-input {
-  @apply pl-10 bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500/20;
+  @apply pl-10 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500/20;
+  background-color: rgba(51, 65, 85, 0.5); /* bg-slate-700/50 */
+  border-color: #475569; /* border-slate-600 */
 }
 
 .quantum-filter-controls {
@@ -45,7 +51,9 @@
 }
 
 .quantum-select {
-  @apply bg-slate-700/50 border-slate-600 text-white focus:border-cyan-500 focus:ring-cyan-500/20;
+  @apply text-white focus:border-cyan-500 focus:ring-cyan-500/20;
+  background-color: rgba(51, 65, 85, 0.5); /* bg-slate-700/50 */
+  border-color: #475569; /* border-slate-600 */
 }
 
 .quantum-content {
@@ -57,11 +65,15 @@
 }
 
 .quantum-card {
-  @apply bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm transition-all duration-300;
+  @apply border backdrop-blur-sm transition-all duration-300;
+  background-color: rgba(30, 41, 59, 0.5); /* bg-slate-800/50 */
+  border-color: rgba(51, 65, 85, 0.5); /* border-slate-700/50 */
 }
 
 .quantum-card-hover {
-  @apply transform scale-105 border-cyan-500/30 shadow-lg shadow-cyan-500/10;
+  @apply transform scale-105 shadow-lg;
+  border-color: rgba(6, 182, 212, 0.3); /* border-cyan-500/30 */
+  box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.1), 0 4px 6px -4px rgba(6, 182, 212, 0.1); /* shadow-cyan-500/10 */
 }
 
 .quantum-card-header {
@@ -77,7 +89,9 @@
 }
 
 .quantum-badge {
-  @apply bg-slate-700 text-slate-300 border border-slate-600;
+  @apply text-slate-300 border;
+  background-color: #334155; /* bg-slate-700 */
+  border-color: #475569; /* border-slate-600 */
 }
 
 .quantum-card-actions {
@@ -85,7 +99,8 @@
 }
 
 .quantum-button-icon {
-  @apply h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50;
+  @apply h-8 w-8 p-0 text-slate-400 hover:text-white;
+  /* hover:bg-slate-700/50 não suportado em CSS puro, use via Tailwind no HTML */
 }
 
 .quantum-card-content {
@@ -114,7 +129,9 @@
 
 /* Modal Styles */
 .quantum-modal {
-  @apply bg-slate-800 border border-slate-700 max-w-2xl;
+  @apply border max-w-2xl;
+  background-color: #1e293b; /* bg-slate-800 */
+  border-color: #334155; /* border-slate-700 */
 }
 
 .quantum-modal-title {
@@ -126,7 +143,9 @@
 }
 
 .quantum-tabs {
-  @apply bg-slate-700/50 border border-slate-600;
+  @apply border;
+  background-color: rgba(51, 65, 85, 0.5); /* bg-slate-700/50 */
+  border-color: #475569; /* border-slate-600 */
 }
 
 .quantum-tab-content {
@@ -142,7 +161,9 @@
 }
 
 .quantum-textarea {
-  @apply bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500/20;
+  @apply text-white placeholder-slate-400 focus:border-cyan-500 focus:ring-cyan-500/20;
+  background-color: rgba(51, 65, 85, 0.5); /* bg-slate-700/50 */
+  border-color: #475569; /* border-slate-600 */
 }
 
 .quantum-colors-selector {
@@ -174,7 +195,9 @@
 }
 
 .quantum-checkbox {
-  @apply w-4 h-4 text-cyan-500 bg-slate-700 border-slate-600 rounded focus:ring-cyan-500/20;
+  @apply w-4 h-4 text-cyan-500 rounded focus:ring-cyan-500/20;
+  background-color: #334155; /* bg-slate-700 */
+  border-color: #475569; /* border-slate-600 */
 }
 
 .quantum-modal-footer {
@@ -186,11 +209,14 @@
 }
 
 .quantum-collection-item {
-  @apply flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/50 transition-all duration-200;
+  @apply flex items-center justify-between p-4 rounded-lg border transition-all duration-200;
+  background-color: rgba(51, 65, 85, 0.3); /* bg-slate-700/30 */
+  border-color: rgba(71, 85, 105, 0.5); /* border-slate-600/50 */
 }
 
 .quantum-collection-item-has-card {
-  @apply border-green-500/30 bg-green-500/10;
+  border-color: rgba(34, 197, 94, 0.3); /* border-green-500/30 */
+  background-color: rgba(34, 197, 94, 0.1); /* bg-green-500/10 */
 }
 
 .quantum-collection-info h4 {
@@ -206,20 +232,26 @@
 }
 
 .quantum-badge-success {
-  @apply bg-green-500/20 text-green-400 border-green-500/30;
+  color: #22c55e; /* text-green-400 */
+  border-color: rgba(34, 197, 94, 0.3); /* border-green-500/30 */
+  background-color: rgba(34, 197, 94, 0.2); /* bg-green-500/20 */
 }
 
 /* Button Styles */
 .quantum-button-primary {
-  @apply bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-lg shadow-cyan-500/25 transition-all duration-200;
+  @apply bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-lg transition-all duration-200;
+  box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.25), 0 4px 6px -4px rgba(6, 182, 212, 0.25); /* shadow-cyan-500/25 */
 }
 
 .quantum-button-secondary {
-  @apply bg-slate-700/50 text-slate-300 border border-slate-600 hover:bg-slate-700 hover:text-white transition-all duration-200;
+  @apply text-slate-300 border hover:bg-slate-700 hover:text-white transition-all duration-200;
+  background-color: rgba(51, 65, 85, 0.5); /* bg-slate-700/50 */
+  border-color: #475569; /* border-slate-600 */
 }
 
 .quantum-button-danger {
-  @apply bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 shadow-lg shadow-red-500/25 transition-all duration-200;
+  @apply bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 shadow-lg transition-all duration-200;
+  box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.25), 0 4px 6px -4px rgba(239, 68, 68, 0.25); /* shadow-red-500/25 */
 }
 
 /* Notification Styles */
@@ -232,15 +264,21 @@
 }
 
 .quantum-notification-success {
-  @apply bg-green-500/20 border border-green-500/30 text-green-300;
+  color: #22c55e; /* text-green-300 */
+  border-color: rgba(34, 197, 94, 0.3); /* border-green-500/30 */
+  background-color: rgba(34, 197, 94, 0.2); /* bg-green-500/20 */
 }
 
 .quantum-notification-error {
-  @apply bg-red-500/20 border border-red-500/30 text-red-300;
+  color: #ef4444; /* text-red-300 */
+  border-color: rgba(239, 68, 68, 0.3); /* border-red-500/30 */
+  background-color: rgba(239, 68, 68, 0.2); /* bg-red-500/20 */
 }
 
 .quantum-notification-info {
-  @apply bg-blue-500/20 border border-blue-500/30 text-blue-300;
+  color: #38bdf8; /* text-blue-300 */
+  border-color: rgba(59, 130, 246, 0.3); /* border-blue-500/30 */
+  background-color: rgba(59, 130, 246, 0.2); /* bg-blue-500/20 */
 }
 
 /* Responsive Design */
@@ -303,7 +341,8 @@
 .quantum-input:focus,
 .quantum-select:focus,
 .quantum-textarea:focus {
-  @apply ring-2 ring-cyan-500/20 border-cyan-500;
+  @apply ring-2 border-cyan-500;
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2); /* ring-cyan-500/20 */
 }
 
 /* Loading States */
@@ -313,17 +352,22 @@
 
 .quantum-loading::after {
   content: '';
-  @apply absolute inset-0 bg-slate-800/50 rounded-lg;
+  position: absolute;
+  inset: 0;
+  background-color: rgba(30, 41, 59, 0.5); /* bg-slate-800/50 */
+  border-radius: 0.5rem;
 }
 
 /* Success States */
 .quantum-success {
-  @apply border-green-500/30 bg-green-500/10;
+  border-color: rgba(34, 197, 94, 0.3); /* border-green-500/30 */
+  background-color: rgba(34, 197, 94, 0.1); /* bg-green-500/10 */
 }
 
 /* Error States */
 .quantum-error {
-  @apply border-red-500/30 bg-red-500/10;
+  border-color: rgba(239, 68, 68, 0.3); /* border-red-500/30 */
+  background-color: rgba(239, 68, 68, 0.1); /* bg-red-500/10 */
 }
 
 /* Disabled States */
@@ -337,16 +381,20 @@
 }
 
 .quantum-collections-list::-webkit-scrollbar-track {
-  @apply bg-slate-700/30 rounded;
+  background-color: rgba(51, 65, 85, 0.3); /* bg-slate-700/30 */
+  border-radius: 0.5rem;
 }
 
 .quantum-collections-list::-webkit-scrollbar-thumb {
-  @apply bg-slate-600 rounded hover:bg-slate-500;
+  background-color: #475569; /* bg-slate-600 */
+  border-radius: 0.5rem;
 }
 
 /* Glass Effect */
 .quantum-glass {
-  @apply backdrop-blur-sm bg-white/10 border border-white/20;
+  @apply backdrop-blur-sm border;
+  background-color: rgba(255,255,255,0.1); /* bg-white/10 */
+  border-color: rgba(255,255,255,0.2); /* border-white/20 */
 }
 
 /* Gradient Text */

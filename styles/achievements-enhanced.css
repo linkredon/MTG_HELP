@@ -7,7 +7,12 @@
 
 /* Cabeçalho com estatísticas */
 .achievements-header {
-  @apply bg-gray-800/40 border border-gray-700/50 rounded-lg shadow-md overflow-hidden p-4;
+  background-color: rgba(31, 41, 55, 0.4); /* bg-gray-800/40 */
+  border: 1px solid rgba(55, 65, 81, 0.5); /* border-gray-700/50 */
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* shadow-md */
+  overflow: hidden;
+  padding: 1rem;
 }
 
 .achievements-header-content {
@@ -52,7 +57,11 @@
 }
 
 .achievements-stat-card {
-  @apply bg-gray-900/50 border border-gray-700/30 rounded p-2 text-center;
+  background-color: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
+  border: 1px solid rgba(55, 65, 81, 0.3); /* border-gray-700/30 */
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  text-align: center;
 }
 
 .achievements-stat-value {
@@ -65,7 +74,11 @@
 
 /* Tabs de categorias */
 .achievements-tabs {
-  @apply bg-gray-800/40 border border-gray-700/50 rounded-lg shadow-md overflow-hidden;
+  background-color: rgba(31, 41, 55, 0.4); /* bg-gray-800/40 */
+  border: 1px solid rgba(55, 65, 81, 0.5); /* border-gray-700/50 */
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* shadow-md */
+  overflow: hidden;
 }
 
 .achievements-tabs-header {
@@ -95,11 +108,17 @@
 
 /* Card de conquista */
 .achievement-card {
-  @apply bg-gray-800/40 border border-gray-700/50 rounded-lg shadow-md overflow-hidden transition-all duration-300;
+  background-color: rgba(31, 41, 55, 0.4); /* bg-gray-800/40 */
+  border: 1px solid rgba(55, 65, 81, 0.5); /* border-gray-700/50 */
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* shadow-md */
+  overflow: hidden;
+  transition: all 0.3s;
 }
 
 .achievement-card.unlocked {
-  @apply border-cyan-500/30 shadow-lg;
+  border-color: rgba(6, 182, 212, 0.3); /* border-cyan-500/30 */
+  box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.1), 0 4px 6px -4px rgba(6, 182, 212, 0.1); /* shadow-lg shadow-cyan-500/10 */
 }
 
 .achievement-card-header {
@@ -107,7 +126,7 @@
 }
 
 .achievement-card-header.unlocked {
-  @apply bg-gradient-to-r from-cyan-900/50 to-blue-900/50;
+  background: linear-gradient(to right, rgba(22, 78, 99, 0.5), rgba(30, 58, 138, 0.5)); /* from-cyan-900/50 to-blue-900/50 */
 }
 
 .achievement-card-icon {
@@ -115,7 +134,7 @@
 }
 
 .achievement-card-icon.unlocked {
-  @apply bg-cyan-500/20;
+  background-color: rgba(6, 182, 212, 0.2); /* bg-cyan-500/20 */
 }
 
 .achievement-card-content {
@@ -131,11 +150,13 @@
 }
 
 .achievement-card-rarity {
-  @apply px-1.5 py-0.5 rounded text-[10px] font-medium uppercase bg-gray-700/50 text-gray-300;
+  background-color: rgba(55, 65, 81, 0.5); /* bg-gray-700/50 */
+  color: #d1d5db; /* text-gray-300 */
 }
 
 .achievement-card-rarity.unlocked {
-  @apply bg-cyan-500/20 text-cyan-300;
+  background-color: rgba(6, 182, 212, 0.2); /* bg-cyan-500/20 */
+  color: #67e8f9; /* text-cyan-300 */
 }
 
 .achievement-card-points {
@@ -143,7 +164,7 @@
 }
 
 .achievement-card-points.unlocked {
-  @apply text-cyan-400;
+  color: #22d3ee; /* text-cyan-400 */
 }
 
 /* Corpo do card de conquista */
@@ -177,11 +198,13 @@
 }
 
 .achievement-progress-bar {
-  @apply h-1.5 bg-gray-800/70 rounded-full overflow-hidden;
+  background-color: rgba(31, 41, 55, 0.7); /* bg-gray-800/70 */
+  border-radius: 9999px;
+  overflow: hidden;
 }
 
 .achievement-progress-bar-fill {
-  @apply h-full bg-cyan-500;
+  background-color: #06b6d4; /* bg-cyan-500 */
 }
 
 /* Estado vazio */

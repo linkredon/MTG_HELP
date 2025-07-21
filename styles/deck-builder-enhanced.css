@@ -13,11 +13,14 @@
 }
 
 .mtg-card {
-  @apply bg-gray-800/40 border border-gray-700/50 rounded-lg shadow-md overflow-hidden;
+  @apply rounded-lg shadow-md overflow-hidden border;
+  background-color: rgba(31, 41, 55, 0.4); /* bg-gray-800/40 */
+  border-color: rgba(55, 65, 81, 0.5); /* border-gray-700/50 */
 }
 
 .mtg-card-header {
-  @apply flex items-center gap-3 p-4 border-b border-gray-700/50;
+  @apply flex items-center gap-3 p-4 border-b;
+  border-color: rgba(55, 65, 81, 0.5); /* border-gray-700/50 */
 }
 
 .mtg-card-icon {
@@ -37,7 +40,9 @@
 }
 
 .mtg-card-mini {
-  @apply bg-gray-800/40 border border-gray-700/50 rounded-lg p-3 hover:bg-gray-800/60 transition-colors;
+  @apply rounded-lg p-3 hover:bg-gray-800/60 transition-colors border;
+  background-color: rgba(31, 41, 55, 0.4); /* bg-gray-800/40 */
+  border-color: rgba(55, 65, 81, 0.5); /* border-gray-700/50 */
 }
 
 .mtg-grid {
@@ -61,15 +66,21 @@
 }
 
 .mtg-input {
-  @apply w-full bg-gray-900/50 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20;
+  @apply w-full rounded-md text-white placeholder-gray-500 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 border;
+  background-color: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
+  border-color: #374151; /* border-gray-700 */
 }
 
 .mtg-textarea {
-  @apply w-full bg-gray-900/50 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20;
+  @apply w-full rounded-md text-white placeholder-gray-500 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 border;
+  background-color: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
+  border-color: #374151; /* border-gray-700 */
 }
 
 .mtg-select {
-  @apply w-full bg-gray-900/50 border border-gray-700 rounded-md text-white;
+  @apply w-full rounded-md text-white border;
+  background-color: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
+  border-color: #374151; /* border-gray-700 */
 }
 
 .mtg-dropdown {
@@ -85,7 +96,8 @@
 }
 
 .mtg-badge-primary {
-  @apply bg-cyan-500/20 text-cyan-400;
+  color: #22d3ee; /* text-cyan-400 */
+  background-color: rgba(6, 182, 212, 0.2); /* bg-cyan-500/20 */
 }
 
 .mtg-badge-secondary {
@@ -93,7 +105,8 @@
 }
 
 .mtg-badge-success {
-  @apply bg-green-500/20 text-green-400;
+  color: #22c55e; /* text-green-400 */
+  background-color: rgba(34, 197, 94, 0.2); /* bg-green-500/20 */
 }
 
 .mtg-tabs {
@@ -113,7 +126,8 @@
 }
 
 .mtg-status-info {
-  @apply bg-blue-500/20 text-blue-400;
+  color: #38bdf8; /* text-blue-400 */
+  background-color: rgba(59, 130, 246, 0.2); /* bg-blue-500/20 */
 }
 
 .mtg-form-group {
@@ -122,13 +136,13 @@
 
 /* Compatibilidade com o tema quantum */
 .quantum-card .mtg-card {
-  @apply bg-gray-900/50;
+  background-color: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
 }
 
 .quantum-card .mtg-input,
 .quantum-card .mtg-textarea,
 .quantum-card .mtg-select {
-  @apply bg-black/40;
+  background-color: rgba(0, 0, 0, 0.4); /* bg-black/40 */
 }
 
 /* Estilos para o layout melhorado da aba "Minha Coleção" */
@@ -138,7 +152,9 @@
 }
 
 .quantum-collection-header {
-  @apply flex items-center justify-between mb-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700;
+  @apply flex items-center justify-between mb-6 p-4 rounded-lg border;
+  background-color: rgba(30, 41, 59, 0.5); /* bg-slate-800/50 */
+  border-color: #334155; /* border-slate-700 */
 }
 
 .quantum-header-info {
@@ -154,7 +170,9 @@
 }
 
 .quantum-collection-card {
-  @apply bg-slate-800/50 border border-slate-700 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10;
+  @apply border transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10;
+  background-color: rgba(30, 41, 59, 0.5); /* bg-slate-800/50 */
+  border-color: #334155; /* border-slate-700 */
 }
 
 .quantum-collection-header-info {
@@ -170,7 +188,9 @@
 }
 
 .quantum-badge-info {
-  @apply bg-cyan-500/20 text-cyan-400 border-cyan-500/30;
+  color: #22d3ee; /* text-cyan-400 */
+  background-color: rgba(6, 182, 212, 0.2); /* bg-cyan-500/20 */
+  border-color: rgba(6, 182, 212, 0.3); /* border-cyan-500/30 */
 }
 
 .quantum-collection-empty {
@@ -254,7 +274,9 @@
 
 /* Cards de busca melhorados */
 .quantum-card-search {
-  @apply bg-slate-800/50 border border-slate-700 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10;
+  @apply border transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10;
+  background-color: rgba(30, 41, 59, 0.5); /* bg-slate-800/50 */
+  border-color: #334155; /* border-slate-700 */
 }
 
 .quantum-card-content {
@@ -290,7 +312,9 @@
 }
 
 .quantum-badge-success {
-  @apply bg-green-600/20 text-green-400 border-green-600/30;
+  color: #22c55e; /* text-green-400 */
+  background-color: rgba(22, 163, 74, 0.2); /* bg-green-600/20 */
+  border-color: rgba(22, 163, 74, 0.3); /* border-green-600/30 */
 }
 
 .quantum-card-actions {
@@ -346,15 +370,21 @@
 }
 
 .quantum-notification-success {
-  @apply bg-green-600/20 text-green-400 border-green-600/30;
+  color: #22c55e; /* text-green-400 */
+  background-color: rgba(22, 163, 74, 0.2); /* bg-green-600/20 */
+  border-color: rgba(22, 163, 74, 0.3); /* border-green-600/30 */
 }
 
 .quantum-notification-error {
-  @apply bg-red-600/20 text-red-400 border-red-600/30;
+  color: #ef4444; /* text-red-400 */
+  background-color: rgba(220, 38, 38, 0.2); /* bg-red-600/20 */
+  border-color: rgba(220, 38, 38, 0.3); /* border-red-600/30 */
 }
 
 .quantum-notification-info {
-  @apply bg-blue-600/20 text-blue-400 border-blue-600/30;
+  color: #38bdf8; /* text-blue-400 */
+  background-color: rgba(2, 132, 199, 0.2); /* bg-blue-600/20 */
+  border-color: rgba(2, 132, 199, 0.3); /* border-blue-600/30 */
 }
 
 .quantum-notification-content {
@@ -379,11 +409,14 @@
 }
 
 .quantum-collection-item {
-  @apply flex items-center justify-between p-3 bg-slate-700/30 rounded-lg border border-slate-600 hover:border-cyan-400/50 transition-all duration-200;
+  @apply flex items-center justify-between p-3 rounded-lg border transition-all duration-200;
+  background-color: rgba(51, 65, 85, 0.3); /* bg-slate-700/30 */
+  border-color: #475569; /* border-slate-600 */
 }
 
 .quantum-collection-item-has-card {
-  @apply border-green-500/50 bg-green-500/10;
+  border-color: rgba(34, 197, 94, 0.5); /* border-green-500/50 */
+  background-color: rgba(34, 197, 94, 0.1); /* bg-green-500/10 */
 }
 
 .quantum-collection-info {
@@ -440,7 +473,9 @@
 }
 
 .quantum-stats-card {
-  @apply bg-slate-800/50 border border-slate-700 hover:border-cyan-500/50 transition-all duration-300;
+  @apply border transition-all duration-300;
+  background-color: rgba(30, 41, 59, 0.5); /* bg-slate-800/50 */
+  border-color: #334155; /* border-slate-700 */
 }
 
 .quantum-stats-title {
