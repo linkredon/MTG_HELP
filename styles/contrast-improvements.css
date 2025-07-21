@@ -54,19 +54,19 @@
 
 /* Cards e containers com melhor contraste */
 .bg-gray-800,
-.bg-gray-800\/50 {
+.bg-gray-800-50 {
   background-color: var(--bg-card) !important;
   border-color: var(--border-primary) !important;
 }
 
 .bg-gray-900,
-.bg-gray-900\/50 {
+.bg-gray-900-50 {
   background-color: var(--bg-primary) !important;
 }
 
 /* Bordas mais visíveis */
 .border-gray-700,
-.border-gray-700\/50 {
+.border-gray-700-50 {
   border-color: var(--border-primary) !important;
 }
 
