@@ -112,7 +112,7 @@ body {
   color: #F9FAFB;
 }
 
-.cream-global\/80 {
+.cream-global-80 {
   color: rgba(249, 250, 251, 0.8);
 }
 /* HeroUI Scrollbar */
@@ -295,7 +295,7 @@ body {
     color: var(--hero-dark-foreground);
   }
   
-  .cream-global\/80 {
+  .cream-global-80 {
     color: rgba(236, 237, 238, 0.8);
   }
 }
